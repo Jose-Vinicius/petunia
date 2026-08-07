@@ -37,13 +37,17 @@ Com ele é possível registrar entradas e saídas, organizá-las por categorias 
 |---|---|
 | Backend | Ruby on Rails |
 | Banco de dados | PostgreSQL 17 |
-| Frontend | Hotwire / Turbo / Stimulus _(a definir)_ |
-| Autenticação | Devise _(a definir)_ |
-| Testes | RSpec _(a definir)_ |
+| Frontend | Hotwire  |
+| Autenticação | Devise |
+| Testes | RSpec (em PT-br) |
 
 ---
 
 ## ✨ Funcionalidades
+
+### Login
+
+O login permitira a pessoa escolher em qual conta "ambiente" deseja trabalhar, a pessoa pode ter mais de uma conta no sistema, por exemplo, posso ter uma conta pessoal e uma da minha mãe acessando pelo mesmo email, no momento do login o sistema checaria se teria mais de um "ambiente" e abriria um seletor no momento do login para a pessoa decidir em qual conta deseja trabalhar 
 
 ### 🏦 Contas Bancárias e Cartões
 
