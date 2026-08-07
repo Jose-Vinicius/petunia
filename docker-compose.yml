@@ -2,6 +2,7 @@ name: petunia
 
 services:
   web:
+    container_name: petunia-web-1
     build: .
     image: ${DOCKER_IMAGE:-ghcr.io/jose-vinicius/petunia:latest}
     restart: unless-stopped
@@ -26,6 +27,7 @@ services:
       - azaleia_net
 
   worker:
+    container_name: petunia-worker-1
     build: .
     image: ${DOCKER_IMAGE:-ghcr.io/jose-vinicius/petunia:latest}
     restart: unless-stopped
