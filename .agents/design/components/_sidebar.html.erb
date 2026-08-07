@@ -1,0 +1,32 @@
+<!-- Desktop Side NavBar -->
+<aside class="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 border-r border-outline-variant bg-surface-container-lowest z-40">
+  <!-- Header -->
+  <div class="p-6 border-b border-outline-variant flex items-center gap-3">
+    <div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center overflow-hidden">
+      <span class="material-symbols-outlined text-secondary" data-icon="person">person</span>
+    </div>
+    <div>
+      <h2 class="text-headline-sm font-headline tracking-tighter font-bold text-on-surface">Petunia</h2>
+      <p class="font-body text-label-md font-medium tracking-tight text-secondary">Finance Manager</p>
+    </div>
+  </div>
+  
+  <!-- Main Nav -->
+  <div class="flex-1 overflow-y-auto py-6 flex flex-col gap-1 px-3">
+    <%= render 'components/nav_item', icon: 'dashboard', label: 'Dashboard', url: '#' %>
+    <%= render 'components/nav_item', icon: 'swap_horiz', label: 'Transactions', url: '#' %>
+    <%= render 'components/nav_item', icon: 'account_balance', label: 'Accounts', url: '#' %>
+    <%= render 'components/nav_item', icon: 'account_balance_wallet', label: 'Budgets', url: '#' %>
+    <%= render 'components/nav_item', icon: 'bar_chart', label: 'Reports', url: '#' %>
+    
+    <!-- CTA -->
+    <div class="mt-6 px-4">
+      <%= render 'components/cta_button', icon: 'add', label: 'New Transaction' %>
+    </div>
+  </div>
+  
+  <!-- Footer Nav (Settings is Active) -->
+  <div class="p-3 border-t border-outline-variant flex flex-col gap-1">
+    <%= render 'components/nav_item', icon: 'settings', label: 'Settings', url: '#', active: true %>
+  </div>
+</aside>

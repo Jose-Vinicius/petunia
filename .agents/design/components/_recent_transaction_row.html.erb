@@ -1,0 +1,11 @@
+<%# .agents/design/components/_recent_transaction_row.html.erb %>
+<tr class="hover:bg-surface-container-highest transition-colors">
+<td class="px-6 py-4 whitespace-nowrap text-secondary"><%= date %></td>
+<td class="px-6 py-4 font-medium text-on-surface"><%= description %></td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container-highest text-secondary border border-outline-variant">
+<%= category %>
+</span>
+</td>
+<td class="px-6 py-4 text-right font-medium <%= defined?(amount_class) ? amount_class : 'text-on-surface' %>"><%= amount %></td>
+</tr>

@@ -1,0 +1,337 @@
+<!DOCTYPE html><html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Petunia - Configurações</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#0f0f12",
+                    "surface-bright": "#18181b",
+                    "on-secondary-fixed-variant": "#3f3f46",
+                    "tertiary-container": "#065f46",
+                    "surface": "#0c0c0f",
+                    "on-error-container": "#fca5a5",
+                    "surface-container-lowest": "#09090b",
+                    "on-secondary-container": "#a1a1aa",
+                    "primary-fixed-dim": "#c4b5fd",
+                    "on-surface-variant": "#a1a1aa",
+                    "on-tertiary-container": "#bbf7d0",
+                    "surface-variant": "#18181b",
+                    "outline-variant": "#27272a",
+                    "on-surface": "#fafafa",
+                    "secondary-container": "#27272a",
+                    "on-primary-container": "#ede9fe",
+                    "primary-fixed": "#ede9fe",
+                    "surface-dim": "#0c0c0f",
+                    "tertiary-fixed-dim": "#6ee7b7",
+                    "inverse-on-surface": "#09090b",
+                    "surface-container-highest": "#1e1e22",
+                    "on-tertiary-fixed": "#003318",
+                    "surface-container": "#121215",
+                    "secondary": "#71717a",
+                    "tertiary": "#34d399",
+                    "on-primary-fixed-variant": "#5b21b6",
+                    "surface-tint": "#a78bfa",
+                    "outline": "#52525b",
+                    "inverse-primary": "#5b21b6",
+                    "background": "#09090b",
+                    "on-primary": "#0a0012",
+                    "on-tertiary-fixed-variant": "#047857",
+                    "on-secondary-fixed": "#18181b",
+                    "on-error": "#1a0000",
+                    "secondary-fixed": "#a1a1aa",
+                    "on-tertiary": "#001a12",
+                    "primary": "#a78bfa",
+                    "on-primary-fixed": "#2e1065",
+                    "inverse-surface": "#fafafa",
+                    "on-background": "#fafafa",
+                    "primary-container": "#7c3aed",
+                    "on-secondary": "#09090b",
+                    "secondary-fixed-dim": "#71717a",
+                    "surface-container-high": "#18181b",
+                    "error-container": "#3b1111",
+                    "tertiary-fixed": "#bbf7d0",
+                    "error": "#ef4444"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Geist", "sans-serif"],
+                    "display": ["Geist", "sans-serif"],
+                    "body": ["Geist", "sans-serif"],
+                    "label": ["Geist", "sans-serif"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Geist', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Custom Toggle Switch Styles based on Obsidian theme */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #a78bfa;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #a78bfa;
+        }
+        .toggle-checkbox:focus + .toggle-label {
+            outline: 2px solid #a78bfa;
+            outline-offset: 2px;
+        }
+    </style>
+<style>
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(5px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style><style>
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(5px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style><style>
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(5px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style><style>
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(5px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style><style>
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(5px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style><style>
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(5px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        </style></head>
+<body class="bg-background text-on-background h-screen flex overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Mobile Top NavBar (Visible only on mobile, links suppressed per rules) -->
+<nav class="md:hidden flex justify-between items-center w-full h-16 px-6 border-b border-outline-variant bg-surface fixed top-0 z-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-2xl icon-fill" data-icon="local_florist">local_florist</span>
+<span class="text-xl font-headline font-bold text-on-surface tracking-tighter">Petunia</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-secondary hover:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-secondary hover:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</nav>
+<%= render 'components/sidebar' %>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full ml-0 md:ml-64 mt-16 md:mt-0 bg-background overflow-hidden relative">
+<!-- Subtle Background Glow -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-64 bg-primary/5 blur-[100px] pointer-events-none rounded-full"></div>
+<!-- Page Header -->
+<header class="px-6 md:px-10 py-8 border-b border-outline-variant shrink-0 relative z-10">
+<div class="flex items-center gap-2 text-secondary text-sm mb-2 font-medium">
+<span class="material-symbols-outlined text-base" data-icon="settings">settings</span>
+<span class="">Configurações</span>
+<span class="material-symbols-outlined text-base" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface">Organização</span>
+</div>
+<h1 class="text-3xl font-headline font-bold tracking-tight text-on-surface">Categorias e Centros de Custo</h1>
+<p class="text-secondary mt-2 text-sm max-w-2xl">Gerencie as estruturas de classificação para suas transações financeiras. Defina padrões para agilizar os lançamentos.</p>
+</header>
+<!-- Tabs Navigation -->
+<div class="px-6 md:px-10 border-b border-outline-variant shrink-0 flex gap-6 z-10 bg-background/80 backdrop-blur-sm sticky top-0">
+<button class="py-4 text-sm font-medium border-b-2 border-primary text-primary transition-colors" id="tab-categorias" onclick="switchTab('categorias')">
+                Categorias
+            </button>
+<button class="py-4 text-sm font-medium border-b-2 border-transparent text-secondary hover:text-on-surface transition-colors" id="tab-centros" onclick="switchTab('centros')">
+                Centros de Custo
+            </button>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 md:p-10 z-10">
+<!-- Panel: Categorias -->
+<div class="block animate-[fadeIn_0.3s_ease-out]" id="panel-categorias">
+<!-- Toolbar -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+<div class="relative w-full sm:w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-lg" data-icon="search">search</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-sm text-on-surface placeholder:text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Buscar categoria..." type="text">
+</div>
+<button class="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary text-background font-medium px-4 py-2 rounded-lg hover:bg-primary-fixed transition-colors duration-200">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                        Nova Categoria
+                    </button>
+</div>
+<!-- List/Bento Grid -->
+<div class="grid grid-cols-1 gap-3">
+<!-- Item: Casa (Default) -->
+<div class="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface-container border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-4 mb-4 sm:mb-0">
+<div class="w-10 h-10 rounded-md bg-surface-container-lowest border border-outline-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-on-surface">Casa</h3>
+<p class="text-xs text-secondary mt-0.5">Despesas residenciais, aluguel, contas.</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t border-outline-variant sm:border-t-0 pt-3 sm:pt-0">
+
+<div class="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-secondary hover:text-on-surface hover:bg-surface-container-highest rounded transition-colors" title="Editar">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item: Supermercado -->
+<div class="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface-container border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-4 mb-4 sm:mb-0">
+<div class="w-10 h-10 rounded-md bg-surface-container-lowest border border-outline-variant flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-on-surface">Supermercado</h3>
+<p class="text-xs text-secondary mt-0.5">Alimentação e itens de limpeza.</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t border-outline-variant sm:border-t-0 pt-3 sm:pt-0">
+<div class="flex items-center gap-2">
+
+<!-- Toggle Switch -->
+
+</div>
+<div class="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-secondary hover:text-on-surface hover:bg-surface-container-highest rounded transition-colors" title="Editar">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1.5 text-secondary hover:text-error hover:bg-error/10 rounded transition-colors" title="Excluir">
+<span class="material-symbols-outlined text-[18px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item: Transporte -->
+<div class="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface-container border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-4 mb-4 sm:mb-0">
+<div class="w-10 h-10 rounded-md bg-surface-container-lowest border border-outline-variant flex items-center justify-center text-secondary group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+</div>
+<div>
+<h3 class="text-sm font-semibold text-on-surface">Transporte</h3>
+<p class="text-xs text-secondary mt-0.5">Combustível, aplicativos, transporte público.</p>
+</div>
+</div>
+<div class="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t border-outline-variant sm:border-t-0 pt-3 sm:pt-0">
+<div class="flex items-center gap-2">
+
+<!-- Toggle Switch -->
+
+</div>
+<div class="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 text-secondary hover:text-on-surface hover:bg-surface-container-highest rounded transition-colors" title="Editar">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+</button>
+<button class="p-1.5 text-secondary hover:text-error hover:bg-error/10 rounded transition-colors" title="Excluir">
+<span class="material-symbols-outlined text-[18px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Panel: Centros de Custo -->
+<div class="hidden animate-[fadeIn_0.3s_ease-out]" id="panel-centros">
+<!-- Toolbar -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+<div class="relative w-full sm:w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-lg" data-icon="search">search</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-sm text-on-surface placeholder:text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Buscar centro de custo..." type="text">
+</div>
+<button class="w-full sm:w-auto flex items-center justify-center gap-2 bg-surface-container text-on-surface border border-outline-variant font-medium px-4 py-2 rounded-lg hover:bg-surface-container-high transition-colors duration-200">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                        Novo Centro
+                    </button>
+</div>
+<!-- Empty State (Demonstrating variety) -->
+<div class="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-outline-variant rounded-lg bg-surface-container-lowest">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-secondary mb-4">
+<span class="material-symbols-outlined text-3xl" data-icon="account_tree">account_tree</span>
+</div>
+<h3 class="text-base font-semibold text-on-surface mb-1">Nenhum Centro de Custo</h3>
+<p class="text-sm text-secondary text-center max-w-sm mb-6">Os centros de custo ajudam a agrupar despesas por projetos, filiais ou membros da família.</p>
+<button class="flex items-center justify-center gap-2 bg-primary text-background font-medium px-4 py-2 rounded-lg hover:bg-primary-fixed transition-colors duration-200">
+                        Criar Primeiro Centro
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple Tab Switching Logic
+        function switchTab(tabId) {
+            const tabCat = document.getElementById('tab-categorias');
+            const tabCen = document.getElementById('tab-centros');
+            const panelCat = document.getElementById('panel-categorias');
+            const panelCen = document.getElementById('panel-centros');
+
+            const activeClassTab = ['border-b-2', 'border-primary', 'text-primary'];
+            const inactiveClassTab = ['border-b-2', 'border-transparent', 'text-secondary', 'hover:text-on-surface'];
+
+            if (tabId === 'categorias') {
+                tabCat.classList.remove(...inactiveClassTab);
+                tabCat.classList.add(...activeClassTab);
+                tabCen.classList.remove(...activeClassTab);
+                tabCen.classList.add(...inactiveClassTab);
+                
+                panelCat.classList.remove('hidden');
+                panelCat.classList.add('block');
+                panelCen.classList.remove('block');
+                panelCen.classList.add('hidden');
+            } else {
+                tabCen.classList.remove(...inactiveClassTab);
+                tabCen.classList.add(...activeClassTab);
+                tabCat.classList.remove(...activeClassTab);
+                tabCat.classList.add(...inactiveClassTab);
+                
+                panelCen.classList.remove('hidden');
+                panelCen.classList.add('block');
+                panelCat.classList.remove('block');
+                panelCat.classList.add('hidden');
+            }
+        }
+
+        // Add custom styles for basic fade animation
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(5px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+
+
+
+
+</body></html>

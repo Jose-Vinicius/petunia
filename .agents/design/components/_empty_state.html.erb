@@ -1,0 +1,40 @@
+<%# .agents/design/components/_empty_state.html.erb %>
+<div class="flex-1 flex flex-col items-center justify-center p-8 relative">
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03] overflow-hidden">
+<img alt="Petunia Large Watermark" class="w-[800px] h-[800px] object-contain rotate-12 scale-110" src="https://lh3.googleusercontent.com/aida/AP1WRLsc9-2bcT2ia_0x0Ff1aBNbBIuNT8G5xKyc9oCzGFRs5fT_hiiehlyn8cU6Hh53nyf1g6rClaSD9iSzpEIEZgOhXtAi3w-ObDldA16nihmI8PK_CskvUKJEC74kGG4SB2LDeLdSePy4_uBBeZwR8rUXS-ntY5BhlXafJYmURnmYAW8Cor9LShklbUOXh4bLhr4cbtcm4bPS2TyKrpz7jWWH2nGdvym2mv48dz8Oc5qA7X1rjZBT8QJzCZcf">
+</div>
+<div class="relative z-10 max-w-md w-full text-center flex flex-col items-center space-y-8">
+<div class="relative group">
+<div class="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-110 group-hover:bg-primary/30 transition-all duration-700"></div>
+<div class="relative bg-surface-container border border-outline-variant p-8 rounded-2xl shadow-2xl backdrop-blur-sm">
+<div class="w-24 h-24 flex items-center justify-center">
+<img alt="Empty State Icon" class="w-20 h-20 object-contain drop-shadow-[0_0_15px_rgba(167,139,250,0.4)]" src="https://lh3.googleusercontent.com/aida/AP1WRLsc9-2bcT2ia_0x0Ff1aBNbBIuNT8G5xKyc9oCzGFRs5fT_hiiehlyn8cU6Hh53nyf1g6rClaSD9iSzpEIEZgOhXtAi3w-ObDldA16nihmI8PK_CskvUKJEC74kGG4SB2LDeLdSePy4_uBBeZwR8rUXS-ntY5BhlXafJYmURnmYAW8Cor9LShklbUOXh4bLhr4cbtcm4bPS2TyKrpz7jWWH2nGdvym2mv48dz8Oc5qA7X1rjZBT8QJzCZcf">
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<h2 class="text-3xl md:text-4xl font-headline font-bold text-on-surface tracking-tight"><%= title %></h2>
+<p class="text-secondary-fixed text-lg leading-relaxed max-w-sm mx-auto">
+<%= description %>
+</p>
+</div>
+<div class="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
+<div class="w-full sm:w-auto">
+  <%= render 'components/cta_button', icon: primary_button_icon, label: primary_button_label %>
+</div>
+<% if defined?(secondary_button_label) && secondary_button_label.present? %>
+<button class="px-8 py-2.5 border border-outline-variant text-on-surface font-semibold rounded-lg hover:bg-surface-container transition-colors w-full sm:w-auto justify-center">
+<%= secondary_button_label %>
+</button>
+<% end %>
+</div>
+<% if defined?(hint) && hint.present? %>
+<div class="pt-8 border-t border-outline-variant/30 w-full">
+<p class="text-on-surface-variant text-xs flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">lightbulb</span>
+<%= hint %>
+</p>
+</div>
+<% end %>
+</div>
+</div>

@@ -1,0 +1,12 @@
+<% active ||= false %>
+<% if active %>
+  <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface bg-surface-container-highest border-r-2 border-primary transition-colors duration-200 ease-in-out font-body text-label-md font-medium tracking-tight opacity-90" href="<%= url %>">
+    <span class="material-symbols-outlined text-primary icon-fill" data-icon="<%= icon %>"><%= icon %></span>
+    <%= label %>
+  </a>
+<% else %>
+  <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 ease-in-out font-body text-label-md font-medium tracking-tight group" href="<%= url %>">
+    <span class="material-symbols-outlined group-hover:text-primary transition-colors" data-icon="<%= icon %>"><%= icon %></span>
+    <%= label %>
+  </a>
+<% end %>

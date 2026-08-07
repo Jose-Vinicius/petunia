@@ -1,0 +1,17 @@
+<%# .agents/design/components/_summary_card.html.erb %>
+<div class="bg-surface-container rounded-xl p-6 border border-outline-variant flex flex-col justify-between group hover:border-primary transition-colors duration-300">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-surface-container-highest rounded-lg <%= icon_color_class %>">
+<span class="material-symbols-outlined"><%= icon %></span>
+</div>
+<% if defined?(badge_text) && badge_text.present? %>
+<span class="flex items-center text-xs font-medium <%= badge_color_class %> <%= badge_bg_class %> px-2 py-1 rounded-full">
+<span class="material-symbols-outlined text-[14px] mr-1"><%= badge_icon %></span> <%= badge_text %>
+</span>
+<% end %>
+</div>
+<div>
+<p class="text-sm text-secondary mb-1"><%= label %></p>
+<h2 class="text-3xl font-headline font-bold text-on-surface tracking-tight"><%= value %></h2>
+</div>
+</div>

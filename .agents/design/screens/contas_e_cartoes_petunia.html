@@ -1,0 +1,202 @@
+<!DOCTYPE html><html class="dark" lang="pt-BR" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Petunia - Contas e Cartões</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#0f0f12",
+                        "surface-bright": "#18181b",
+                        "on-secondary-fixed-variant": "#3f3f46",
+                        "tertiary-container": "#065f46",
+                        "surface": "#0c0c0f",
+                        "on-error-container": "#fca5a5",
+                        "surface-container-lowest": "#09090b",
+                        "on-secondary-container": "#a1a1aa",
+                        "primary-fixed-dim": "#c4b5fd",
+                        "on-surface-variant": "#a1a1aa",
+                        "on-tertiary-container": "#bbf7d0",
+                        "surface-variant": "#18181b",
+                        "outline-variant": "#27272a",
+                        "on-surface": "#fafafa",
+                        "secondary-container": "#27272a",
+                        "on-primary-container": "#ede9fe",
+                        "primary-fixed": "#ede9fe",
+                        "surface-dim": "#0c0c0f",
+                        "tertiary-fixed-dim": "#6ee7b7",
+                        "inverse-on-surface": "#09090b",
+                        "surface-container-highest": "#1e1e22",
+                        "on-tertiary-fixed": "#003318",
+                        "surface-container": "#121215",
+                        "secondary": "#71717a",
+                        "tertiary": "#34d399",
+                        "on-primary-fixed-variant": "#5b21b6",
+                        "surface-tint": "#a78bfa",
+                        "outline": "#52525b",
+                        "inverse-primary": "#5b21b6",
+                        "background": "#09090b",
+                        "on-primary": "#0a0012",
+                        "on-tertiary-fixed-variant": "#047857",
+                        "on-secondary-fixed": "#18181b",
+                        "on-error": "#1a0000",
+                        "secondary-fixed": "#a1a1aa",
+                        "on-tertiary": "#001a12",
+                        "primary": "#a78bfa",
+                        "on-primary-fixed": "#2e1065",
+                        "inverse-surface": "#fafafa",
+                        "on-background": "#fafafa",
+                        "primary-container": "#7c3aed",
+                        "on-secondary": "#09090b",
+                        "secondary-fixed-dim": "#71717a",
+                        "surface-container-high": "#18181b",
+                        "error-container": "#3b1111",
+                        "tertiary-fixed": "#bbf7d0",
+                        "error": "#ef4444"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Geist", "sans-serif"],
+                        "display": ["Geist", "sans-serif"],
+                        "body": ["Geist", "sans-serif"],
+                        "label": ["Geist", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Geist', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .material-symbols-outlined.fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Obsidian specific generic styles */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (Shared Component) -->
+<nav class="hidden md:flex flex-col fixed left-0 top-0 h-full w-64 border-r border-outline-variant bg-surface-container-lowest z-50">
+<!-- Brand Header -->
+<div class="h-16 flex items-center px-6 border-b border-outline-variant">
+<span class="text-headline-sm font-headline tracking-tighter font-bold text-on-surface">Petunia</span>
+</div>
+<!-- User Profile Area -->
+<div class="p-6 flex items-center gap-3 border-b border-outline-variant">
+<img alt="User Profile Avatar" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A professional close-up portrait of a user in a dark, high-contrast, moody studio setting, looking directly at the camera. The lighting is dramatic, emphasizing sharp features with subtle violet rim light to match the Obsidian design system. The background is a pure, deep near-black." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDhSXpaPYgO2uaQWNG-eDT_oCwQT5W858jMbz-HzzEPmRESahHVcZGgLRBDtSeYv8P70fpzFyMljeDsdYFqvirP6SZA_EH66U1JzvJ2szKtwVAUDrPZHeexYfbieosSn0_WkCmodTHDC5P22x5bNkyg7s7R-8za1K-3QHhaBIk7QfCkWmgO6frz5y61SOXhaap1nAJDYIAxb0qp5sHLvqimuGudW5LplVEe-yHEHIWpqLQGKp5mSqebS3cBbLSb-MjP7qbbH7f8XZj">
+<div class="flex flex-col">
+<span class="text-label-md font-medium text-on-surface">Petunia</span>
+<span class="text-xs text-secondary">Finance Manager</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 ease-in-out font-body text-label-md font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 ease-in-out font-body text-label-md font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="swap_horiz">swap_horiz</span>
+                Transactions
+            </a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-on-surface bg-surface-container-highest border-r-2 border-primary font-body text-label-md font-medium tracking-tight opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined text-xl fill" data-icon="account_balance">account_balance</span>
+                Accounts
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 ease-in-out font-body text-label-md font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="account_balance_wallet">account_balance_wallet</span>
+                Budgets
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 ease-in-out font-body text-label-md font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="bar_chart">bar_chart</span>
+                Reports
+            </a>
+</div>
+<!-- CTA -->
+<div class="p-4 border-t border-outline-variant">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-2 px-4 rounded-md font-medium text-sm transition-colors hover:bg-primary-container hover:text-on-primary-container focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-surface-container-lowest">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Transaction
+            </button>
+</div>
+<!-- Footer Links -->
+<div class="p-3 border-t border-outline-variant space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors duration-200 ease-in-out font-body text-label-md font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="settings">settings</span>
+                Settings
+            </a>
+
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 min-w-0">
+<!-- TopNavBar (Shared Component) -->
+<%= render 'components/header' %>
+<!-- Canvas -->
+<main class="flex-1 overflow-y-auto p-6 md:p-10 lg:p-12">
+<div class="max-w-6xl mx-auto space-y-12">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="text-3xl font-headline font-bold tracking-tighter text-on-surface">Gestão de Contas e Cartões</h1>
+<p class="text-on-surface-variant mt-2 max-w-xl">Gerencie seus saldos, faturas e limites em um único lugar.</p>
+</div>
+</div>
+<!-- Section: Contas Bancárias -->
+<section class="space-y-6">
+<div class="flex items-center justify-between border-b border-outline-variant pb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">account_balance</span>
+<h2 class="text-xl font-headline font-semibold tracking-tight text-on-surface">Contas Bancárias</h2>
+</div>
+<button class="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-container transition-colors group">
+<span class="material-symbols-outlined text-base group-hover:scale-110 transition-transform">add_circle</span>
+                            Nova Conta
+                        </button>
+</div>
+<!-- Bank Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<%= render 'components/bank_account_card', initial: 'N', name: 'Nubank', type: 'Conta Corrente', balance: 'R$ 12.450,00' %>
+<%= render 'components/bank_account_card', initial: 'I', name: 'Itaú Personnalité', type: 'Conta Investimento', balance: 'R$ 45.890,50' %>
+</div>
+</section>
+<!-- Section: Cartões de Crédito -->
+<section class="space-y-6">
+<div class="flex items-center justify-between border-b border-outline-variant pb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">credit_card</span>
+<h2 class="text-xl font-headline font-semibold tracking-tight text-on-surface">Cartões de Crédito</h2>
+</div>
+<button class="flex items-center gap-2 text-sm font-medium bg-surface-container border border-outline-variant text-on-surface hover:border-primary hover:text-primary px-3 py-1.5 rounded-md transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+                            Novo Cartão
+                        </button>
+</div>
+<!-- Credit Cards List/Grid -->
+<div class="grid grid-cols-1 gap-6"><!-- Simplified Card 1 -->
+<%= render 'components/credit_card_item', bank: 'Nubank', name: 'Ultravioleta', total_limit: 'R$ 21.428,57', used_limit: 'R$ 6.428,57' %>
+
+<!-- Simplified Card 2 -->
+<%= render 'components/credit_card_item', bank: 'Itaú', name: 'Click Platinum', total_limit: 'R$ 9.411,76', used_limit: 'R$ 1.411,76' %></div>
+</section>
+</div>
+</main>
+</div>
+
+
+</body></html>

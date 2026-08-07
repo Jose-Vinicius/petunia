@@ -1,0 +1,12 @@
+<%# .agents/design/components/_category_spending_item.html.erb %>
+<div>
+<div class="flex justify-between items-center mb-2 text-sm">
+<span class="flex items-center text-on-surface">
+<div class="w-2 h-2 rounded-full <%= color_class %> mr-2"></div> <%= label %>
+</span>
+<span class="font-medium"><%= value %></span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="<%= color_class %> h-1.5 rounded-full" style="width: <%= percentage %>%"></div>
+</div>
+</div>

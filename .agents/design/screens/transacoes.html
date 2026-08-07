@@ -1,0 +1,199 @@
+<!DOCTYPE html><html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Petunia - Transações</title>
+<!-- Google Fonts: Geist & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration (Obsidian Design System) -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-low": "#0f0f12",
+                        "surface-bright": "#18181b",
+                        "on-secondary-fixed-variant": "#3f3f46",
+                        "tertiary-container": "#065f46",
+                        "surface": "#0c0c0f",
+                        "on-error-container": "#fca5a5",
+                        "surface-container-lowest": "#09090b",
+                        "on-secondary-container": "#a1a1aa",
+                        "primary-fixed-dim": "#c4b5fd",
+                        "on-surface-variant": "#a1a1aa",
+                        "on-tertiary-container": "#bbf7d0",
+                        "surface-variant": "#18181b",
+                        "outline-variant": "#27272a",
+                        "on-surface": "#fafafa",
+                        "secondary-container": "#27272a",
+                        "on-primary-container": "#ede9fe",
+                        "primary-fixed": "#ede9fe",
+                        "surface-dim": "#0c0c0f",
+                        "tertiary-fixed-dim": "#6ee7b7",
+                        "inverse-on-surface": "#09090b",
+                        "surface-container-highest": "#1e1e22",
+                        "on-tertiary-fixed": "#003318",
+                        "surface-container": "#121215",
+                        "secondary": "#71717a",
+                        "tertiary": "#34d399",
+                        "on-primary-fixed-variant": "#5b21b6",
+                        "surface-tint": "#a78bfa",
+                        "outline": "#52525b",
+                        "inverse-primary": "#5b21b6",
+                        "background": "#09090b",
+                        "on-primary": "#0a0012",
+                        "on-tertiary-fixed-variant": "#047857",
+                        "on-secondary-fixed": "#18181b",
+                        "on-error": "#1a0000",
+                        "secondary-fixed": "#a1a1aa",
+                        "on-tertiary": "#001a12",
+                        "primary": "#a78bfa",
+                        "on-primary-fixed": "#2e1065",
+                        "inverse-surface": "#fafafa",
+                        "on-background": "#fafafa",
+                        "primary-container": "#7c3aed",
+                        "on-secondary": "#09090b",
+                        "secondary-fixed-dim": "#71717a",
+                        "surface-container-high": "#18181b",
+                        "error-container": "#3b1111",
+                        "tertiary-fixed": "#bbf7d0",
+                        "error": "#ef4444"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Geist", "sans-serif"],
+                        "display": ["Geist", "sans-serif"],
+                        "body": ["Geist", "sans-serif"],
+                        "label": ["Geist", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Geist', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Custom scrollbar for precision aesthetic */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (Shared Component) -->
+<%= render 'components/sidebar' %>
+<!-- Main Content Canvas -->
+<div class="flex-1 md:ml-64 flex flex-col min-h-screen max-w-full">
+<!-- TopNavBar (Shared Component - Contextually nested for structural flow) -->
+<%= render 'components/header' %>
+<!-- Page Content: Transactions -->
+<main class="flex-1 p-6 md:p-8 flex flex-col gap-6 overflow-x-hidden">
+<!-- Page Header & Action Bar -->
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+<div>
+<h1 class="text-2xl font-headline font-bold tracking-tight text-on-surface">Transações</h1>
+<p class="text-secondary text-sm mt-1">Gerencie e analise todos os seus registros financeiros.</p>
+</div>
+<!-- Primary Action -->
+<div class="w-full sm:w-48">
+  <%= render 'components/cta_button', icon: 'add', label: 'Nova Transação' %>
+</div>
+</div>
+<!-- Filters & Search Bar -->
+<div class="flex flex-col md:flex-row flex-wrap gap-3 bg-surface-container p-3 rounded-lg border border-outline-variant items-center">
+<!-- Search -->
+<div class="relative w-full md:w-auto md:flex-1 md:min-w-[200px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[18px]">search</span>
+<input class="w-full bg-surface-container-lowest text-on-surface border border-outline-variant rounded-md pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-on-surface-variant transition-colors" placeholder="Buscar transação..." type="text">
+</div>
+<!-- Filters -->
+<div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
+<button class="inline-flex items-center gap-2 px-3 py-2 bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface-variant hover:text-on-surface rounded-md text-sm transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                        Este Mês
+                        <span class="material-symbols-outlined text-[16px] ml-1">expand_more</span>
+</button>
+<button class="inline-flex items-center gap-2 px-3 py-2 bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface-variant hover:text-on-surface rounded-md text-sm transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">category</span>
+                        Categoria
+                        <span class="material-symbols-outlined text-[16px] ml-1">expand_more</span>
+</button>
+<button class="inline-flex items-center gap-2 px-3 py-2 bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface-variant hover:text-on-surface rounded-md text-sm transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">account_balance</span>
+                        Conta
+                        <span class="material-symbols-outlined text-[16px] ml-1">expand_more</span>
+</button>
+<div class="h-6 w-px bg-outline-variant mx-1 hidden sm:block"></div>
+<button class="inline-flex items-center justify-center p-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-high text-on-surface rounded-md transition-colors tooltip-trigger" title="Filtros Avançados">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+</div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm flex-1 flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse whitespace-nowrap">
+<thead class="bg-surface-container-highest border-b border-outline-variant">
+<tr>
+<th class="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Data</th>
+<th class="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Tipo</th>
+<th class="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Categoria</th>
+<th class="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Centro de Custo</th>
+<th class="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Conta/Cartão</th>
+<th class="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Descrição</th>
+<th class="px-5 py-3 text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-right">Valor</th>
+<th class="px-5 py-3 w-10"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant text-sm text-on-surface font-medium">
+<!-- Row 1 (Expense) -->
+<!-- Row 1 (Expense) -->
+<%= render 'components/transaction_row', date: '24 Out 2023', type_label: 'Despesa', type_text_class: 'text-on-surface-variant', type_bg_class: 'bg-secondary', category: 'Alimentação', cost_center: 'Pessoal', account_name: 'Nubank', account_bg_class: 'bg-primary-container/20', account_border_class: 'border-primary/30', account_icon: 'credit_card', account_icon_color_class: 'text-primary', description: 'Supermercado Extra', amount: '- R$ 450,00' %>
+<!-- Row 2 (Income) -->
+<%= render 'components/transaction_row', date: '22 Out 2023', type_label: 'Receita', type_text_class: 'text-tertiary', type_bg_class: 'bg-tertiary', category: 'Salário', cost_center: 'Trabalho', account_name: 'Itaú Corrente', account_bg_class: 'bg-surface-container-highest', account_border_class: 'border-outline', account_icon: 'account_balance', account_icon_color_class: 'text-secondary', description: 'Salário Outubro', amount: '+ R$ 6.200,00', amount_class: 'text-tertiary' %>
+<!-- Row 3 (Expense) -->
+<%= render 'components/transaction_row', date: '21 Out 2023', type_label: 'Despesa', type_text_class: 'text-on-surface-variant', type_bg_class: 'bg-secondary', category: 'Transporte', cost_center: 'Pessoal', account_name: 'Nubank', account_bg_class: 'bg-primary-container/20', account_border_class: 'border-primary/30', account_icon: 'credit_card', account_icon_color_class: 'text-primary', description: 'Uber - Reunião', amount: '- R$ 35,50' %>
+<!-- Row 4 (Expense) -->
+<%= render 'components/transaction_row', date: '20 Out 2023', type_label: 'Despesa', type_text_class: 'text-on-surface-variant', type_bg_class: 'bg-secondary', category: 'Moradia', cost_center: 'Casa', account_name: 'Itaú Corrente', account_bg_class: 'bg-surface-container-highest', account_border_class: 'border-outline', account_icon: 'account_balance', account_icon_color_class: 'text-secondary', description: 'Conta de Luz (Enel)', amount: '- R$ 184,20' %>
+<!-- Row 5 (Transfer - Optional state) -->
+<%= render 'components/transaction_row', date: '18 Out 2023', type_label: 'Transferência', type_text_class: 'text-primary', type_bg_class: 'bg-primary', category: '--', cost_center: 'Investimentos', account_name: 'Corretora XP', account_bg_class: 'bg-surface-container-highest', account_border_class: 'border-outline', account_icon: 'account_balance', account_icon_color_class: 'text-secondary', description: 'Aporte Mensal CDI', amount: '- R$ 1.000,00', amount_class: 'text-on-surface' %>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="mt-auto border-t border-outline-variant bg-surface px-5 py-3 flex items-center justify-between">
+<span class="text-sm text-secondary">Mostrando <span class="text-on-surface font-medium">1</span> a <span class="text-on-surface font-medium">5</span> de <span class="text-on-surface font-medium">42</span> transações</span>
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<div class="hidden sm:flex items-center gap-1">
+<button class="w-8 h-8 rounded-md bg-surface-container-highest border border-primary text-primary text-sm font-medium flex items-center justify-center">1</button>
+<button class="w-8 h-8 rounded-md hover:bg-surface-container-high text-secondary hover:text-on-surface text-sm font-medium flex items-center justify-center transition-colors">2</button>
+<button class="w-8 h-8 rounded-md hover:bg-surface-container-high text-secondary hover:text-on-surface text-sm font-medium flex items-center justify-center transition-colors">3</button>
+<span class="text-secondary px-1">...</span>
+<button class="w-8 h-8 rounded-md hover:bg-surface-container-high text-secondary hover:text-on-surface text-sm font-medium flex items-center justify-center transition-colors">9</button>
+</div>
+<button class="p-1.5 rounded-md text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

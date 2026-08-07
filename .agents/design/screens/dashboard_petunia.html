@@ -1,0 +1,167 @@
+<!DOCTYPE html><html class="dark" lang="pt" style="width: 1280px; height: 1024px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Petunia Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap');
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#0f0f12",
+                        "surface-bright": "#18181b",
+                        "on-secondary-fixed-variant": "#3f3f46",
+                        "tertiary-container": "#065f46",
+                        "surface": "#0c0c0f",
+                        "on-error-container": "#fca5a5",
+                        "surface-container-lowest": "#09090b",
+                        "on-secondary-container": "#a1a1aa",
+                        "primary-fixed-dim": "#c4b5fd",
+                        "on-surface-variant": "#a1a1aa",
+                        "on-tertiary-container": "#bbf7d0",
+                        "surface-variant": "#18181b",
+                        "outline-variant": "#27272a",
+                        "on-surface": "#fafafa",
+                        "secondary-container": "#27272a",
+                        "on-primary-container": "#ede9fe",
+                        "primary-fixed": "#ede9fe",
+                        "surface-dim": "#0c0c0f",
+                        "tertiary-fixed-dim": "#6ee7b7",
+                        "inverse-on-surface": "#09090b",
+                        "surface-container-highest": "#1e1e22",
+                        "on-tertiary-fixed": "#003318",
+                        "surface-container": "#121215",
+                        "secondary": "#71717a",
+                        "tertiary": "#34d399",
+                        "on-primary-fixed-variant": "#5b21b6",
+                        "surface-tint": "#a78bfa",
+                        "outline": "#52525b",
+                        "inverse-primary": "#5b21b6",
+                        "background": "#09090b",
+                        "on-primary": "#0a0012",
+                        "on-tertiary-fixed-variant": "#047857",
+                        "on-secondary-fixed": "#18181b",
+                        "on-error": "#1a0000",
+                        "secondary-fixed": "#a1a1aa",
+                        "on-tertiary": "#001a12",
+                        "primary": "#a78bfa",
+                        "on-primary-fixed": "#2e1065",
+                        "inverse-surface": "#fafafa",
+                        "on-background": "#fafafa",
+                        "primary-container": "#7c3aed",
+                        "on-secondary": "#09090b",
+                        "secondary-fixed-dim": "#71717a",
+                        "surface-container-high": "#18181b",
+                        "error-container": "#3b1111",
+                        "tertiary-fixed": "#bbf7d0",
+                        "error": "#ef4444"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Geist"],
+                        "display": ["Geist"],
+                        "body": ["Geist"],
+                        "label": ["Geist"]
+                    }
+                }
+            }
+        }
+    </script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&amp;display=swap" data-snapdom="injected-import"></head>
+<body class="bg-background text-on-surface font-body antialiased selection:bg-primary-container selection:text-on-primary-container h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<%= render 'components/sidebar' %>
+<!-- Main Content Wrapper -->
+<main class="flex-1 md:ml-64 flex flex-col h-full bg-surface-container-low overflow-hidden">
+<!-- TopNavBar (Mobile mainly, or contextual header) -->
+<%= render 'components/header' %>
+<!-- Scrollable Canvas -->
+<div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="text-3xl font-headline font-bold tracking-tight text-on-surface mb-1">Visão Geral</h1>
+<p class="text-secondary text-sm">Acompanhe seu progresso financeiro e gastos recentes.</p>
+</div>
+<div class="w-full md:w-auto md:min-w-[200px]">
+  <%= render 'components/cta_button', icon: 'download', label: 'Exportar Relatório' %>
+</div>
+</div>
+<!-- Summary Cards Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Total Balance -->
+<!-- Total Balance -->
+<%= render 'components/summary_card', icon: 'account_balance_wallet', icon_color_class: 'text-primary', badge_text: '+2.4%', badge_icon: 'trending_up', badge_color_class: 'text-tertiary', badge_bg_class: 'bg-tertiary/10', label: 'Saldo Total', value: '$12,450.00' %>
+<!-- Monthly Income -->
+<%= render 'components/summary_card', icon: 'arrow_downward', icon_color_class: 'text-tertiary', badge_text: nil, badge_icon: nil, badge_color_class: nil, badge_bg_class: nil, label: 'Receita Mensal', value: '$5,200.00' %>
+<!-- Monthly Expenses -->
+<%= render 'components/summary_card', icon: 'arrow_upward', icon_color_class: 'text-error', badge_text: 'Alta', badge_icon: 'warning', badge_color_class: 'text-error', badge_bg_class: 'bg-error/10', label: 'Despesas Mensais', value: '$3,150.00' %>
+</div>
+<!-- Lower Section: Analytics & Table -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Spending by Category (Minimalist List) -->
+<div class="lg:col-span-1 bg-surface-container rounded-xl p-6 border border-outline-variant flex flex-col">
+<h3 class="text-lg font-headline font-semibold mb-6 flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">pie_chart</span>
+                        Gastos por Categoria
+                    </h3>
+<div class="space-y-5 flex-1">
+<!-- Housing -->
+<!-- Housing -->
+<%= render 'components/category_spending_item', color_class: 'bg-primary', label: 'Habitação', value: '$1,200', percentage: 45 %>
+<!-- Food -->
+<%= render 'components/category_spending_item', color_class: 'bg-tertiary', label: 'Alimentação', value: '$850', percentage: 30 %>
+<!-- Transport -->
+<%= render 'components/category_spending_item', color_class: 'bg-outline', label: 'Transporte', value: '$400', percentage: 15 %>
+<!-- Leisure -->
+<%= render 'components/category_spending_item', color_class: 'bg-secondary', label: 'Lazer', value: '$300', percentage: 10 %>
+</div>
+</div>
+<!-- Recent Transactions Table -->
+<div class="lg:col-span-2 bg-surface-container rounded-xl border border-outline-variant overflow-hidden flex flex-col">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="text-lg font-headline font-semibold flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">list_alt</span>
+                            Transações Recentes
+                        </h3>
+<button class="text-sm text-primary hover:text-primary-container transition-colors font-medium">Ver Todas</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="text-xs text-secondary uppercase bg-surface-container-highest border-b border-outline-variant">
+<tr>
+<th class="px-6 py-4 font-medium tracking-wider" scope="col">Data</th>
+<th class="px-6 py-4 font-medium tracking-wider" scope="col">Descrição</th>
+<th class="px-6 py-4 font-medium tracking-wider" scope="col">Categoria</th>
+<th class="px-6 py-4 font-medium tracking-wider text-right" scope="col">Valor</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<%= render 'components/recent_transaction_row', date: 'Hoje, 10:45', description: 'Mercado Central', category: 'Alimentação', amount: '-$120.50' %>
+<%= render 'components/recent_transaction_row', date: 'Ontem, 09:00', description: 'Salário', category: 'Receita', amount: '+$5,200.00', amount_class: 'text-tertiary' %>
+<%= render 'components/recent_transaction_row', date: '15 Nov, 14:30', description: 'Uber', category: 'Transporte', amount: '-$24.00' %>
+<%= render 'components/recent_transaction_row', date: '12 Nov, 19:00', description: 'Netflix', category: 'Lazer', amount: '-$15.99' %>
+<%= render 'components/recent_transaction_row', date: '10 Nov, 10:00', description: 'Aluguel', category: 'Habitação', amount: '-$1,200.00' %>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+
+
+
+<div id="snapdom-sandbox" data-snapdom-sandbox="true" aria-hidden="true" style="position: absolute; left: -9999px; top: -9999px; width: 0px; height: 0px; overflow: hidden;"></div></body></html>
