@@ -1,0 +1,23 @@
+<div class="hero">
+  <div class="hero-badge">
+    <span class="material-symbols-outlined" style="font-size: 1rem;">stars</span>
+    <span><%= t("home.index.hero_badge") %></span>
+  </div>
+  
+  <h1 class="hero-title">
+    <%= t("home.index.hero_title_html") %>
+  </h1>
+  
+  <p class="hero-description">
+    <%= t("app.description") %>
+  </p>
+
+  <div class="hero-actions">
+    <% if user_signed_in? %>
+      <%= link_to t("app.dashboard"), "#", class: "btn btn-primary" %>
+    <% else %>
+      <%= link_to t("app.get_started"), new_user_registration_path, class: "btn btn-primary" %>
+      <%= link_to t("app.login"), new_user_session_path, class: "btn btn-secondary" %>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,1 @@
+sempre salve os artefatos na pasta .agents/artifacts (crie uma subpasta se necessario)

@@ -40,7 +40,18 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# User authentication
+gem "devise"
+gem "devise-i18n"
+
 group :development, :test do
+  # Environment variables
+  gem "dotenv-rails"
+
+  # Testing framework
+  gem "rspec-rails", "~> 7.0"
+  gem "factory_bot_rails"
+
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 

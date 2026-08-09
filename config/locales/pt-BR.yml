@@ -1,0 +1,30 @@
+pt-BR:
+  app:
+    name: "Petunia"
+    tagline: "Controle Financeiro Simples e Eficiente"
+    welcome: "Bem-vindo ao Petunia"
+    description: "Gerencie suas contas, cartões, categorias e transações financeiras em um único lugar com clareza e precisão."
+    get_started: "Começar Agora"
+    login: "Entrar"
+    register: "Cadastrar"
+    logout: "Sair"
+    dashboard: "Painel"
+  home:
+    index:
+      hero_badge: "Controle Financeiro Pessoal"
+      hero_title_html: "Gerencie seus gastos e receitas com <span style=\"color: var(--primary);\">precisão</span>."
+  helpers:
+    submit:
+      create: "Criar %{model}"
+      update: "Atualizar %{model}"
+      submit: "Salvar %{model}"
+  activerecord:
+    models:
+      user: "Usuário"
+    attributes:
+      user:
+        email: "E-mail"
+        password: "Senha"
+        password_confirmation: "Confirmação de Senha"
+        current_password: "Senha Atual"
+        remember_me: "Lembrar de mim"

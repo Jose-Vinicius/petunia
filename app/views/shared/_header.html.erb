@@ -1,0 +1,20 @@
+<header class="navbar">
+  <div class="navbar-brand">
+    <a href="<%= root_path %>" style="color: inherit; display: flex; align-items: center; gap: 0.5rem;">
+      <span class="material-symbols-outlined" style="color: var(--primary);">local_florist</span>
+      <span><%= t("app.name") %></span>
+    </a>
+  </div>
+  
+  <div class="navbar-nav">
+    <% if user_signed_in? %>
+      <span style="color: var(--text-secondary); font-size: 0.85rem;">
+        <%= current_user.email %>
+      </span>
+      <%= button_to t("app.logout"), destroy_user_session_path, method: :delete, class: "btn btn-secondary" %>
+    <% else %>
+      <%= link_to t("app.login"), new_user_session_path, class: "btn btn-ghost" %>
+      <%= link_to t("app.register"), new_user_registration_path, class: "btn btn-primary" %>
+    <% end %>
+  </div>
+</header>

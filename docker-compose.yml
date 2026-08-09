@@ -18,8 +18,8 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:80/up"]
       interval: 10s
       timeout: 5s
-      retries: 3
-      start_period: 15s
+      retries: 5
+      start_period: 40s
     volumes:
       - rails_storage:/rails/storage
     networks:
