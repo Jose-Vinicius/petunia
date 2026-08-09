@@ -1,68 +1,43 @@
-# 🚀 Walkthrough — Fase 1: Setup do Projeto & Design System Base
+# 🚀 Walkthrough — Gestão de Membros e Compartilhamento de Ambientes (`AccountUser`)
 
-A **Fase 1** da aplicação **Petunia** foi concluída com sucesso. Todos os testes automatizados foram executados e aprovados.
+A funcionalidade de **Compartilhamento de Ambientes e Gestão de Membros** foi implementada e validada com sucesso!
 
----
+## 📦 Alterações Realizadas
 
-## 💡 Resumo das Alterações Realizadas
+### 1. Rotas e Controller de Membros (`AccountUsersController`)
+- **Rotas**: adicionado `resources :account_users, only: [:index, :create, :destroy], path: 'members'` aninhado em `resources :accounts` no arquivo `config/routes.rb`.
+- **Controller**: criado `app/controllers/account_users_controller.rb`:
+  - Autenticação e garantia de papel `owner` para gerenciar membros (`ensure_owner!`).
+  - **Adição por E-mail (Opção B)**:
+    - Se o usuário informado já existir no Petunia, ele é associado diretamente ao ambiente com o papel selecionado (`Membro` ou `Proprietário`).
+    - Se o usuário não existir, a senha é solicitada no formulário (mínimo 6 caracteres), o novo usuário é cadastrado no sistema e vinculado imediatamente à conta.
+  - **Remoção de Membros**:
+    - Permite remover membros da conta, impedindo a remoção do último proprietário.
 
-### 1. Infraestrutura de Testes e I18n (PT-BR)
-- **Gems Adicionadas:** `rspec-rails`, `factory_bot_rails`, `devise` e `devise-i18n`.
-- **Configuração de Locale:** `config.i18n.default_locale = :"pt-BR"` e `config.time_zone = "Brasilia"` em [application.rb](file:///var/home/josevinicius/data/projects/personal/petunia/config/application.rb).
-- **RSpec Helper:** `spec/rails_helper.rb` configurado com `FactoryBot::Syntax::Methods` e helpers do Devise.
-- **Dicionário em Português:** Criado [pt-BR.yml](file:///var/home/josevinicius/data/projects/personal/petunia/config/locales/pt-BR.yml).
+### 2. Interface Visual (Obsidian Dark UI)
+- Tela `account_users/index.html.erb`:
+  - Formulário para adicionar/convidar membro com campos de e-mail, senha inicial (caso o usuário não exista) e seleção de papel (`owner` / `member`).
+  - Lista de integrantes com badges de papel (*Proprietário* em violeta, *Membro* em verde) e ação de remoção.
+- Tela `accounts/index.html.erb`:
+  - Botão *"Gerenciar Membros"* nos cards dos ambientes onde o usuário logado é proprietário.
 
-### 2. Autenticação Base (Devise)
-- **Model `User`:** Gerado com migration e factory pronta ([user.rb](file:///var/home/josevinicius/data/projects/personal/petunia/app/models/user.rb) e [users.rb](file:///var/home/josevinicius/data/projects/personal/petunia/spec/factories/users.rb)).
-- **ActionMailer:** Configurado `default_url_options` em [development.rb](file:///var/home/josevinicius/data/projects/personal/petunia/config/environments/development.rb).
-- **Views do Devise:** Telas de login ([sessions/new.html.erb](file:///var/home/josevinicius/data/projects/personal/petunia/app/views/devise/sessions/new.html.erb)) e cadastro ([registrations/new.html.erb](file:///var/home/josevinicius/data/projects/personal/petunia/app/views/devise/registrations/new.html.erb)) estilizadas de acordo com o tema Obsidian Dark.
-
-### 3. Design System "Obsidian High-Contrast Dark"
-- **Estilos Globais:** [application.css](file:///var/home/josevinicius/data/projects/personal/petunia/app/assets/stylesheets/application.css) criado com o tema visual (`#09090b`, `#a78bfa`, `#34d399`, superfícies zinc `#18181b` e bordas `#27272a`).
-- **Tipografia:** Importação da fonte **Geist** do Google Fonts.
-- **Componente Header:** Reutilizável em [shared/_header.html.erb](file:///var/home/josevinicius/data/projects/personal/petunia/app/views/shared/_header.html.erb) com status dinâmico do usuário logado.
-- **Landing Page & Layout:** Criado [home_controller.rb](file:///var/home/josevinicius/data/projects/personal/petunia/app/controllers/home_controller.rb), view [home/index.html.erb](file:///var/home/josevinicius/data/projects/personal/petunia/app/views/home/index.html.erb) e atualizado o layout [application.html.erb](file:///var/home/josevinicius/data/projects/personal/petunia/app/views/layouts/application.html.erb).
-
----
-
-## 🧪 Resultados dos Testes Automatizados (RSpec)
-
-Foram criadas suítes de testes em Português para validar o model de usuário, a controller inicial e os fluxos de autenticação do Devise:
-
-```bash
-User
-  validações e factory
-    cria um usuário válido com a factory padrão
-    exige um e-mail válido
-    não permite e-mails duplicados
-
-Autenticação (Devise)
-  GET /users/sign_in
-    carrega a tela de login com o tema Obsidian Dark
-  GET /users/sign_up
-    carrega a tela de cadastro
-  POST /users/sign_in
-    autentica o usuário com credenciais válidas
-
-Página Inicial (Home)
-  GET /
-    retorna código HTTP 200 e exibe as informações da aplicação Petunia
-    quando o usuário não está autenticado
-      exibe os botões de entrar e cadastrar
-    quando o usuário está autenticado
-      exibe o botão de sair e o e-mail do usuário
-
-Finished in 0.30175 seconds (files took 1.29 seconds to load)
-9 examples, 0 failures
-```
+### 3. Internacionalização (i18n)
+- Chaves de tradução adicionadas em `config/locales/pt-BR.yml` e `config/locales/en.yml` cobrindo labels, ajuda de formulário, badges e mensagens de feedback.
 
 ---
 
-## 🔍 Como Verificar Manualmente
+## 🧪 Validação e Testes
 
-1. Suba o servidor de desenvolvimento:
-   ```bash
-   bin/rails server
-   ```
-2. Acesse `http://localhost:3000` no seu navegador para visualizar a landing page no tema **Obsidian High-Contrast Dark**.
-3. Clique em **Cadastrar** (`/users/sign_up`) ou **Entrar** (`/users/sign_in`) para visualizar e testar as telas de formulário com o tema escuro.
+### 1. Suíte de Testes RSpec
+Todos os **50 testes** da suíte passaram com **0 falhas**:
+- `spec/requests/account_users_spec.rb`:
+  - Adição de usuário existente (`jose@teste.com` adiciona `vitoria@teste.com` e ela ganha acesso).
+  - Teste de login e troca de ambiente ativa para a `vitoria@teste.com`.
+  - Adição de novo usuário com senha inicial (Opção B).
+  - Rejeição de senhas inválidas ou curtas para novos usuários.
+  - Proteção contra duplicação de vínculo no mesmo ambiente.
+  - Bloqueio de remoção do único proprietário.
+  - Bloqueio de acesso para usuários com papel `member`.
+
+### 2. Análise Estática (RuboCop)
+- **42 arquivos inspecionados**, **0 ofensas detectadas**.

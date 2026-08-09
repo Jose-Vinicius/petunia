@@ -62,5 +62,18 @@ RSpec.describe User, type: :model do
         expect(usuario.errors[:password_confirmation]).to include("não é igual a Senha")
       end
     end
+
+    context 'criação automática de conta padrão' do
+      it 'cria automaticamente uma conta "Conta Pessoal" com papel de "owner" ao salvar um novo usuário' do
+        usuario = create(:user)
+        expect(usuario.accounts.count).to eq(1)
+
+        conta_padrao = usuario.accounts.first
+        expect(conta_padrao.name).to eq("Conta Pessoal")
+
+        account_user = usuario.account_users.find_by(account: conta_padrao)
+        expect(account_user.role).to eq("owner")
+      end
+    end
   end
 end

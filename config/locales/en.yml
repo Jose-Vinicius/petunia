@@ -9,10 +9,64 @@ en:
     register: "Sign up"
     logout: "Sign out"
     dashboard: "Dashboard"
+    accounts: "My Accounts"
+    new_account: "+ New Account"
+    members: "Members"
   home:
     index:
       hero_badge: "Personal Financial Control"
       hero_title_html: "Manage your expenses and income with <span style=\"color: var(--primary);\">precision</span>."
+  accounts:
+    index:
+      title: "Your Financial Accounts"
+      subtitle: "Switch between your accounts or create a new workspace"
+      new_account: "Create New Account"
+      active: "Active"
+      switch: "Switch"
+      manage_members: "Manage Members"
+    new:
+      title: "New Account"
+      subtitle: "Create a new account to organize project or family finances"
+      name_label: "Account Name"
+      name_placeholder: "e.g. Family Account, Company X, Vacation"
+      submit: "Create Account"
+    create:
+      success: "Account '%{name}' created successfully."
+    switch:
+      success: "Switched to account '%{name}'."
+      error: "You do not have permission to access this account."
+  account_users:
+    index:
+      title: "Members of '%{name}'"
+      subtitle: "Add and manage users with access to this account"
+      add_title: "Add or Invite Member"
+      email_label: "User Email"
+      email_placeholder: "user@example.com"
+      password_label: "Initial Password (if user doesn't exist yet)"
+      password_placeholder: "minimum 6 characters"
+      role_label: "Role in Account"
+      role_owner: "Owner (Full access + member management)"
+      role_member: "Member (View & manage finances)"
+      submit: "Add Member"
+      members_list_title: "Account Members"
+      user: "User"
+      role: "Role"
+      joined_at: "Joined at"
+      actions: "Actions"
+      remove: "Remove"
+      confirm_remove: "Are you sure you want to remove this member from the account?"
+      owner_badge: "Owner"
+      member_badge: "Member"
+    create:
+      success: "User '%{email}' added successfully to the account."
+    destroy:
+      success: "Member removed successfully."
+      last_owner_error: "Cannot remove the only owner of the account."
+    errors:
+      email_blank: "Please enter the user email."
+      password_required: "Password of at least 6 characters is required to register a new user."
+      already_member: "User '%{email}' is already a member of this account."
+      unauthorized: "Only account owners can manage members."
   helpers:
     submit:
       create: "Create %{model}"
@@ -21,6 +75,8 @@ en:
   activerecord:
     models:
       user: "User"
+      account: "Account"
+      account_user: "Account User"
     attributes:
       user:
         email: "Email"
@@ -28,3 +84,5 @@ en:
         password_confirmation: "Password confirmation"
         current_password: "Current password"
         remember_me: "Remember me"
+      account:
+        name: "Account Name"

@@ -12,6 +12,12 @@ Rails.application.routes.draw do
   # User authentication routes
   devise_for :users
 
+  # Account management, switching, and member management routes
+  resources :accounts, only: [ :index, :new, :create ] do
+    post :switch, on: :member
+    resources :account_users, only: [ :index, :create, :destroy ], path: "members"
+  end
+
   # Defines the root path route ("/")
   root "home#index"
 end

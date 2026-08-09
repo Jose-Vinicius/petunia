@@ -9,10 +9,64 @@ pt-BR:
     register: "Cadastrar"
     logout: "Sair"
     dashboard: "Painel"
+    accounts: "Minhas Contas"
+    new_account: "+ Nova Conta"
+    members: "Membros"
   home:
     index:
       hero_badge: "Controle Financeiro Pessoal"
       hero_title_html: "Gerencie seus gastos e receitas com <span style=\"color: var(--primary);\">precisão</span>."
+  accounts:
+    index:
+      title: "Seus Ambientes Financeiros"
+      subtitle: "Alterne entre suas contas ou crie um novo ambiente"
+      new_account: "Criar Novo Ambiente"
+      active: "Ativo"
+      switch: "Alternar"
+      manage_members: "Gerenciar Membros"
+    new:
+      title: "Novo Ambiente"
+      subtitle: "Crie uma nova conta para organizar finanças de projetos ou família"
+      name_label: "Nome do Ambiente"
+      name_placeholder: "Ex: Conta Família, Empresa X, Viagem"
+      submit: "Criar Ambiente"
+    create:
+      success: "Ambiente '%{name}' criado com sucesso."
+    switch:
+      success: "Ambiente alterado para '%{name}'."
+      error: "Você não tem permissão para acessar esta conta."
+  account_users:
+    index:
+      title: "Membros do Ambiente '%{name}'"
+      subtitle: "Adicione e gerencie os usuários com acesso a esta conta"
+      add_title: "Adicionar ou Convidar Membro"
+      email_label: "E-mail do Usuário"
+      email_placeholder: "usuario@exemplo.com"
+      password_label: "Senha Inicial (caso o usuário não exista no sistema)"
+      password_placeholder: "mínimo 6 caracteres"
+      role_label: "Papel no Ambiente"
+      role_owner: "Proprietário (Acesso total + gestão de membros)"
+      role_member: "Membro (Visualiza e gerencia finanças)"
+      submit: "Adicionar Membro"
+      members_list_title: "Integrantes da Conta"
+      user: "Usuário"
+      role: "Papel"
+      joined_at: "Adicionado em"
+      actions: "Ações"
+      remove: "Remover"
+      confirm_remove: "Tem certeza que deseja remover este membro da conta?"
+      owner_badge: "Proprietário"
+      member_badge: "Membro"
+    create:
+      success: "Usuário '%{email}' adicionado com sucesso ao ambiente."
+    destroy:
+      success: "Membro removido da conta com sucesso."
+      last_owner_error: "Não é possível remover o único proprietário da conta."
+    errors:
+      email_blank: "Informe o e-mail do usuário."
+      password_required: "Senha de no mínimo 6 caracteres é obrigatória para cadastrar um novo usuário no sistema."
+      already_member: "O usuário '%{email}' já é membro deste ambiente."
+      unauthorized: "Apenas proprietários da conta podem gerenciar membros."
   helpers:
     submit:
       create: "Criar %{model}"
@@ -21,6 +75,8 @@ pt-BR:
   activerecord:
     models:
       user: "Usuário"
+      account: "Conta"
+      account_user: "Membro da Conta"
     attributes:
       user:
         email: "E-mail"
@@ -28,3 +84,5 @@ pt-BR:
         password_confirmation: "Confirmação de Senha"
         current_password: "Senha Atual"
         remember_me: "Lembrar de mim"
+      account:
+        name: "Nome do Ambiente"

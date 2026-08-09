@@ -1,0 +1,53 @@
+<div style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
+        <%= t("accounts.index.title") %>
+      </h1>
+      <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem;">
+        <%= t("accounts.index.subtitle") %>
+      </p>
+    </div>
+
+    <%= link_to t("accounts.index.new_account"), new_account_path, class: "btn btn-primary" %>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem;">
+    <% @accounts.each do |account| %>
+      <% is_active = (current_account == account) %>
+      <div style="background: var(--surface-card, #121215); border: 1px solid <%= is_active ? 'var(--primary, #a78bfa)' : 'var(--border, #27272a)' %>; border-radius: var(--radius-lg, 12px); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="material-symbols-outlined" style="color: <%= is_active ? 'var(--primary, #a78bfa)' : 'var(--text-secondary)' %>;">domain</span>
+              <h2 style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary); margin: 0;"><%= account.name %></h2>
+            </div>
+            <% if is_active %>
+              <span style="background: rgba(167, 139, 250, 0.15); color: var(--primary, #a78bfa); font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 999px;">
+                <%= t("accounts.index.active") %>
+              </span>
+            <% end %>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          <% if is_active %>
+            <button class="btn btn-secondary btn-block" disabled style="opacity: 0.6; cursor: default;">
+              <%= t("accounts.index.active") %>
+            </button>
+          <% else %>
+            <%= button_to t("accounts.index.switch"), switch_account_path(account), method: :post, class: "btn btn-primary btn-block" %>
+          <% end %>
+
+          <% account_user = current_user.account_users.find_by(account: account) %>
+          <% if account_user&.role == "owner" %>
+            <%= link_to account_account_users_path(account), class: "btn btn-ghost btn-block", style: "font-size: 0.85rem;" do %>
+              <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">group</span>
+              <%= t("accounts.index.manage_members") %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
