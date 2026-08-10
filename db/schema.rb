@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_09_141101) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_09_160701) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -31,6 +31,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_09_141101) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "bank_accounts", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "name"], name: "index_bank_accounts_on_account_id_and_name", unique: true
+    t.index ["account_id"], name: "index_bank_accounts_on_account_id"
+  end
+
+  create_table "credit_cards", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "bank_account_id", null: false
+    t.datetime "created_at", null: false
+    t.decimal "limit", precision: 10, scale: 2, default: "0.0", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "name"], name: "index_credit_cards_on_account_id_and_name", unique: true
+    t.index ["account_id"], name: "index_credit_cards_on_account_id"
+    t.index ["bank_account_id"], name: "index_credit_cards_on_bank_account_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -45,4 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_09_141101) do
 
   add_foreign_key "account_users", "accounts"
   add_foreign_key "account_users", "users"
+  add_foreign_key "bank_accounts", "accounts"
+  add_foreign_key "credit_cards", "accounts"
+  add_foreign_key "credit_cards", "bank_accounts"
 end

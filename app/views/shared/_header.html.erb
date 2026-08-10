@@ -18,10 +18,12 @@
   
   <div class="navbar-nav">
     <% if user_signed_in? %>
-      <span style="color: var(--text-secondary); font-size: 0.85rem;">
+      <%= link_to t("app.bank_accounts"), bank_accounts_path, class: "btn btn-ghost" %>
+      <%= link_to t("app.credit_cards"), credit_cards_path, class: "btn btn-ghost" %>
+      <%= link_to t("app.accounts"), accounts_path, class: "btn btn-ghost" %>
+      <span style="color: var(--text-secondary); font-size: 0.85rem; margin-left: 0.5rem;">
         <%= current_user.email %>
       </span>
-      <%= link_to t("app.accounts"), accounts_path, class: "btn btn-ghost" %>
       <%= button_to t("app.logout"), destroy_user_session_path, method: :delete, class: "btn btn-secondary" %>
     <% else %>
       <%= link_to t("app.login"), new_user_session_path, class: "btn btn-ghost" %>

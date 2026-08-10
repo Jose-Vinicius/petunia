@@ -1,0 +1,75 @@
+<div style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
+        <%= t("credit_cards.index.title") %>
+      </h1>
+      <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem;">
+        <%= t("credit_cards.index.subtitle") %>
+      </p>
+    </div>
+
+    <%= link_to t("credit_cards.index.new_button"), new_credit_card_path, class: "btn btn-primary" %>
+  </div>
+
+  <% if current_account.bank_accounts.empty? %>
+    <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid #eab308; border-radius: var(--radius-lg, 12px); padding: 1.25rem 1.5rem; margin-bottom: 2rem; color: #fef08a; display: flex; align-items: center; gap: 0.75rem;">
+      <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #eab308;">warning</span>
+      <div>
+        <strong><%= t("credit_cards.index.no_bank_account_warning") %></strong>
+        <div style="margin-top: 0.25rem;">
+          <%= link_to t("bank_accounts.index.new_button"), new_bank_account_path, style: "color: #fde047; text-decoration: underline;" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @credit_cards.empty? %>
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 3rem 1.5rem; text-align: center; color: var(--text-secondary);">
+      <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--border, #27272a); margin-bottom: 1rem;">credit_card</span>
+      <p style="margin: 0 0 1.5rem 0;"><%= t("credit_cards.index.empty") %></p>
+      <%= link_to t("credit_cards.index.new_button"), new_credit_card_path, class: "btn btn-primary" %>
+    </div>
+  <% else %>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem;">
+      <% @credit_cards.each do |credit_card| %>
+        <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.5rem;">credit_card</span>
+                <h2 style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary); margin: 0;"><%= credit_card.name %></h2>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; background: var(--surface-hover, #18181b); padding: 0.85rem 1rem; border-radius: var(--radius-md, 8px); border: 1px solid var(--border, #27272a);">
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                <span style="color: var(--text-secondary);"><%= t("credit_cards.index.limit_label") %></span>
+                <span style="font-weight: 700; color: #34d399; font-size: 1.05rem;">
+                  <%= number_to_currency(credit_card.limit, unit: "R$ ", separator: ",", delimiter: ".") %>
+                </span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                <span style="color: var(--text-secondary);"><%= t("credit_cards.index.bank_account_label") %></span>
+                <span style="font-weight: 500; color: var(--text-primary);">
+                  <%= credit_card.bank_account.name %>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; justify-content: flex-end; border-top: 1px solid var(--border, #27272a); padding-top: 1rem;">
+            <%= link_to edit_credit_card_path(credit_card), class: "btn btn-ghost", style: "padding: 0.35rem 0.6rem; font-size: 0.85rem;" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle;">edit</span>
+              <%= t("helpers.submit.update", model: "") %>
+            <% end %>
+            <%= button_to credit_card_path(credit_card), method: :delete, data: { turbo_confirm: t("credit_cards.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.35rem 0.6rem; font-size: 0.85rem;" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle;">delete</span>
+              <%= t("account_users.index.remove") %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

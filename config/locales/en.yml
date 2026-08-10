@@ -12,6 +12,8 @@ en:
     accounts: "My Accounts"
     new_account: "+ New Account"
     members: "Members"
+    bank_accounts: "Bank Accounts"
+    credit_cards: "Credit Cards"
   home:
     index:
       hero_badge: "Personal Financial Control"
@@ -67,6 +69,55 @@ en:
       password_required: "Password of at least 6 characters is required to register a new user."
       already_member: "User '%{email}' is already a member of this account."
       unauthorized: "Only account owners can manage members."
+  bank_accounts:
+    index:
+      title: "Bank Accounts"
+      subtitle: "Manage bank accounts in your active account"
+      new_button: "+ New Bank Account"
+      empty: "No bank accounts registered in this account."
+    new:
+      title: "New Bank Account"
+      subtitle: "Register a new bank account (e.g. Chase, Bank of America)"
+      submit: "Save Bank Account"
+    edit:
+      title: "Edit Bank Account"
+      subtitle: "Update bank account information"
+      submit: "Update Bank Account"
+    create:
+      success: "Bank account '%{name}' created successfully."
+    update:
+      success: "Bank account '%{name}' updated successfully."
+    destroy:
+      success: "Bank account '%{name}' removed successfully."
+      confirm: "Are you sure you want to remove this bank account? Associated credit cards will also be removed."
+    errors:
+      not_found: "Bank account not found."
+  credit_cards:
+    index:
+      title: "Credit Cards"
+      subtitle: "Manage credit cards linked to your bank accounts"
+      new_button: "+ New Credit Card"
+      empty: "No credit cards registered in this account."
+      limit_label: "Total Limit"
+      bank_account_label: "Linked Bank Account"
+      no_bank_account_warning: "You need to register at least one Bank Account before creating a Credit Card."
+    new:
+      title: "New Credit Card"
+      subtitle: "Register a card and link it to an existing bank account"
+      submit: "Save Credit Card"
+    edit:
+      title: "Edit Credit Card"
+      subtitle: "Update credit card information"
+      submit: "Update Credit Card"
+    create:
+      success: "Credit card '%{name}' created successfully."
+    update:
+      success: "Credit card '%{name}' updated successfully."
+    destroy:
+      success: "Credit card '%{name}' removed successfully."
+      confirm: "Are you sure you want to remove this credit card?"
+    errors:
+      not_found: "Credit card not found."
   helpers:
     submit:
       create: "Create %{model}"
@@ -77,6 +128,8 @@ en:
       user: "User"
       account: "Account"
       account_user: "Account User"
+      bank_account: "Bank Account"
+      credit_card: "Credit Card"
     attributes:
       user:
         email: "Email"
@@ -86,3 +139,10 @@ en:
         remember_me: "Remember me"
       account:
         name: "Account Name"
+      bank_account:
+        name: "Bank Account Name"
+      credit_card:
+        name: "Card Name"
+        limit: "Total Limit"
+        bank_account: "Linked Bank Account"
+        bank_account_id: "Linked Bank Account"

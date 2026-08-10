@@ -12,6 +12,8 @@ pt-BR:
     accounts: "Minhas Contas"
     new_account: "+ Nova Conta"
     members: "Membros"
+    bank_accounts: "Contas Bancárias"
+    credit_cards: "Cartões de Crédito"
   home:
     index:
       hero_badge: "Controle Financeiro Pessoal"
@@ -67,6 +69,55 @@ pt-BR:
       password_required: "Senha de no mínimo 6 caracteres é obrigatória para cadastrar um novo usuário no sistema."
       already_member: "O usuário '%{email}' já é membro deste ambiente."
       unauthorized: "Apenas proprietários da conta podem gerenciar membros."
+  bank_accounts:
+    index:
+      title: "Contas Bancárias"
+      subtitle: "Gerencie as contas bancárias cadastradas no ambiente ativo"
+      new_button: "+ Nova Conta Bancária"
+      empty: "Nenhuma conta bancária cadastrada neste ambiente."
+    new:
+      title: "Nova Conta Bancária"
+      subtitle: "Cadastre uma nova conta bancária (ex: Nubank, Itaú, Bradesco)"
+      submit: "Salvar Conta Bancária"
+    edit:
+      title: "Editar Conta Bancária"
+      subtitle: "Altere as informações da conta bancária"
+      submit: "Atualizar Conta Bancária"
+    create:
+      success: "Conta bancária '%{name}' criada com sucesso."
+    update:
+      success: "Conta bancária '%{name}' atualizada com sucesso."
+    destroy:
+      success: "Conta bancária '%{name}' removida com sucesso."
+      confirm: "Tem certeza que deseja remover esta conta bancária? Todos os cartões de crédito associados a ela também serão removidos."
+    errors:
+      not_found: "Conta bancária não encontrada."
+  credit_cards:
+    index:
+      title: "Cartões de Crédito"
+      subtitle: "Gerencie os cartões de crédito vinculados às suas contas bancárias"
+      new_button: "+ Novo Cartão de Crédito"
+      empty: "Nenhum cartão de crédito cadastrado neste ambiente."
+      limit_label: "Limite Total"
+      bank_account_label: "Conta Vinculada"
+      no_bank_account_warning: "Você precisa cadastrar pelo menos uma Conta Bancária antes de criar um Cartão de Crédito."
+    new:
+      title: "Novo Cartão de Crédito"
+      subtitle: "Cadastre um cartão e associe a uma conta bancária existente"
+      submit: "Salvar Cartão de Crédito"
+    edit:
+      title: "Editar Cartão de Crédito"
+      subtitle: "Altere as informações do cartão de crédito"
+      submit: "Atualizar Cartão de Crédito"
+    create:
+      success: "Cartão de crédito '%{name}' criado com sucesso."
+    update:
+      success: "Cartão de crédito '%{name}' atualizado com sucesso."
+    destroy:
+      success: "Cartão de crédito '%{name}' removido com sucesso."
+      confirm: "Tem certeza que deseja remover este cartão de crédito?"
+    errors:
+      not_found: "Cartão de crédito não encontrado."
   helpers:
     submit:
       create: "Criar %{model}"
@@ -77,6 +128,8 @@ pt-BR:
       user: "Usuário"
       account: "Conta"
       account_user: "Membro da Conta"
+      bank_account: "Conta Bancária"
+      credit_card: "Cartão de Crédito"
     attributes:
       user:
         email: "E-mail"
@@ -86,3 +139,10 @@ pt-BR:
         remember_me: "Lembrar de mim"
       account:
         name: "Nome do Ambiente"
+      bank_account:
+        name: "Nome da Conta Bancária"
+      credit_card:
+        name: "Nome do Cartão"
+        limit: "Limite Total (R$)"
+        bank_account: "Conta Bancária Vinculada"
+        bank_account_id: "Conta Bancária Vinculada"
