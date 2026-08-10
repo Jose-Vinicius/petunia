@@ -212,7 +212,37 @@ pt-BR:
       confirm: "Tem certeza que deseja remover esta transação?"
     errors:
       not_found: "Transação não encontrada."
+  dashboard:
+    title: "Painel Financeiro — %{account}"
+    subtitle: "Visão geral das finanças do mês de %{month}"
+    consolidated_balance: "Saldo Consolidado Total"
+    monthly_income: "Receitas do Mês"
+    monthly_expense: "Despesas do Mês"
+    monthly_balance: "Saldo Líquido do Mês"
+    category_breakdown: "Gastos por Categoria"
+    no_expenses: "Nenhuma despesa registrada neste mês."
+    accounts_and_cards: "Saldos e Cartões"
+    recent_transactions: "Lançamentos Recentes"
+    view_all: "Ver Todas →"
+    no_recent_transactions: "Nenhum lançamento recente encontrado."
+  imports:
+    button: "📥 Importar Planilha"
+    new:
+      title: "Importar Transações por Planilha"
+      subtitle: "Envie um arquivo CSV ou Excel (.xlsx) com seus lançamentos"
+      file_label: "Arquivo da Planilha (.csv, .xlsx, .xls)"
+      bank_account_label: "Conta Bancária de Destino"
+      credit_card_label: "Cartão de Crédito de Destino (Opcional)"
+      download_header_only: "Modelo (Apenas Cabeçalho)"
+      download_with_sample: "Modelo (Com Exemplos)"
+      submit: "Processar Importação"
+
+    create:
+      no_file: "Por favor, selecione um arquivo de planilha válido para enviar."
+      success: "%{count} transações importadas com sucesso!"
+      error_html: "Ocorreram erros na importação: %{errors}"
   helpers:
+
     submit:
       create: "Criar %{model}"
       update: "Atualizar %{model}"

@@ -44,6 +44,12 @@ gem "image_processing", "~> 1.2"
 gem "devise"
 gem "devise-i18n"
 
+# Spreadsheet parsing (CSV & XLSX)
+gem "csv"
+gem "roo", "~> 2.10"
+
+
+
 group :development, :test do
   # Environment variables
   gem "dotenv-rails"

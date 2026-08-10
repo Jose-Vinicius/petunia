@@ -108,12 +108,17 @@ Este documento contém a análise detalhada dos requisitos e o detalhamento de t
 ---
 
 ### 🟢 FASE 6: Dashboard Inicial e Consolidação
-> **Objetivo:** Entregar uma visão geral imediata do saldo e gastos do ambiente selecionado.
+> **Objetivo:** Entregar uma visão geral imediata do saldo e gastos do ambiente selecionado e permitir a importação de lançamentos em lote via planilha.
 
-- [ ] **Task 6.1: Dashboard Financeiro Inicial**
+- [x] **Task 6.1: Dashboard Financeiro Inicial**
   - Card de Saldo Total Consolidado por conta bancária.
   - Resumo de Entradas vs Saídas do mês atual.
   - Feed das últimas transações recentes.
-- [ ] **Task 6.2: Refinamento de UX/UI e Polimento Visual**
+- [x] **Task 6.2: Refinamento de UX/UI e Polimento Visual**
   - Garantir aderência estrita às diretrizes de UI (Obsidian High-Contrast Dark).
   - Adicionar micro-animações, estados de hover e estados de foco acessíveis.
+- [x] **Task 6.3: Importação de Transações por Planilha (CSV / Excel)**
+  - Serviço `TransactionImporterService` com suporte a colunas flexíveis (Data, Valor, Descrição, Categoria, Tipo).
+  - Suporte a moedas em formato brasileiro (`R$ 1.500,50`) e decimais padrão.
+  - Interface em Modal Hotwire (`ImportsController`) para upload rápido sem troca de contexto.
+

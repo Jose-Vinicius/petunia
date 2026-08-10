@@ -1,0 +1,174 @@
+<div style="max-width: 1100px; margin: 2rem auto; padding: 0 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
+        <%= t("dashboard.title", account: current_account.name) %>
+      </h1>
+      <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem;">
+        <%= t("dashboard.subtitle", month: l(Date.current, format: "%B de %Y").capitalize) %>
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+      <%= link_to t("transactions.index.new_income"), new_transaction_path(type: "income"), data: { turbo_frame: "modal" }, class: "btn btn-secondary", style: "color: #34d399; border-color: rgba(52, 211, 153, 0.4);" %>
+      <%= link_to t("transactions.index.new_button"), new_transaction_path(type: "expense"), data: { turbo_frame: "modal" }, class: "btn btn-primary" %>
+      <%= link_to t("imports.button"), new_import_path, data: { turbo_frame: "modal" }, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <!-- Top Metrics Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+        <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;"><%= t("dashboard.consolidated_balance") %></span>
+        <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.4rem;">account_balance</span>
+      </div>
+      <div style="font-size: 1.5rem; font-weight: 700; color: <%= @consolidated_balance >= 0 ? 'var(--text-primary)' : '#ef4444' %>;">
+        <%= number_to_currency(@consolidated_balance, unit: "R$ ", separator: ",", delimiter: ".") %>
+      </div>
+    </div>
+
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+        <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;"><%= t("dashboard.monthly_income") %></span>
+        <span class="material-symbols-outlined" style="color: #34d399; font-size: 1.4rem;">arrow_downward</span>
+      </div>
+      <div style="font-size: 1.5rem; font-weight: 700; color: #34d399;">
+        <%= number_to_currency(@monthly_income, unit: "R$ ", separator: ",", delimiter: ".") %>
+      </div>
+    </div>
+
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+        <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;"><%= t("dashboard.monthly_expense") %></span>
+        <span class="material-symbols-outlined" style="color: #ef4444; font-size: 1.4rem;">arrow_upward</span>
+      </div>
+      <div style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">
+        <%= number_to_currency(@monthly_expense, unit: "R$ ", separator: ",", delimiter: ".") %>
+      </div>
+    </div>
+
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+        <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;"><%= t("dashboard.monthly_balance") %></span>
+        <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.4rem;">account_balance_wallet</span>
+      </div>
+      <div style="font-size: 1.5rem; font-weight: 700; color: <%= @monthly_balance >= 0 ? '#34d399' : '#ef4444' %>;">
+        <%= number_to_currency(@monthly_balance, unit: "R$ ", separator: ",", delimiter: ".") %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Main Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+    
+    <!-- Category Breakdown & Accounts -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <!-- Gastos por Categoria -->
+      <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.5rem;">
+        <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+          <span class="material-symbols-outlined" style="color: var(--primary);">pie_chart</span>
+          <%= t("dashboard.category_breakdown") %>
+        </h2>
+
+        <% if @category_expenses.empty? %>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;"><%= t("dashboard.no_expenses") %></p>
+        <% else %>
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <% @category_expenses.each do |cat_name, cat_total| %>
+              <% percent = @monthly_expense > 0 ? ((cat_total / @monthly_expense) * 100).round(1) : 0 %>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.3rem;">
+                  <span style="color: var(--text-primary); font-weight: 500;"><%= cat_name %></span>
+                  <span style="color: var(--text-secondary); font-weight: 600;">
+                    <%= number_to_currency(cat_total, unit: "R$ ", separator: ",", delimiter: ".") %> (<%= percent %>%)
+                  </span>
+                </div>
+                <div style="width: 100%; height: 8px; background: var(--surface-hover, #18181b); border-radius: 999px; overflow: hidden;">
+                  <div style="width: <%= [percent, 100].min %>%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, #34d399 100%); border-radius: 999px;"></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Resumo por Conta Bancária & Cartões -->
+      <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.5rem;">
+        <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+          <span class="material-symbols-outlined" style="color: var(--primary);">credit_card</span>
+          <%= t("dashboard.accounts_and_cards") %>
+        </h2>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <% @bank_accounts.each do |bank_acc| %>
+            <% acc_balance = bank_acc.transactions.income.sum(:amount) - bank_acc.transactions.expense.sum(:amount) %>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.85rem; background: var(--surface-container, #18181b); border: 1px solid var(--border, #27272a); border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="material-symbols-outlined" style="color: var(--primary); font-size: 1.2rem;">account_balance</span>
+                <span style="font-weight: 500; font-size: 0.9rem;"><%= bank_acc.name %></span>
+              </div>
+              <span style="font-weight: 700; font-size: 0.9rem; color: <%= acc_balance >= 0 ? '#34d399' : '#ef4444' %>;">
+                <%= number_to_currency(acc_balance, unit: "R$ ", separator: ",", delimiter: ".") %>
+              </span>
+            </div>
+          <% end %>
+
+          <% @credit_cards.each do |card| %>
+            <% card_expenses = card.transactions.expense.sum(:amount) %>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.85rem; background: var(--surface-container, #18181b); border: 1px solid var(--border, #27272a); border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="material-symbols-outlined" style="color: #a78bfa; font-size: 1.2rem;">credit_card</span>
+                <span style="font-weight: 500; font-size: 0.9rem;"><%= card.name %></span>
+              </div>
+              <span style="font-weight: 600; font-size: 0.85rem; color: #ef4444;">
+                - <%= number_to_currency(card_expenses, unit: "R$ ", separator: ",", delimiter: ".") %> / <%= number_to_currency(card.limit, unit: "R$ ", separator: ",", delimiter: ".") %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feed de Transações Recentes -->
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <span class="material-symbols-outlined" style="color: var(--primary);">receipt_long</span>
+            <%= t("dashboard.recent_transactions") %>
+          </h2>
+          <%= link_to t("dashboard.view_all"), transactions_path, style: "font-size: 0.85rem; color: var(--primary); font-weight: 500;" %>
+        </div>
+
+        <% if @recent_transactions.empty? %>
+          <div style="text-align: center; padding: 2rem 1rem; color: var(--text-secondary);">
+            <p style="margin-bottom: 1rem;"><%= t("dashboard.no_recent_transactions") %></p>
+            <%= link_to t("transactions.index.new_button"), new_transaction_path, data: { turbo_frame: "modal" }, class: "btn btn-primary" %>
+          </div>
+        <% else %>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <% @recent_transactions.each do |tx| %>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: var(--surface-container, #18181b); border: 1px solid var(--border, #27272a); border-radius: 8px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary);"><%= tx.description %></div>
+                  <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.15rem;">
+                    <span><%= l(tx.date, format: :short) rescue tx.date.to_s %></span> • <span>🏷️ <%= tx.category.name %></span>
+                  </div>
+                </div>
+                <div style="font-weight: 700; font-size: 0.95rem; color: <%= tx.income? ? '#34d399' : '#ef4444' %>;">
+                  <%= tx.income? ? '+' : '-' %> <%= number_to_currency(tx.amount, unit: "R$ ", separator: ",", delimiter: ".") %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div style="margin-top: 1.5rem; border-top: 1px solid var(--border, #27272a); padding-top: 1rem; text-align: center;">
+        <%= link_to t("transactions.index.title"), transactions_path, class: "btn btn-ghost", style: "width: 100%;" %>
+      </div>
+    </div>
+
+  </div>
+</div>

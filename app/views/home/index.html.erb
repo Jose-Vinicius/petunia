@@ -14,8 +14,9 @@
 
   <div class="hero-actions">
     <% if user_signed_in? %>
-      <%= link_to t("app.dashboard"), "#", class: "btn btn-primary" %>
+      <%= link_to t("app.dashboard"), dashboard_path, class: "btn btn-primary" %>
     <% else %>
+
       <%= link_to t("app.get_started"), new_user_registration_path, class: "btn btn-primary" %>
       <%= link_to t("app.login"), new_user_session_path, class: "btn btn-secondary" %>
     <% end %>

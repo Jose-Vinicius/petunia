@@ -212,7 +212,37 @@ en:
       confirm: "Are you sure you want to remove this transaction?"
     errors:
       not_found: "Transaction not found."
+  dashboard:
+    title: "Financial Dashboard — %{account}"
+    subtitle: "Financial overview for %{month}"
+    consolidated_balance: "Total Consolidated Balance"
+    monthly_income: "Monthly Income"
+    monthly_expense: "Monthly Expense"
+    monthly_balance: "Monthly Net Balance"
+    category_breakdown: "Expenses by Category"
+    no_expenses: "No expenses recorded this month."
+    accounts_and_cards: "Balances & Cards"
+    recent_transactions: "Recent Transactions"
+    view_all: "View All →"
+    no_recent_transactions: "No recent transactions found."
+  imports:
+    button: "📥 Import Spreadsheet"
+    new:
+      title: "Import Transactions via Spreadsheet"
+      subtitle: "Upload a CSV or Excel (.xlsx) file with your transactions"
+      file_label: "Spreadsheet File (.csv, .xlsx, .xls)"
+      bank_account_label: "Destination Bank Account"
+      credit_card_label: "Destination Credit Card (Optional)"
+      download_header_only: "Template (Header Only)"
+      download_with_sample: "Template (With Examples)"
+      submit: "Process Import"
+
+    create:
+      no_file: "Please select a valid spreadsheet file to upload."
+      success: "%{count} transactions imported successfully!"
+      error_html: "Errors occurred during import: %{errors}"
   helpers:
+
     submit:
       create: "Create %{model}"
       update: "Update %{model}"

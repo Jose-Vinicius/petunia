@@ -25,6 +25,11 @@ Rails.application.routes.draw do
   resources :cost_centers, except: [ :show ]
   resources :transactions, except: [ :show ]
 
+  # Dashboard & Spreadsheet Import
+  get "dashboard" => "dashboard#index", as: :dashboard
+  resources :imports, only: [ :new, :create ] do
+    get :download_template, on: :collection
+  end
 
 
   # Defines the root path route ("/")

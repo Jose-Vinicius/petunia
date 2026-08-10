@@ -1,49 +1,46 @@
-# 🚀 Walkthrough — FASE 5: Entradas e Saídas (Transações Financeiras com Modal Hotwire)
+# 🚀 Walkthrough — FASE 6: Dashboard Financeiro e Importação por Planilha
 
-A **FASE 5** do projeto **Petunia** foi totalmente implementada e refinada com a abertura de formulários via **Modal Hotwire (Turbo Frame)**!
+A **FASE 6** do projeto **Petunia** foi totalmente concluída e validada com sucesso!
 
 ---
 
 ## 📦 Alterações Realizadas
 
-### 1. Modal Dialog & UX Hotwire (Nova Solicitação)
-- **Turbo Frame Modal (`layout/application.html.erb`)**: Adicionado `<%= turbo_frame_tag "modal" %>` no layout global.
-- **Fluxo de Abertura sem Troca de Tela**: Ao clicar em **+ Nova Receita**, **+ Nova Despesa** ou no botão de **Editar** em qualquer transação, o formulário é carregado instantaneamente em uma janela modal com efeito de backdrop blur e overlay no tema *Obsidian Dark*.
-- **Submissão e Redirecionamento**: Ao salvar uma nova transação ou editar uma existente, a aplicação realiza um redirect `303 See Other` para `/transactions`, fechando o modal, atualizando a listagem, recomputando os cards de saldo/totais do período e exibindo a mensagem flash de sucesso.
+### 1. Dashboard Financeiro Consolidado (`DashboardController` & `views/dashboard/index.html.erb`)
+- **Saldo Consolidado Total**: exibe a soma de todas as receitas menos despesas registradas no ambiente.
+- **Resumos Mensais**: Cards de Receitas do Mês, Despesas do Mês e Saldo Líquido do Mês Atual.
+- **Distribuição de Gastos por Categoria**: Barras visuais com porcentagens ordenadas pelos maiores gastos do mês.
+- **Resumo por Conta & Cartão**: Apresenta os saldos atuais de cada Conta Bancária e o limite utilizado nos Cartões de Crédito.
+- **Feed Recente**: Exibe os 5 lançamentos mais recentes com link direto para a página de transações completas.
 
-### 2. Banco de Dados & Models
-- **Migration (`20260810125500_create_transactions.rb`)**:
-  - Tabela `transactions`: `transaction_type` (`income`/`expense`), `amount` (decimal), `description`, `date`, `account_id`, `category_id`, `cost_center_id`, `bank_account_id`, `credit_card_id`.
-  - Índices para otimização de consultas por data, tipo e categoria.
-- **Model `Transaction`**:
-  - Validações de presença (`description`, `date`, `amount`, `transaction_type`) e valor positivo (`> 0`).
-  - Regra de negócio para receitas (`income`): obrigatoriedade de vincular a uma Conta Bancária (`bank_account_id`) e proibição de uso de cartão de crédito.
-  - Regra de negócio para despesas (`expense`): exige que pelo menos um meio de pagamento seja informado (Conta Bancária ou Cartão de Crédito).
-  - Trava de segurança multi-tenant: valida que Categoria, Centro de Custo, Conta Bancária e Cartão pertencem ao mesmo ambiente (`account_id`).
-- **Associations**:
-  - `Account`, `Category`, `CostCenter`, `BankAccount`, `CreditCard` atualizados com `has_many :transactions`.
+### 2. Importação de Transações por Planilha & Modelos Baixáveis (`TransactionImporterService` & `ImportsController`)
+- **Gems Integradas**: `roo` e `csv` para suporte transparente a arquivos `.csv`, `.xlsx` e `.xls`.
+- **Download de Planilhas Modelo (Nova Funcionalidade)**:
+  - **Modelo Apenas Cabeçalho**: Botão para baixar `modelo_transacoes_cabecalho.csv` pré-configurado com delimitador `;` e codificação UTF-8 BOM para o Excel.
+  - **Modelo Com Exemplos**: Botão para baixar `modelo_transacoes_exemplo.csv` preenchido com dados de teste.
+- **Parsing Resiliente & Colunas Flexíveis**: Mapeamento inteligente de cabeçalhos em Português e Inglês (*Data, Descrição, Valor, Tipo, Categoria, Centro de Custo*).
+- **Formatos de Moeda**: Leitura automática de números inteiros, decimais e formato monetário brasileiro (`R$ 1.500,50`, `-45,00`).
+- **Criação Automática**: Cria automaticamente novas categorias informadas na planilha caso não existam no ambiente.
+- **UX em Modal Hotwire**: Formulário de upload renderizado dentro do Modal Turbo Frame com seleção de conta bancária ou cartão de crédito de destino.
 
-### 3. Controllers, Turbo Streams & JavaScript
-- `TransactionsController`: CRUD completo escopado ao `current_account` com suporte a filtros dinâmicos por mês, tipo, categoria, centro de custo e meio de pagamento.
-- Resposta reativa via **Turbo Streams** (`index.turbo_stream.erb`) atualizando instantaneamente os cards de resumo e a tabela ao alterar filtros.
-- Controlador **Stimulus JS** (`transaction_form_controller.js`): oculta e desabilita dinamicamente a opção de cartão de crédito quando o usuário seleciona "Receita".
+### 3. Ajustes de Navegação & UX Obsidian Dark
+- Header (`app/views/shared/_header.html.erb`): adicionado link de acesso ao **Painel** (Dashboard).
+- Botão "📥 Importar Planilha" adicionado na barra de ações rápidas da página de transações e do dashboard.
+- Redirecionamento amigável e botões de ação integrados.
 
-### 4. Interface Visual (Obsidian Dark UI)
-- Header (`app/views/shared/_header.html.erb`): adicionado link de navegação para **Transações**.
-- Cards Superiores de Resumo: **Total de Receitas** (`#34d399`), **Total de Despesas** (`#ef4444`) e **Saldo do Período** (`#a78bfa`).
-- Tabela/Listagem de Transações com badges de tipo, ícones do meio de pagamento, chips de centro de custo e categoria.
-
-### 5. Internacionalização (i18n)
-- Traduções completas em Português (`pt-BR.yml`) e Inglês (`en.yml`) para transações, tipos, filtros, formulários e mensagens de sucesso/erro.
+### 4. Internacionalização & Testes
+- Traduções completas em `pt-BR.yml` e `en.yml` para Dashboard, Importação e Planilhas Modelo.
+- **136 specs RSpec executados com 0 falhas**.
+- **82 arquivos inspecionados pelo RuboCop com 0 ofensas**.
 
 ---
 
-## 🧪 Validação e Testes
+## 🧪 Validação e Suíte de Testes
 
-### 1. Suíte de Testes RSpec
-Todos os **125 testes** do projeto foram executados com **0 falhas**:
-- `spec/models/transaction_spec.rb`: validações de regras de pagamento, valores positivos e segurança entre ambientes.
-- `spec/requests/transactions_spec.rb`: autenticação, criação de receitas e despesas, formulários e isolamento multi-tenant.
+```bash
+bundle exec rspec
+# 136 examples, 0 failures
 
-### 2. Análise Estática (RuboCop)
-- **76 arquivos inspecionados**, **0 ofensas detectadas**.
+bundle exec rubocop
+# 82 files inspected, no offenses detected
+```
