@@ -1,6 +1,8 @@
 class CreditCard < ApplicationRecord
   belongs_to :bank_account
   belongs_to :account
+  has_many :transactions, dependent: :destroy
+
 
   validates :name, presence: true, uniqueness: { scope: :account_id }
   validates :limit, presence: true, numericality: { greater_than_or_equal_to: 0 }

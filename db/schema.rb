@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_10_123501) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_10_125500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -72,6 +72,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_123501) do
     t.index ["bank_account_id"], name: "index_credit_cards_on_bank_account_id"
   end
 
+  create_table "transactions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.bigint "bank_account_id"
+    t.bigint "category_id", null: false
+    t.bigint "cost_center_id"
+    t.datetime "created_at", null: false
+    t.bigint "credit_card_id"
+    t.date "date", null: false
+    t.string "description", null: false
+    t.string "transaction_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "category_id"], name: "index_transactions_on_account_id_and_category_id"
+    t.index ["account_id", "date"], name: "index_transactions_on_account_id_and_date"
+    t.index ["account_id", "transaction_type"], name: "index_transactions_on_account_id_and_transaction_type"
+    t.index ["account_id"], name: "index_transactions_on_account_id"
+    t.index ["bank_account_id"], name: "index_transactions_on_bank_account_id"
+    t.index ["category_id"], name: "index_transactions_on_category_id"
+    t.index ["cost_center_id"], name: "index_transactions_on_cost_center_id"
+    t.index ["credit_card_id"], name: "index_transactions_on_credit_card_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -91,4 +113,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_123501) do
   add_foreign_key "cost_centers", "accounts"
   add_foreign_key "credit_cards", "accounts"
   add_foreign_key "credit_cards", "bank_accounts"
+  add_foreign_key "transactions", "accounts"
+  add_foreign_key "transactions", "bank_accounts"
+  add_foreign_key "transactions", "categories"
+  add_foreign_key "transactions", "cost_centers"
+  add_foreign_key "transactions", "credit_cards"
 end

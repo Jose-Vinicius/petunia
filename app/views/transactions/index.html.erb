@@ -1,0 +1,25 @@
+<div style="max-width: 1000px; margin: 2rem auto; padding: 0 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
+        <%= t("transactions.index.title") %>
+      </h1>
+      <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem;">
+        <%= t("transactions.index.subtitle") %>
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <%= link_to t("transactions.index.new_income"), new_transaction_path(type: "income"), data: { turbo_frame: "modal" }, class: "btn btn-secondary", style: "color: #34d399; border-color: rgba(52, 211, 153, 0.4);" %>
+      <%= link_to t("transactions.index.new_button"), new_transaction_path(type: "expense"), data: { turbo_frame: "modal" }, class: "btn btn-primary" %>
+    </div>
+
+  </div>
+
+  <%= render "summary_cards" %>
+
+  <%= turbo_frame_tag "transactions_content" do %>
+    <%= render "filters" %>
+    <%= render "list" %>
+  <% end %>
+</div>

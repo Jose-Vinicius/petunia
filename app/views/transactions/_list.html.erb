@@ -1,0 +1,69 @@
+<div id="transactions_list">
+  <% if @transactions.empty? %>
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 3rem 1.5rem; text-align: center; color: var(--text-secondary);">
+      <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--border, #27272a); margin-bottom: 1rem;">receipt_long</span>
+      <p style="margin: 0 0 1.5rem 0;"><%= t("transactions.index.empty") %></p>
+      <%= link_to t("transactions.index.new_button"), new_transaction_path, data: { turbo_frame: "modal" }, class: "btn btn-primary" %>
+    </div>
+  <% else %>
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border, #27272a); color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">
+            <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.date") %></th>
+            <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.description") %></th>
+            <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.category") %></th>
+            <th style="padding: 0.85rem 1.25rem;"><%= t("transactions.index.source") %></th>
+            <th style="padding: 0.85rem 1.25rem; text-align: right;"><%= t("activerecord.attributes.transaction.amount") %></th>
+            <th style="padding: 0.85rem 1.25rem; text-align: right;"><%= t("account_users.index.actions") %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @transactions.each do |transaction| %>
+            <tr style="border-bottom: 1px solid var(--border, #27272a);">
+              <td style="padding: 0.85rem 1.25rem; color: var(--text-secondary); white-space: nowrap;">
+                <%= l(transaction.date, format: :short) rescue transaction.date.strftime("%d/%m/%Y") %>
+              </td>
+              <td style="padding: 0.85rem 1.25rem;">
+                <div style="font-weight: 600; color: var(--text-primary);"><%= transaction.description %></div>
+                <% if transaction.cost_center.present? %>
+                  <span style="font-size: 0.75rem; color: var(--text-secondary); background: var(--surface-hover, #18181b); border: 1px solid var(--border, #27272a); padding: 0.1rem 0.4rem; border-radius: 4px;">
+                    🎯 <%= transaction.cost_center.name %>
+                  </span>
+                <% end %>
+              </td>
+              <td style="padding: 0.85rem 1.25rem; color: var(--text-primary);">
+                <span style="font-size: 0.8rem; background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.2); padding: 0.2rem 0.5rem; border-radius: 6px; color: var(--primary, #a78bfa);">
+                  🏷️ <%= transaction.category.name %>
+                </span>
+              </td>
+              <td style="padding: 0.85rem 1.25rem; color: var(--text-secondary);">
+                <% if transaction.bank_account.present? %>
+                  <span>🏦 <%= transaction.bank_account.name %></span>
+                <% elsif transaction.credit_card.present? %>
+                  <span>💳 <%= transaction.credit_card.name %></span>
+                <% else %>
+                  <span>-</span>
+                <% end %>
+              </td>
+              <td style="padding: 0.85rem 1.25rem; text-align: right; font-weight: 700; white-space: nowrap; color: <%= transaction.income? ? '#34d399' : '#ef4444' %>;">
+                <%= transaction.income? ? '+' : '-' %> <%= number_to_currency(transaction.amount, unit: "R$ ", separator: ",", delimiter: ".") %>
+              </td>
+              <td style="padding: 0.85rem 1.25rem; text-align: right; white-space: nowrap;">
+                <div style="display: flex; justify-content: flex-end; gap: 0.25rem;">
+                  <%= link_to edit_transaction_path(transaction), data: { turbo_frame: "modal" }, class: "btn btn-ghost", style: "padding: 0.25rem 0.4rem; font-size: 0.8rem;" do %>
+                    <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">edit</span>
+                  <% end %>
+
+                  <%= button_to transaction_path(transaction), method: :delete, data: { turbo_confirm: t("transactions.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.25rem 0.4rem; font-size: 0.8rem;" do %>
+                    <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">delete</span>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

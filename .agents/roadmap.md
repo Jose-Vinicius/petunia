@@ -95,11 +95,11 @@ Este documento contém a análise detalhada dos requisitos e o detalhamento de t
 ### 🟢 FASE 5: Entradas e Saídas (Transações Financeiras)
 > **Objetivo:** Permitir o registro, filtragem e acompanhamento do fluxo de caixa.
 
-- [ ] **Task 5.1: Modelagem da Entidade `Transaction`**
+- [x] **Task 5.1: Modelagem da Entidade `Transaction`**
   - Migration para `transactions` (type: `income`/`expense`, amount, description, date, category_id, cost_center_id, bank_account_id, credit_card_id, account_id).
   - Regras de negócio e validações de valor, data e vínculos válidos.
   - Testes unitários em RSpec.
-- [ ] **Task 5.2: Interface de Lançamentos de Entradas e Saídas**
+- [x] **Task 5.2: Interface de Lançamentos de Entradas e Saídas**
   - Formulário dinâmico (com opção de associar a conta bancária ou cartão de crédito).
   - Listagem de transações com ordenação por data, badges de tipo (receita em verde `#34d399`, despesa em vermelho `#ef4444`).
   - Filtros por período, categoria, centro de custo e conta bancária via Turbo Streams.

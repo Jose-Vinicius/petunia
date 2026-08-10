@@ -1,46 +1,49 @@
-# 🚀 Walkthrough — FASE 4: Categorias e Centros de Custo
+# 🚀 Walkthrough — FASE 5: Entradas e Saídas (Transações Financeiras com Modal Hotwire)
 
-A **FASE 4** do projeto **Petunia** foi totalmente implementada e validada com sucesso!
+A **FASE 5** do projeto **Petunia** foi totalmente implementada e refinada com a abertura de formulários via **Modal Hotwire (Turbo Frame)**!
 
 ---
 
 ## 📦 Alterações Realizadas
 
-### 1. Banco de Dados & Models
-- **Migrations**:
-  - `20260810123500_create_categories.rb`: tabela `categories` (`name: string`, `default: boolean`, `account_id: references`, índice único `[account_id, name]`).
-  - `20260810123501_create_cost_centers.rb`: tabela `cost_centers` (`name: string`, `default: boolean`, `account_id: references`, índice único `[account_id, name]`).
-- **Models**:
-  - `Category`: `belongs_to :account`, constante `DEFAULT_CATEGORIES` (*Alimentação, Moradia, Transporte, Lazer, Saúde, Educação, Salário*), validação de presença e unicidade escopada ao ambiente.
-  - `CostCenter`: `belongs_to :account`, constante `DEFAULT_COST_CENTERS` (*Pessoal, Trabalho, Projetos*), validação de presença e unicidade escopada ao ambiente.
-  - `Account`: associações `has_many :categories` e `has_many :cost_centers` com callback `after_create :seed_default_categories_and_cost_centers` para popular automaticamente os registros padrão com `default: true`.
-- **Seeds (`db/seeds.rb`)**:
-  - Garantia de popular categorias e centros de custo padrão de forma idempotente em todas as contas.
+### 1. Modal Dialog & UX Hotwire (Nova Solicitação)
+- **Turbo Frame Modal (`layout/application.html.erb`)**: Adicionado `<%= turbo_frame_tag "modal" %>` no layout global.
+- **Fluxo de Abertura sem Troca de Tela**: Ao clicar em **+ Nova Receita**, **+ Nova Despesa** ou no botão de **Editar** em qualquer transação, o formulário é carregado instantaneamente em uma janela modal com efeito de backdrop blur e overlay no tema *Obsidian Dark*.
+- **Submissão e Redirecionamento**: Ao salvar uma nova transação ou editar uma existente, a aplicação realiza um redirect `303 See Other` para `/transactions`, fechando o modal, atualizando a listagem, recomputando os cards de saldo/totais do período e exibindo a mensagem flash de sucesso.
 
-### 2. Controllers & Rotas
-- `CategoriesController`: CRUD completo (`index`, `new`, `create`, `edit`, `update`, `destroy`) escopado ao `current_account`.
-- `CostCentersController`: CRUD completo (`index`, `new`, `create`, `edit`, `update`, `destroy`) escopado ao `current_account`.
-- Rotas de recursos adicionadas em `config/routes.rb`.
+### 2. Banco de Dados & Models
+- **Migration (`20260810125500_create_transactions.rb`)**:
+  - Tabela `transactions`: `transaction_type` (`income`/`expense`), `amount` (decimal), `description`, `date`, `account_id`, `category_id`, `cost_center_id`, `bank_account_id`, `credit_card_id`.
+  - Índices para otimização de consultas por data, tipo e categoria.
+- **Model `Transaction`**:
+  - Validações de presença (`description`, `date`, `amount`, `transaction_type`) e valor positivo (`> 0`).
+  - Regra de negócio para receitas (`income`): obrigatoriedade de vincular a uma Conta Bancária (`bank_account_id`) e proibição de uso de cartão de crédito.
+  - Regra de negócio para despesas (`expense`): exige que pelo menos um meio de pagamento seja informado (Conta Bancária ou Cartão de Crédito).
+  - Trava de segurança multi-tenant: valida que Categoria, Centro de Custo, Conta Bancária e Cartão pertencem ao mesmo ambiente (`account_id`).
+- **Associations**:
+  - `Account`, `Category`, `CostCenter`, `BankAccount`, `CreditCard` atualizados com `has_many :transactions`.
 
-### 3. Interface Visual (Obsidian Dark UI)
-- Header (`app/views/shared/_header.html.erb`): adicionados botões diretos de navegação para **Categorias** e **Centros de Custo**.
-- Views de Categorias: `categories/index.html.erb`, `categories/new.html.erb`, `categories/edit.html.erb` com badges visuais indicando registros "Padrão" ou "Personalizada".
-- Views de Centros de Custo: `cost_centers/index.html.erb`, `cost_centers/new.html.erb`, `cost_centers/edit.html.erb` com badges visuais.
+### 3. Controllers, Turbo Streams & JavaScript
+- `TransactionsController`: CRUD completo escopado ao `current_account` com suporte a filtros dinâmicos por mês, tipo, categoria, centro de custo e meio de pagamento.
+- Resposta reativa via **Turbo Streams** (`index.turbo_stream.erb`) atualizando instantaneamente os cards de resumo e a tabela ao alterar filtros.
+- Controlador **Stimulus JS** (`transaction_form_controller.js`): oculta e desabilita dinamicamente a opção de cartão de crédito quando o usuário seleciona "Receita".
 
-### 4. Internacionalização (i18n)
-- Traduções completas em Português (`pt-BR.yml`) e Inglês (`en.yml`) para títulos, mensagens flash, formulários, badges e modelos ActiveRecord.
+### 4. Interface Visual (Obsidian Dark UI)
+- Header (`app/views/shared/_header.html.erb`): adicionado link de navegação para **Transações**.
+- Cards Superiores de Resumo: **Total de Receitas** (`#34d399`), **Total de Despesas** (`#ef4444`) e **Saldo do Período** (`#a78bfa`).
+- Tabela/Listagem de Transações com badges de tipo, ícones do meio de pagamento, chips de centro de custo e categoria.
+
+### 5. Internacionalização (i18n)
+- Traduções completas em Português (`pt-BR.yml`) e Inglês (`en.yml`) para transações, tipos, filtros, formulários e mensagens de sucesso/erro.
 
 ---
 
 ## 🧪 Validação e Testes
 
 ### 1. Suíte de Testes RSpec
-Todos os **105 testes** do projeto foram executados com **0 falhas**:
-- `spec/models/category_spec.rb`: validações de presença, unicidade e escopo por ambiente.
-- `spec/models/cost_center_spec.rb`: validações de presença, unicidade e escopo por ambiente.
-- `spec/models/account_spec.rb`: verificação da criação automática de categorias e centros de custo padrão no `after_create`.
-- `spec/requests/categories_spec.rb`: autenticação, CRUD completo e segurança multi-tenant.
-- `spec/requests/cost_centers_spec.rb`: autenticação, CRUD completo e segurança multi-tenant.
+Todos os **125 testes** do projeto foram executados com **0 falhas**:
+- `spec/models/transaction_spec.rb`: validações de regras de pagamento, valores positivos e segurança entre ambientes.
+- `spec/requests/transactions_spec.rb`: autenticação, criação de receitas e despesas, formulários e isolamento multi-tenant.
 
 ### 2. Análise Estática (RuboCop)
-- **70 arquivos inspecionados**, **0 ofensas detectadas**.
+- **76 arquivos inspecionados**, **0 ofensas detectadas**.

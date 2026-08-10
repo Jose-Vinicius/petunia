@@ -16,6 +16,7 @@ pt-BR:
     credit_cards: "Cartões de Crédito"
     categories: "Categorias"
     cost_centers: "Centros de Custo"
+    transactions: "Transações"
   home:
     index:
       hero_badge: "Controle Financeiro Pessoal"
@@ -170,6 +171,47 @@ pt-BR:
       confirm: "Tem certeza que deseja remover este centro de custo?"
     errors:
       not_found: "Centro de custo não encontrado."
+  transactions:
+    index:
+      title: "Transações Financeiras"
+      subtitle: "Acompanhe e gerencie os lançamentos de receitas e despesas do ambiente ativo"
+      new_button: "+ Nova Despesa"
+      new_income: "+ Nova Receita"
+      empty: "Nenhuma transação financeira lançada neste ambiente para os filtros selecionados."
+      total_income: "Total de Receitas"
+      total_expense: "Total de Despesas"
+      balance: "Saldo do Período"
+      source: "Forma de Pagamento"
+    filters:
+      month: "Mês / Período"
+      type: "Tipo de Lançamento"
+      category: "Categoria"
+      cost_center: "Centro de Custo"
+      payment_source: "Meio de Pagamento"
+      all_types: "Todos os Tipos"
+      all_categories: "Todas as Categorias"
+      all_cost_centers: "Todos os Centros de Custo"
+      all_sources: "Todas as Fontes"
+    types:
+      income: "Receita"
+      expense: "Despesa"
+    new:
+      title: "Novo Lançamento"
+      subtitle: "Registre uma nova entrada ou saída financeira"
+      submit: "Salvar Lançamento"
+    edit:
+      title: "Editar Lançamento"
+      subtitle: "Altere as informações da transação"
+      submit: "Atualizar Lançamento"
+    create:
+      success: "Transação lançada com sucesso."
+    update:
+      success: "Transação atualizada com sucesso."
+    destroy:
+      success: "Transação removida com sucesso."
+      confirm: "Tem certeza que deseja remover esta transação?"
+    errors:
+      not_found: "Transação não encontrada."
   helpers:
     submit:
       create: "Criar %{model}"
@@ -184,6 +226,7 @@ pt-BR:
       credit_card: "Cartão de Crédito"
       category: "Categoria"
       cost_center: "Centro de Custo"
+      transaction: "Transação"
     attributes:
       user:
         email: "E-mail"
@@ -204,3 +247,16 @@ pt-BR:
         name: "Nome da Categoria"
       cost_center:
         name: "Nome do Centro de Custo"
+      transaction:
+        transaction_type: "Tipo de Lançamento"
+        description: "Descrição"
+        amount: "Valor (R$)"
+        date: "Data da Transação"
+        category: "Categoria"
+        category_id: "Categoria"
+        cost_center: "Centro de Custo"
+        cost_center_id: "Centro de Custo"
+        bank_account: "Conta Bancária"
+        bank_account_id: "Conta Bancária"
+        credit_card: "Cartão de Crédito"
+        credit_card_id: "Cartão de Crédito"

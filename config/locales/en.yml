@@ -16,6 +16,7 @@ en:
     credit_cards: "Credit Cards"
     categories: "Categories"
     cost_centers: "Cost Centers"
+    transactions: "Transactions"
   home:
     index:
       hero_badge: "Personal Financial Control"
@@ -170,6 +171,47 @@ en:
       confirm: "Are you sure you want to remove this cost center?"
     errors:
       not_found: "Cost center not found."
+  transactions:
+    index:
+      title: "Financial Transactions"
+      subtitle: "Track and manage income and expense entries in your active account"
+      new_button: "+ New Expense"
+      new_income: "+ New Income"
+      empty: "No transactions found in this account for the selected filters."
+      total_income: "Total Income"
+      total_expense: "Total Expense"
+      balance: "Net Balance"
+      source: "Payment Method"
+    filters:
+      month: "Month / Period"
+      type: "Entry Type"
+      category: "Category"
+      cost_center: "Cost Center"
+      payment_source: "Payment Source"
+      all_types: "All Types"
+      all_categories: "All Categories"
+      all_cost_centers: "All Cost Centers"
+      all_sources: "All Sources"
+    types:
+      income: "Income"
+      expense: "Expense"
+    new:
+      title: "New Transaction"
+      subtitle: "Record a new financial entry or expense"
+      submit: "Save Transaction"
+    edit:
+      title: "Edit Transaction"
+      subtitle: "Update transaction details"
+      submit: "Update Transaction"
+    create:
+      success: "Transaction created successfully."
+    update:
+      success: "Transaction updated successfully."
+    destroy:
+      success: "Transaction removed successfully."
+      confirm: "Are you sure you want to remove this transaction?"
+    errors:
+      not_found: "Transaction not found."
   helpers:
     submit:
       create: "Create %{model}"
@@ -184,6 +226,7 @@ en:
       credit_card: "Credit Card"
       category: "Category"
       cost_center: "Cost Center"
+      transaction: "Transaction"
     attributes:
       user:
         email: "Email"
@@ -204,3 +247,16 @@ en:
         name: "Category Name"
       cost_center:
         name: "Cost Center Name"
+      transaction:
+        transaction_type: "Entry Type"
+        description: "Description"
+        amount: "Amount"
+        date: "Transaction Date"
+        category: "Category"
+        category_id: "Category"
+        cost_center: "Cost Center"
+        cost_center_id: "Cost Center"
+        bank_account: "Bank Account"
+        bank_account_id: "Bank Account"
+        credit_card: "Credit Card"
+        credit_card_id: "Credit Card"

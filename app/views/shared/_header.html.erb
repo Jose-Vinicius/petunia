@@ -18,11 +18,13 @@
   
   <div class="navbar-nav">
     <% if user_signed_in? %>
+      <%= link_to t("app.transactions"), transactions_path, class: "btn btn-ghost" %>
       <%= link_to t("app.bank_accounts"), bank_accounts_path, class: "btn btn-ghost" %>
       <%= link_to t("app.credit_cards"), credit_cards_path, class: "btn btn-ghost" %>
       <%= link_to t("app.categories"), categories_path, class: "btn btn-ghost" %>
       <%= link_to t("app.cost_centers"), cost_centers_path, class: "btn btn-ghost" %>
       <%= link_to t("app.accounts"), accounts_path, class: "btn btn-ghost" %>
+
 
       <span style="color: var(--text-secondary); font-size: 0.85rem; margin-left: 0.5rem;">
         <%= current_user.email %>

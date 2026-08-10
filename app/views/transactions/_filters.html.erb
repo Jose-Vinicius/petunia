@@ -1,0 +1,31 @@
+<%= form_with url: transactions_path, method: :get, data: { turbo_frame: "transactions_content", turbo_action: "advance" }, style: "background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem; margin-bottom: 1.5rem;" do |f| %>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; align-items: end;">
+    <div>
+      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.month") %></label>
+      <input type="month" name="month" value="<%= @month == 'all' ? '' : @month %>" onchange="this.form.requestSubmit()" class="form-input" style="padding: 0.4rem 0.6rem; font-size: 0.85rem;" />
+    </div>
+
+    <div>
+      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.type") %></label>
+      <%= select_tag :transaction_type, options_for_select([[t("transactions.filters.all_types"), ""], [t("transactions.types.income"), "income"], [t("transactions.types.expense"), "expense"]], @selected_type), onchange: "this.form.requestSubmit()", class: "form-input", style: "padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+    </div>
+
+    <div>
+      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.category") %></label>
+      <%= select_tag :category_id, options_for_select([[t("transactions.filters.all_categories"), ""]] + @categories.map { |c| [c.name, c.id] }, @selected_category_id), onchange: "this.form.requestSubmit()", class: "form-input", style: "padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+    </div>
+
+    <div>
+      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.cost_center") %></label>
+      <%= select_tag :cost_center_id, options_for_select([[t("transactions.filters.all_cost_centers"), ""]] + @cost_centers.map { |cc| [cc.name, cc.id] }, @selected_cost_center_id), onchange: "this.form.requestSubmit()", class: "form-input", style: "padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+    </div>
+
+    <div>
+      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.payment_source") %></label>
+      <% payment_options = [[t("transactions.filters.all_sources"), ""]] +
+                           @bank_accounts.map { |b| ["🏦 #{b.name}", "bank_#{b.id}"] } +
+                           @credit_cards.map { |c| ["💳 #{c.name}", "card_#{c.id}"] } %>
+      <%= select_tag :payment_source, options_for_select(payment_options, @selected_payment_source), onchange: "this.form.requestSubmit()", class: "form-input", style: "padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,31 @@
+<div id="summary_cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+  <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+      <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;"><%= t("transactions.index.total_income") %></span>
+      <span class="material-symbols-outlined" style="color: #34d399; font-size: 1.4rem;">arrow_downward</span>
+    </div>
+    <div style="font-size: 1.5rem; font-weight: 700; color: #34d399;">
+      <%= number_to_currency(@total_income, unit: "R$ ", separator: ",", delimiter: ".") %>
+    </div>
+  </div>
+
+  <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+      <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;"><%= t("transactions.index.total_expense") %></span>
+      <span class="material-symbols-outlined" style="color: #ef4444; font-size: 1.4rem;">arrow_upward</span>
+    </div>
+    <div style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">
+      <%= number_to_currency(@total_expense, unit: "R$ ", separator: ",", delimiter: ".") %>
+    </div>
+  </div>
+
+  <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+      <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;"><%= t("transactions.index.balance") %></span>
+      <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.4rem;">account_balance_wallet</span>
+    </div>
+    <div style="font-size: 1.5rem; font-weight: 700; color: <%= @balance >= 0 ? 'var(--text-primary)' : '#ef4444' %>;">
+      <%= number_to_currency(@balance, unit: "R$ ", separator: ",", delimiter: ".") %>
+    </div>
+  </div>
+</div>

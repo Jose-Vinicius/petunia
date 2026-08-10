@@ -6,6 +6,8 @@ class CostCenter < ApplicationRecord
   ].freeze
 
   belongs_to :account
+  has_many :transactions, dependent: :nullify
+
 
   validates :name, presence: true, uniqueness: { scope: :account_id, case_sensitive: false }
 end
