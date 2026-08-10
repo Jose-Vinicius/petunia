@@ -1,9 +1,13 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+Account.find_each do |account|
+  Category::DEFAULT_CATEGORIES.each do |cat_name|
+    account.categories.find_or_create_by!(name: cat_name) do |cat|
+      cat.default = true
+    end
+  end
+
+  CostCenter::DEFAULT_COST_CENTERS.each do |cc_name|
+    account.cost_centers.find_or_create_by!(name: cc_name) do |cc|
+      cc.default = true
+    end
+  end
+end

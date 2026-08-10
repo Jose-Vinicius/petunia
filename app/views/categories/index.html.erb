@@ -1,0 +1,55 @@
+<div style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
+        <%= t("categories.index.title") %>
+      </h1>
+      <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem;">
+        <%= t("categories.index.subtitle") %>
+      </p>
+    </div>
+
+    <%= link_to t("categories.index.new_button"), new_category_path, class: "btn btn-primary" %>
+  </div>
+
+  <% if @categories.empty? %>
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 3rem 1.5rem; text-align: center; color: var(--text-secondary);">
+      <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--border, #27272a); margin-bottom: 1rem;">label</span>
+      <p style="margin: 0 0 1.5rem 0;"><%= t("categories.index.empty") %></p>
+      <%= link_to t("categories.index.new_button"), new_category_path, class: "btn btn-primary" %>
+    </div>
+  <% else %>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;">
+      <% @categories.each do |category| %>
+        <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.3rem;">label</span>
+              <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin: 0;"><%= category.name %></h2>
+            </div>
+            <% if category.default? %>
+              <span style="font-size: 0.75rem; background: rgba(167, 139, 250, 0.15); color: var(--primary, #a78bfa); border: 1px solid rgba(167, 139, 250, 0.3); padding: 0.15rem 0.5rem; border-radius: 999px; font-weight: 500;">
+                <%= t("categories.index.default_badge") %>
+              </span>
+            <% else %>
+              <span style="font-size: 0.75rem; background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.15rem 0.5rem; border-radius: 999px; font-weight: 500;">
+                <%= t("categories.index.custom_badge") %>
+              </span>
+            <% end %>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; justify-content: flex-end; border-top: 1px solid var(--border, #27272a); padding-top: 0.75rem;">
+            <%= link_to edit_category_path(category), class: "btn btn-ghost", style: "padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
+              <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">edit</span>
+              <%= t("helpers.submit.update", model: "") %>
+            <% end %>
+            <%= button_to category_path(category), method: :delete, data: { turbo_confirm: t("categories.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
+              <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">delete</span>
+              <%= t("account_users.index.remove") %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

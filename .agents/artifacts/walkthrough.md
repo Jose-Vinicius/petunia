@@ -1,41 +1,46 @@
-# 🚀 Walkthrough — FASE 3: Contas Bancárias e Cartões de Crédito
+# 🚀 Walkthrough — FASE 4: Categorias e Centros de Custo
 
-A **FASE 3** do projeto **Petunia** foi totalmente implementada e validada com sucesso!
+A **FASE 4** do projeto **Petunia** foi totalmente implementada e validada com sucesso!
+
+---
 
 ## 📦 Alterações Realizadas
 
 ### 1. Banco de Dados & Models
 - **Migrations**:
-  - `20260809160700_create_bank_accounts.rb`: tabela `bank_accounts` (`name: string`, `account_id: references`, índice único `[account_id, name]`).
-  - `20260809160701_create_credit_cards.rb`: tabela `credit_cards` (`name: string`, `limit: decimal`, `bank_account_id: references`, `account_id: references`, índice único `[account_id, name]`).
+  - `20260810123500_create_categories.rb`: tabela `categories` (`name: string`, `default: boolean`, `account_id: references`, índice único `[account_id, name]`).
+  - `20260810123501_create_cost_centers.rb`: tabela `cost_centers` (`name: string`, `default: boolean`, `account_id: references`, índice único `[account_id, name]`).
 - **Models**:
-  - `BankAccount`: `belongs_to :account`, `has_many :credit_cards, dependent: :destroy`, validações de presença e unicidade no ambiente.
-  - `CreditCard`: `belongs_to :bank_account`, `belongs_to :account`, validação de limite numérico (`>= 0`) e trava de segurança multi-tenant que impede vincular a uma conta bancária de outro ambiente.
-  - `Account`: associações `has_many :bank_accounts` e `has_many :credit_cards`.
+  - `Category`: `belongs_to :account`, constante `DEFAULT_CATEGORIES` (*Alimentação, Moradia, Transporte, Lazer, Saúde, Educação, Salário*), validação de presença e unicidade escopada ao ambiente.
+  - `CostCenter`: `belongs_to :account`, constante `DEFAULT_COST_CENTERS` (*Pessoal, Trabalho, Projetos*), validação de presença e unicidade escopada ao ambiente.
+  - `Account`: associações `has_many :categories` e `has_many :cost_centers` com callback `after_create :seed_default_categories_and_cost_centers` para popular automaticamente os registros padrão com `default: true`.
+- **Seeds (`db/seeds.rb`)**:
+  - Garantia de popular categorias e centros de custo padrão de forma idempotente em todas as contas.
 
 ### 2. Controllers & Rotas
-- `BankAccountsController`: CRUD completo escopado ao `current_account`.
-- `CreditCardsController`: CRUD completo escopado ao `current_account`.
-- Rotas adicionadas em `config/routes.rb`.
+- `CategoriesController`: CRUD completo (`index`, `new`, `create`, `edit`, `update`, `destroy`) escopado ao `current_account`.
+- `CostCentersController`: CRUD completo (`index`, `new`, `create`, `edit`, `update`, `destroy`) escopado ao `current_account`.
+- Rotas de recursos adicionadas em `config/routes.rb`.
 
 ### 3. Interface Visual (Obsidian Dark UI)
-- Header (`shared/_header.html.erb`): adicionados botões diretos de navegação para **Contas Bancárias** e **Cartões de Crédito**.
-- Views de Contas Bancárias: `bank_accounts/index.html.erb`, `bank_accounts/new.html.erb` e `bank_accounts/edit.html.erb`.
-- Views de Cartões de Crédito: `credit_cards/index.html.erb`, `credit_cards/new.html.erb` e `credit_cards/edit.html.erb` com exibição de limite formatado em `R$` e aviso visual caso nenhuma conta bancária esteja cadastrada.
+- Header (`app/views/shared/_header.html.erb`): adicionados botões diretos de navegação para **Categorias** e **Centros de Custo**.
+- Views de Categorias: `categories/index.html.erb`, `categories/new.html.erb`, `categories/edit.html.erb` com badges visuais indicando registros "Padrão" ou "Personalizada".
+- Views de Centros de Custo: `cost_centers/index.html.erb`, `cost_centers/new.html.erb`, `cost_centers/edit.html.erb` com badges visuais.
 
 ### 4. Internacionalização (i18n)
-- Traduções em Português e Inglês adicionadas em `config/locales/pt-BR.yml` e `config/locales/en.yml`.
+- Traduções completas em Português (`pt-BR.yml`) e Inglês (`en.yml`) para títulos, mensagens flash, formulários, badges e modelos ActiveRecord.
 
 ---
 
 ## 🧪 Validação e Testes
 
 ### 1. Suíte de Testes RSpec
-Todos os **78 testes** foram executados com **0 falhas**:
-- `spec/models/bank_account_spec.rb`: validações de unicidade e destruição em cascata.
-- `spec/models/credit_card_spec.rb`: validação de limite e trava multi-tenant.
-- `spec/requests/bank_accounts_spec.rb`: CRUD e isolamento por ambiente.
-- `spec/requests/credit_cards_spec.rb`: CRUD, limites positivos e segurança entre ambientes.
+Todos os **105 testes** do projeto foram executados com **0 falhas**:
+- `spec/models/category_spec.rb`: validações de presença, unicidade e escopo por ambiente.
+- `spec/models/cost_center_spec.rb`: validações de presença, unicidade e escopo por ambiente.
+- `spec/models/account_spec.rb`: verificação da criação automática de categorias e centros de custo padrão no `after_create`.
+- `spec/requests/categories_spec.rb`: autenticação, CRUD completo e segurança multi-tenant.
+- `spec/requests/cost_centers_spec.rb`: autenticação, CRUD completo e segurança multi-tenant.
 
 ### 2. Análise Estática (RuboCop)
-- **54 arquivos inspecionados**, **0 ofensas detectadas**.
+- **70 arquivos inspecionados**, **0 ofensas detectadas**.

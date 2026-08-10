@@ -18,5 +18,13 @@ RSpec.describe Account, type: :model do
       account = user.accounts.first
       expect(account.users).to include(user)
     end
+
+    it 'cria automaticamente categorias e centros de custo padrão ao criar uma conta' do
+      account = create(:account)
+      expect(account.categories.pluck(:name)).to include("Alimentação", "Moradia", "Transporte", "Lazer", "Saúde", "Educação", "Salário")
+      expect(account.cost_centers.pluck(:name)).to include("Pessoal", "Trabalho", "Projetos")
+      expect(account.categories.where(default: true).count).to eq(7)
+      expect(account.cost_centers.where(default: true).count).to eq(3)
+    end
   end
 end

@@ -79,12 +79,12 @@ Este documento contém a análise detalhada dos requisitos e o detalhamento de t
 ### 🟢 FASE 4: Categorias e Centros de Custo
 > **Objetivo:** Fornecer estrutura de classificação para transações financeiras.
 
-- [ ] **Task 4.1: Model e Seeding de `Category`**
+- [x] **Task 4.1: Model e Seeding de `Category`**
   - Migration para `categories` (name, default, account_id).
   - Populate de categorias padrão no `db/seeds.rb` (ex: Alimentação, Moradia, Transporte, Lazer, Saúde, Educação, Salário).
   - CRUD para categorias personalizadas criadas pelo usuário.
   - Testes RSpec para `Category`.
-- [ ] **Task 4.2: Model e Seeding de `CostCenter`**
+- [x] **Task 4.2: Model e Seeding de `CostCenter`**
   - Migration para `cost_centers` (name, default, account_id).
   - Populate de centros de custo padrão no `db/seeds.rb` (ex: Pessoal, Trabalho, Projetos).
   - CRUD para novos centros de custo personalizados.

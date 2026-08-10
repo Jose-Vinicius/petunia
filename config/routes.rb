@@ -18,9 +18,12 @@ Rails.application.routes.draw do
     resources :account_users, only: [ :index, :create, :destroy ], path: "members"
   end
 
-  # Financial entities: Bank Accounts & Credit Cards
+  # Financial entities: Bank Accounts, Credit Cards, Categories & Cost Centers
   resources :bank_accounts, except: [ :show ]
   resources :credit_cards, except: [ :show ]
+  resources :categories, except: [ :show ]
+  resources :cost_centers, except: [ :show ]
+
 
   # Defines the root path route ("/")
   root "home#index"
