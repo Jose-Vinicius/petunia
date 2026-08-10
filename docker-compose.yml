@@ -12,32 +12,21 @@ services:
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       AI_API_KEY: ${AI_API_KEY}
+      SOLID_QUEUE_IN_PUMA: "true"
     ports:
       - "${PORT:-8080}:80"
+    mem_limit: 512m
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/up"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 40s
-    volumes:
-      - rails_storage:/rails/storage
-    networks:
-      - default
-      - azaleia_net
-
-  worker:
-    container_name: petunia-worker-1
-    build: .
-    image: ${DOCKER_IMAGE:-ghcr.io/jose-vinicius/petunia:latest}
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST:-db}:5432/${POSTGRES_DB}}
-      RAILS_ENV: production
-      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
-      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-      AI_API_KEY: ${AI_API_KEY}
-    command: ["./bin/jobs"]
     volumes:
       - rails_storage:/rails/storage
     networks:

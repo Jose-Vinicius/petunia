@@ -75,7 +75,6 @@ jobs:
             export DOCKER_IMAGE=ghcr.io/${{ steps.repo.outputs.name }}:latest
             
             docker compose pull
-            docker compose run --rm web bin/rails db:prepare
             docker compose up -d --remove-orphans
             docker image prune -af
 

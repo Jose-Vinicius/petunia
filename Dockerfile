@@ -20,12 +20,14 @@ RUN apt-get update -qq && \
     ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Set production environment variables and enable jemalloc for reduced memory usage and latency.
+# Set production environment variables, jemalloc tuning, and YJIT memory limits.
 ENV RAILS_ENV="production" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
-    LD_PRELOAD="/usr/local/lib/libjemalloc.so"
+    LD_PRELOAD="/usr/local/lib/libjemalloc.so" \
+    MALLOC_CONF="background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:1000" \
+    RUBY_YJIT_MEM_SIZE="32"
 
 # Throw-away build stage to reduce size of final image
 FROM base AS build
