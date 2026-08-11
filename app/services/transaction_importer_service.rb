@@ -9,6 +9,7 @@ class TransactionImporterService
     amount: [ "valor", "amount", "val", "quantia" ],
     type: [ "tipo", "type", "natureza", "operacao", "operação" ],
     category: [ "categoria", "category" ],
+    supplier: [ "fornecedor", "cliente", "supplier", "payee", "local", "estabelecimentos" ],
     cost_center: [ "centro_de_custo", "cost_center", "centro de custo", "centro de custo" ]
   }.freeze
 
@@ -95,6 +96,7 @@ class TransactionImporterService
     description = data[:description].to_s.strip.presence || "Lançamento Importado"
 
     category = find_or_create_category(data[:category])
+    supplier = find_or_create_supplier(data[:supplier])
     cost_center = find_or_create_cost_center(data[:cost_center])
 
     payment_attrs = assign_payment_source(tx_type)
@@ -105,6 +107,7 @@ class TransactionImporterService
       description: description,
       date: parsed_date,
       category: category,
+      supplier: supplier,
       cost_center: cost_center
     }.merge(payment_attrs)
   end
@@ -161,6 +164,12 @@ class TransactionImporterService
     name = cat_name.to_s.strip.presence || "Alimentação"
     @account.categories.find_by("LOWER(name) = ?", name.downcase) ||
       @account.categories.create!(name: name)
+  end
+
+  def find_or_create_supplier(sup_name)
+    name = sup_name.to_s.strip.presence || "Geral"
+    @account.suppliers.find_by("LOWER(name) = ?", name.downcase) ||
+      @account.suppliers.create!(name: name)
   end
 
   def find_or_create_cost_center(cc_name)

@@ -39,14 +39,14 @@ class ImportsController < ApplicationController
 
   def download_template
     sample = params[:sample] == "true"
-    headers = [ "Data", "Descrição", "Valor", "Tipo", "Categoria", "Centro de Custo" ]
+    headers = [ "Data", "Descrição", "Valor", "Tipo", "Categoria", "Fornecedor", "Centro de Custo" ]
 
     csv_data = CSV.generate(headers: true, col_sep: ";") do |csv|
       csv << headers
       if sample
-        csv << [ "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Trabalho" ]
-        csv << [ "11/08/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Pessoal" ]
-        csv << [ "12/08/2026", "Restaurante", "45,00", "Despesa", "Alimentação", "Pessoal" ]
+        csv << [ "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Empresa ACME", "Trabalho" ]
+        csv << [ "11/08/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Mercado Central", "Pessoal" ]
+        csv << [ "12/08/2026", "Restaurante", "45,00", "Despesa", "Alimentação", "Restaurante Gourmet", "Pessoal" ]
       end
     end
 

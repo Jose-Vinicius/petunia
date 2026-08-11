@@ -4,6 +4,7 @@ class TransactionsController < ApplicationController
 
   def index
     @categories = current_account.categories.order(:name)
+    @suppliers = current_account.suppliers.order(:name)
     @cost_centers = current_account.cost_centers.order(:name)
     @bank_accounts = current_account.bank_accounts.order(:name)
     @credit_cards = current_account.credit_cards.order(:name)
@@ -11,10 +12,11 @@ class TransactionsController < ApplicationController
     @month = params[:month].presence || Date.current.strftime("%Y-%m")
     @selected_type = params[:transaction_type].presence
     @selected_category_id = params[:category_id].presence
+    @selected_supplier_id = params[:supplier_id].presence
     @selected_cost_center_id = params[:cost_center_id].presence
     @selected_payment_source = params[:payment_source].presence
 
-    scope = current_account.transactions.includes(:category, :cost_center, :bank_account, :credit_card)
+    scope = current_account.transactions.includes(:category, :supplier, :cost_center, :bank_account, :credit_card)
 
     if @month != "all" && @month =~ /\A\d{4}-\d{2}\z/
       year, month_num = @month.split("-").map(&:to_i)
@@ -25,6 +27,7 @@ class TransactionsController < ApplicationController
 
     scope = scope.where(transaction_type: @selected_type) if @selected_type.present?
     scope = scope.where(category_id: @selected_category_id) if @selected_category_id.present?
+    scope = scope.where(supplier_id: @selected_supplier_id) if @selected_supplier_id.present?
     scope = scope.where(cost_center_id: @selected_cost_center_id) if @selected_cost_center_id.present?
 
     if @selected_payment_source.present?
@@ -96,6 +99,7 @@ class TransactionsController < ApplicationController
 
   def load_form_options
     @categories = current_account.categories.order(:name)
+    @suppliers = current_account.suppliers.order(:name)
     @cost_centers = current_account.cost_centers.order(:name)
     @bank_accounts = current_account.bank_accounts.order(:name)
     @credit_cards = current_account.credit_cards.order(:name)
@@ -108,6 +112,7 @@ class TransactionsController < ApplicationController
       :amount,
       :date,
       :category_id,
+      :supplier_id,
       :cost_center_id,
       :bank_account_id,
       :credit_card_id

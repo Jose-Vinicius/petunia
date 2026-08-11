@@ -15,6 +15,7 @@ pt-BR:
     bank_accounts: "Contas Bancárias"
     credit_cards: "Cartões de Crédito"
     categories: "Categorias"
+    suppliers: "Fornecedores"
     cost_centers: "Centros de Custo"
     transactions: "Transações"
   home:
@@ -171,6 +172,33 @@ pt-BR:
       confirm: "Tem certeza que deseja remover este centro de custo?"
     errors:
       not_found: "Centro de custo não encontrado."
+  suppliers:
+    index:
+      title: "Fornecedores e Clientes"
+      subtitle: "Gerencie os estabelecimentos e pessoas com quem você faz transações"
+      new_button: "+ Novo Fornecedor/Cliente"
+      empty: "Nenhum fornecedor ou cliente cadastrado neste ambiente."
+    new:
+      title: "Novo Fornecedor / Cliente"
+      subtitle: "Cadastre um novo estabelecimento, empresa ou pessoa física"
+      submit: "Salvar Fornecedor/Cliente"
+    edit:
+      title: "Editar Fornecedor / Cliente"
+      subtitle: "Altere o nome do fornecedor ou cliente"
+      submit: "Atualizar Fornecedor/Cliente"
+    quick_add:
+      button: "Novo"
+      placeholder: "Nome do Fornecedor / Cliente"
+      save: "Salvar"
+    create:
+      success: "Fornecedor/Cliente '%{name}' criado com sucesso."
+    update:
+      success: "Fornecedor/Cliente '%{name}' atualizado com sucesso."
+    destroy:
+      success: "Fornecedor/Cliente '%{name}' removido com sucesso."
+      confirm: "Tem certeza que deseja remover este fornecedor/cliente?"
+    errors:
+      not_found: "Fornecedor/Cliente não encontrado."
   transactions:
     index:
       title: "Transações Financeiras"
@@ -182,14 +210,18 @@ pt-BR:
       total_expense: "Total de Despesas"
       balance: "Saldo do Período"
       source: "Forma de Pagamento"
+    form:
+      select_supplier: "Selecione um Fornecedor / Cliente"
     filters:
       month: "Mês / Período"
       type: "Tipo de Lançamento"
       category: "Categoria"
+      supplier: "Fornecedor / Cliente"
       cost_center: "Centro de Custo"
       payment_source: "Meio de Pagamento"
       all_types: "Todos os Tipos"
       all_categories: "Todas as Categorias"
+      all_suppliers: "Todos os Fornecedores"
       all_cost_centers: "Todos os Centros de Custo"
       all_sources: "Todas as Fontes"
     types:
@@ -256,6 +288,7 @@ pt-BR:
       credit_card: "Cartão de Crédito"
       category: "Categoria"
       cost_center: "Centro de Custo"
+      supplier: "Fornecedor / Cliente"
       transaction: "Transação"
     attributes:
       user:
@@ -277,6 +310,8 @@ pt-BR:
         name: "Nome da Categoria"
       cost_center:
         name: "Nome do Centro de Custo"
+      supplier:
+        name: "Nome do Fornecedor / Cliente"
       transaction:
         transaction_type: "Tipo de Lançamento"
         description: "Descrição"
@@ -284,6 +319,8 @@ pt-BR:
         date: "Data da Transação"
         category: "Categoria"
         category_id: "Categoria"
+        supplier: "Fornecedor / Cliente"
+        supplier_id: "Fornecedor / Cliente"
         cost_center: "Centro de Custo"
         cost_center_id: "Centro de Custo"
         bank_account: "Conta Bancária"

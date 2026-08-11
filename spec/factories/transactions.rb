@@ -5,15 +5,9 @@ FactoryBot.define do
     sequence(:description) { |n| "Transação #{n}" }
     date { Date.current }
     association :account
-    association :category, factory: :category
-    association :bank_account, factory: :bank_account
-
-    before(:create) do |transaction|
-      transaction.category.account = transaction.account if transaction.category
-      transaction.cost_center.account = transaction.account if transaction.cost_center
-      transaction.bank_account.account = transaction.account if transaction.bank_account
-      transaction.credit_card.account = transaction.account if transaction.credit_card
-    end
+    category { association :category, account: account }
+    supplier { association :supplier, account: account }
+    bank_account { association :bank_account, account: account }
 
     trait :income do
       transaction_type { "income" }
@@ -25,7 +19,7 @@ FactoryBot.define do
 
     trait :with_credit_card do
       bank_account { nil }
-      association :credit_card, factory: :credit_card
+      credit_card { association :credit_card, account: account }
     end
   end
 end

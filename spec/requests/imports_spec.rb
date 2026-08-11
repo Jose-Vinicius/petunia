@@ -53,7 +53,7 @@ RSpec.describe "Importação por Planilha (Imports)", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.header['Content-Type']).to include('text/csv')
-        expect(response.body).to include("Data;Descrição;Valor;Tipo;Categoria;Centro de Custo")
+        expect(response.body).to include("Data;Descrição;Valor;Tipo;Categoria;Fornecedor;Centro de Custo")
       end
 
       it "faz o download do modelo com dados de exemplo" do

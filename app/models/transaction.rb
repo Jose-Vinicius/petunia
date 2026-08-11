@@ -3,11 +3,12 @@ class Transaction < ApplicationRecord
 
   belongs_to :account
   belongs_to :category
+  belongs_to :supplier
   belongs_to :cost_center, optional: true
   belongs_to :bank_account, optional: true
   belongs_to :credit_card, optional: true
 
-  validates :description, :date, :amount, :transaction_type, presence: true
+  validates :description, :date, :amount, :transaction_type, :supplier_id, presence: true
   validates :amount, numericality: { greater_than: 0 }
 
   validate :must_have_valid_payment_source
@@ -39,6 +40,7 @@ class Transaction < ApplicationRecord
     return unless account_id
 
     errors.add(:category, "inválida para esta conta") if category && category.account_id != account_id
+    errors.add(:supplier, "inválido para esta conta") if supplier && supplier.account_id != account_id
     errors.add(:cost_center, "inválido para esta conta") if cost_center && cost_center.account_id != account_id
     errors.add(:bank_account, "inválida para esta conta") if bank_account && bank_account.account_id != account_id
     errors.add(:credit_card, "inválido para esta conta") if credit_card && credit_card.account_id != account_id

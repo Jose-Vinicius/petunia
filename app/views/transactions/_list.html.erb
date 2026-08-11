@@ -12,6 +12,7 @@
           <tr style="border-bottom: 1px solid var(--border, #27272a); color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.date") %></th>
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.description") %></th>
+            <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.supplier") %></th>
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.category") %></th>
             <th style="padding: 0.85rem 1.25rem;"><%= t("transactions.index.source") %></th>
             <th style="padding: 0.85rem 1.25rem; text-align: right;"><%= t("activerecord.attributes.transaction.amount") %></th>
@@ -31,6 +32,9 @@
                     🎯 <%= transaction.cost_center.name %>
                   </span>
                 <% end %>
+              </td>
+              <td style="padding: 0.85rem 1.25rem; color: var(--text-primary);">
+                <span>🏢 <%= transaction.supplier&.name || "-" %></span>
               </td>
               <td style="padding: 0.85rem 1.25rem; color: var(--text-primary);">
                 <span style="font-size: 0.8rem; background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.2); padding: 0.2rem 0.5rem; border-radius: 6px; color: var(--primary, #a78bfa);">

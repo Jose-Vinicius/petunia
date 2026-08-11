@@ -4,26 +4,28 @@ RSpec.describe Transaction, type: :model do
   describe 'validações e regras de negócio' do
     let(:account) { create(:account) }
     let(:category) { account.categories.first }
+    let(:supplier) { create(:supplier, account: account) }
     let(:bank_account) { create(:bank_account, account: account) }
     let(:credit_card) { create(:credit_card, account: account, bank_account: bank_account) }
 
     it 'é válido com atributos válidos (receita em conta bancária)' do
-      tx = build(:transaction, :income, account: account, category: category, bank_account: bank_account)
+      tx = build(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account)
       expect(tx).to be_valid
     end
 
     it 'é válido com despesa em cartão de crédito' do
-      tx = build(:transaction, :expense, account: account, category: category, bank_account: nil, credit_card: credit_card)
+      tx = build(:transaction, :expense, account: account, category: category, supplier: supplier, bank_account: nil, credit_card: credit_card)
       expect(tx).to be_valid
     end
 
-    it 'exige descrição, data, valor e tipo presentes' do
-      tx = build(:transaction, description: nil, date: nil, amount: nil, transaction_type: nil)
+    it 'exige descrição, data, valor, tipo e fornecedor presentes' do
+      tx = build(:transaction, description: nil, date: nil, amount: nil, transaction_type: nil, supplier: nil)
       expect(tx).not_to be_valid
       expect(tx.errors[:description]).to include("não pode ficar em branco")
       expect(tx.errors[:date]).to include("não pode ficar em branco")
       expect(tx.errors[:amount]).to include("não pode ficar em branco")
       expect(tx.errors[:transaction_type]).to include("não pode ficar em branco")
+      expect(tx.errors[:supplier_id]).to include("não pode ficar em branco")
     end
 
     it 'rejeita valores menores ou iguais a zero' do
@@ -56,6 +58,14 @@ RSpec.describe Transaction, type: :model do
       tx = build(:transaction, account: account, category: other_cat, bank_account: bank_account)
       expect(tx).not_to be_valid
       expect(tx.errors[:category]).to include("inválida para esta conta")
+    end
+
+    it 'impede associar fornecedor de outro ambiente' do
+      other_account = create(:account)
+      other_sup = create(:supplier, account: other_account)
+      tx = build(:transaction, account: account, category: category, supplier: other_sup, bank_account: bank_account)
+      expect(tx).not_to be_valid
+      expect(tx.errors[:supplier]).to include("inválido para esta conta")
     end
 
     it 'impede associar conta bancária de outro ambiente' do

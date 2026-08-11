@@ -18,11 +18,12 @@ Rails.application.routes.draw do
     resources :account_users, only: [ :index, :create, :destroy ], path: "members"
   end
 
-  # Financial entities: Bank Accounts, Credit Cards, Categories, Cost Centers & Transactions
+  # Financial entities: Bank Accounts, Credit Cards, Categories, Cost Centers, Suppliers & Transactions
   resources :bank_accounts, except: [ :show ]
   resources :credit_cards, except: [ :show ]
   resources :categories, except: [ :show ]
   resources :cost_centers, except: [ :show ]
+  resources :suppliers, except: [ :show ]
   resources :transactions, except: [ :show ]
 
   # Dashboard & Spreadsheet Import

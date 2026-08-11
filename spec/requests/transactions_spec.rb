@@ -4,6 +4,7 @@ RSpec.describe "Transações (Transactions)", type: :request do
   let(:user) { create(:user) }
   let(:account) { user.accounts.first }
   let(:category) { account.categories.first }
+  let(:supplier) { create(:supplier, account: account) }
   let(:cost_center) { account.cost_centers.first }
   let(:bank_account) { create(:bank_account, account: account) }
   let(:credit_card) { create(:credit_card, account: account, bank_account: bank_account) }
@@ -22,15 +23,15 @@ RSpec.describe "Transações (Transactions)", type: :request do
 
     describe "GET /transactions" do
       it "lista as transações do ambiente ativo" do
-        create(:transaction, account: account, category: category, bank_account: bank_account, description: "Salário Empresa")
+        create(:transaction, account: account, category: category, supplier: supplier, bank_account: bank_account, description: "Salário Empresa")
         get transactions_path
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("Salário Empresa")
       end
 
       it "filtra transações por tipo (income / expense)" do
-        income_tx = create(:transaction, :income, account: account, category: category, bank_account: bank_account, description: "Receita Freelance")
-        expense_tx = create(:transaction, :expense, account: account, category: category, bank_account: bank_account, description: "Supermercado")
+        income_tx = create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, description: "Receita Freelance")
+        expense_tx = create(:transaction, :expense, account: account, category: category, supplier: supplier, bank_account: bank_account, description: "Supermercado")
 
         get transactions_path, params: { transaction_type: "income", month: "all" }
         expect(response.body).to include("Receita Freelance")
@@ -57,6 +58,7 @@ RSpec.describe "Transações (Transactions)", type: :request do
                 amount: 350.00,
                 date: Date.current.to_s,
                 category_id: category.id,
+                supplier_id: supplier.id,
                 cost_center_id: cost_center.id,
                 bank_account_id: bank_account.id
               }
@@ -77,6 +79,7 @@ RSpec.describe "Transações (Transactions)", type: :request do
                 amount: 85.90,
                 date: Date.current.to_s,
                 category_id: category.id,
+                supplier_id: supplier.id,
                 credit_card_id: credit_card.id
               }
             }
@@ -98,6 +101,7 @@ RSpec.describe "Transações (Transactions)", type: :request do
                 amount: -10,
                 date: Date.current.to_s,
                 category_id: category.id,
+                supplier_id: supplier.id,
                 bank_account_id: bank_account.id
               }
             }
@@ -110,7 +114,7 @@ RSpec.describe "Transações (Transactions)", type: :request do
 
     describe "GET /transactions/:id/edit" do
       it "exibe formulário de edição" do
-        tx = create(:transaction, account: account, category: category, bank_account: bank_account, description: "Compra Exemplo")
+        tx = create(:transaction, account: account, category: category, supplier: supplier, bank_account: bank_account, description: "Compra Exemplo")
         get edit_transaction_path(tx)
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("Compra Exemplo")
@@ -119,8 +123,9 @@ RSpec.describe "Transações (Transactions)", type: :request do
       it "impede editar transação de outro ambiente" do
         other_account = create(:account)
         other_cat = other_account.categories.first
+        other_sup = create(:supplier, account: other_account)
         other_bank = create(:bank_account, account: other_account)
-        other_tx = create(:transaction, account: other_account, category: other_cat, bank_account: other_bank)
+        other_tx = create(:transaction, account: other_account, category: other_cat, supplier: other_sup, bank_account: other_bank)
 
         get edit_transaction_path(other_tx)
         expect(response).to redirect_to(transactions_path)
@@ -129,11 +134,12 @@ RSpec.describe "Transações (Transactions)", type: :request do
 
     describe "PATCH /transactions/:id" do
       it "atualiza o valor e descrição da transação" do
-        tx = create(:transaction, account: account, category: category, bank_account: bank_account, description: "Antiga", amount: 100)
+        tx = create(:transaction, account: account, category: category, supplier: supplier, bank_account: bank_account, description: "Antiga", amount: 100)
         patch transaction_path(tx), params: {
           transaction: {
             description: "Nova Descrição",
-            amount: 150
+            amount: 150,
+            supplier_id: supplier.id
           }
         }
         expect(response).to redirect_to(transactions_path)
