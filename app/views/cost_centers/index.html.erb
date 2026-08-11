@@ -19,7 +19,7 @@
       <%= link_to t("cost_centers.index.new_button"), new_cost_center_path, class: "btn btn-primary" %>
     </div>
   <% else %>
-    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); overflow: hidden;">
+    <div class="table-responsive" style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); overflow-x: auto;">
       <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
         <thead>
           <tr style="border-bottom: 1px solid var(--border, #27272a); background: var(--surface-hover, #18181b); color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">

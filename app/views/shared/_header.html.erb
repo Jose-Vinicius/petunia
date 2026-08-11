@@ -1,89 +1,187 @@
-<header class="navbar">
-  <div class="navbar-brand" style="display: flex; align-items: center; gap: 1rem;">
-    <a href="<%= root_path %>" style="color: inherit; display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
-      <span class="material-symbols-outlined" style="color: var(--primary);">local_florist</span>
-      <span style="font-weight: 700;"><%= t("app.name") %></span>
-    </a>
-
-    <% if user_signed_in? && current_account %>
-      <!-- QUICK ACCOUNT SWITCHER DROPDOWN -->
-      <div class="dropdown" data-controller="dropdown">
-        <button type="button" class="btn btn-ghost" data-action="click->dropdown#toggle" data-dropdown-target="button" aria-expanded="false" style="display: inline-flex; align-items: center; gap: 0.4rem; background: var(--surface-hover, #18181b); padding: 0.35rem 0.75rem; border-radius: var(--radius-md, 8px); border: 1px solid var(--border, #27272a); font-size: 0.85rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">
-          <span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--primary);">domain</span>
-          <span><%= current_account.name %></span>
-          <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--text-secondary);">expand_more</span>
+<div data-controller="sidebar">
+  <!-- TOP NAVBAR -->
+  <header class="navbar">
+    <div class="navbar-brand" style="display: flex; align-items: center; gap: 0.75rem;">
+      <% if user_signed_in? %>
+        <button type="button" class="btn btn-ghost mobile-only" data-action="click->sidebar#toggle" title="Menu" style="padding: 0.35rem 0.5rem; display: inline-flex; align-items: center;">
+          <span class="material-symbols-outlined" style="font-size: 1.4rem;">menu</span>
         </button>
+      <% end %>
 
-        <div class="dropdown-menu" data-dropdown-target="menu">
-          <div class="dropdown-header">Ambiente Ativo</div>
-          <% current_user.accounts.order(:name).each do |acc| %>
-            <% is_active = acc.id == current_account.id %>
-            <%= button_to switch_account_path(acc), method: :post, class: "dropdown-item #{'active' if is_active}", style: "width: 100%;" do %>
-              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: <%= is_active ? 'var(--primary)' : 'transparent' %>;">
-                <%= is_active ? 'check_circle' : 'circle' %>
-              </span>
-              <span style="flex: 1; text-align: left;"><%= acc.name %></span>
+      <a href="<%= root_path %>" style="color: inherit; display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+        <span class="material-symbols-outlined" style="color: var(--primary);">local_florist</span>
+        <span style="font-weight: 700;"><%= t("app.name") %></span>
+      </a>
+
+      <% if user_signed_in? && current_account %>
+        <!-- QUICK ACCOUNT SWITCHER DROPDOWN -->
+        <div class="dropdown" data-controller="dropdown">
+          <button type="button" class="btn btn-ghost" data-action="click->dropdown#toggle" data-dropdown-target="button" aria-expanded="false" style="display: inline-flex; align-items: center; gap: 0.4rem; background: var(--surface-hover, #18181b); padding: 0.35rem 0.65rem; border-radius: var(--radius-md, 8px); border: 1px solid var(--border, #27272a); font-size: 0.82rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">
+            <span class="material-symbols-outlined" style="font-size: 1.05rem; color: var(--primary);">domain</span>
+            <span><%= current_account.name %></span>
+            <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--text-secondary);">expand_more</span>
+          </button>
+
+          <div class="dropdown-menu" data-dropdown-target="menu">
+            <div class="dropdown-header">Ambiente Ativo</div>
+            <% current_user.accounts.order(:name).each do |acc| %>
+              <% is_active = acc.id == current_account.id %>
+              <%= button_to switch_account_path(acc), method: :post, class: "dropdown-item #{'active' if is_active}", style: "width: 100%;" do %>
+                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: <%= is_active ? 'var(--primary)' : 'transparent' %>;">
+                  <%= is_active ? 'check_circle' : 'circle' %>
+                </span>
+                <span style="flex: 1; text-align: left;"><%= acc.name %></span>
+              <% end %>
             <% end %>
-          <% end %>
 
-          <div class="dropdown-divider"></div>
-          <%= link_to accounts_path, class: "dropdown-item", style: "color: var(--text-secondary);" do %>
-            <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span>
-            <span><%= t("app.manage_accounts") %></span>
-          <% end %>
+            <div class="dropdown-divider"></div>
+            <%= link_to accounts_path, class: "dropdown-item", style: "color: var(--text-secondary);" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span>
+              <span><%= t("app.manage_accounts") %></span>
+            <% end %>
+          </div>
         </div>
-      </div>
-    <% end %>
-  </div>
-  
-  <div class="navbar-nav" style="display: flex; align-items: center; gap: 0.5rem;">
-    <% if user_signed_in? %>
-      <%= link_to t("app.dashboard"), dashboard_path, class: "btn btn-ghost" %>
-      <%= link_to t("app.transactions"), transactions_path, class: "btn btn-ghost" %>
+      <% end %>
+    </div>
+    
+    <div class="navbar-nav desktop-only" style="display: flex; align-items: center; gap: 0.5rem;">
+      <% if user_signed_in? %>
+        <%= link_to t("app.dashboard"), dashboard_path, class: "btn btn-ghost" %>
+        <%= link_to t("app.transactions"), transactions_path, class: "btn btn-ghost" %>
 
-      <!-- CADASTROS DROPDOWN MENU -->
-      <div class="dropdown" data-controller="dropdown">
-        <button type="button" class="btn btn-ghost" data-action="click->dropdown#toggle" data-dropdown-target="button" aria-expanded="false" style="display: inline-flex; align-items: center; gap: 0.35rem;">
-          <span class="material-symbols-outlined" style="font-size: 1.1rem;">app_registration</span>
-          <span><%= t("app.registrations") %></span>
-          <span class="material-symbols-outlined" style="font-size: 1rem;">expand_more</span>
+        <!-- CADASTROS DROPDOWN MENU -->
+        <div class="dropdown" data-controller="dropdown">
+          <button type="button" class="btn btn-ghost" data-action="click->dropdown#toggle" data-dropdown-target="button" aria-expanded="false" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+            <span class="material-symbols-outlined" style="font-size: 1.1rem;">app_registration</span>
+            <span><%= t("app.registrations") %></span>
+            <span class="material-symbols-outlined" style="font-size: 1rem;">expand_more</span>
+          </button>
+
+          <div class="dropdown-menu dropdown-menu-end" data-dropdown-target="menu">
+            <%= link_to bank_accounts_path, class: "dropdown-item" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #60a5fa;">account_balance</span>
+              <span><%= t("app.bank_accounts") %></span>
+            <% end %>
+
+            <%= link_to credit_cards_path, class: "dropdown-item" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f472b6;">credit_card</span>
+              <span><%= t("app.credit_cards") %></span>
+            <% end %>
+
+            <%= link_to categories_path, class: "dropdown-item" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #a78bfa;">label</span>
+              <span><%= t("app.categories") %></span>
+            <% end %>
+
+            <%= link_to suppliers_path, class: "dropdown-item" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #34d399;">storefront</span>
+              <span>Fornecedores / Clientes</span>
+            <% end %>
+
+            <%= link_to cost_centers_path, class: "dropdown-item" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #fbbf24;">pie_chart</span>
+              <span><%= t("app.cost_centers") %></span>
+            <% end %>
+          </div>
+        </div>
+
+        <span style="color: var(--text-secondary); font-size: 0.85rem; margin-left: 0.5rem;">
+          <%= current_user.email %>
+        </span>
+        <%= button_to t("app.logout"), destroy_user_session_path, method: :delete, class: "btn btn-secondary" %>
+      <% else %>
+        <%= link_to t("app.login"), new_user_session_path, class: "btn btn-ghost" %>
+        <%= link_to t("app.register"), new_user_registration_path, class: "btn btn-primary" %>
+      <% end %>
+    </div>
+  </header>
+
+  <% if user_signed_in? %>
+    <!-- SIDEBAR BACKDROP -->
+    <div class="sidebar-backdrop" data-sidebar-target="backdrop" data-action="click->sidebar#close"></div>
+
+    <!-- SIDEBAR DRAWER -->
+    <aside class="sidebar-drawer" data-sidebar-target="drawer">
+      <div class="sidebar-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="material-symbols-outlined" style="color: var(--primary);">local_florist</span>
+          <span style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;"><%= t("app.name") %></span>
+        </div>
+        <button type="button" class="btn btn-ghost" data-action="click->sidebar#close" style="padding: 0.25rem;">
+          <span class="material-symbols-outlined">close</span>
         </button>
-
-        <div class="dropdown-menu dropdown-menu-end" data-dropdown-target="menu">
-          <%= link_to bank_accounts_path, class: "dropdown-item" do %>
-            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #60a5fa;">account_balance</span>
-            <span><%= t("app.bank_accounts") %></span>
-          <% end %>
-
-          <%= link_to credit_cards_path, class: "dropdown-item" do %>
-            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f472b6;">credit_card</span>
-            <span><%= t("app.credit_cards") %></span>
-          <% end %>
-
-          <%= link_to categories_path, class: "dropdown-item" do %>
-            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #a78bfa;">label</span>
-            <span><%= t("app.categories") %></span>
-          <% end %>
-
-          <%= link_to suppliers_path, class: "dropdown-item" do %>
-            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #34d399;">storefront</span>
-            <span>Fornecedores / Clientes</span>
-          <% end %>
-
-          <%= link_to cost_centers_path, class: "dropdown-item" do %>
-            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #fbbf24;">pie_chart</span>
-            <span><%= t("app.cost_centers") %></span>
-          <% end %>
-        </div>
       </div>
 
-      <span style="color: var(--text-secondary); font-size: 0.85rem; margin-left: 0.5rem;">
-        <%= current_user.email %>
-      </span>
-      <%= button_to t("app.logout"), destroy_user_session_path, method: :delete, class: "btn btn-secondary" %>
-    <% else %>
-      <%= link_to t("app.login"), new_user_session_path, class: "btn btn-ghost" %>
-      <%= link_to t("app.register"), new_user_registration_path, class: "btn btn-primary" %>
-    <% end %>
-  </div>
-</header>
+      <div class="sidebar-content">
+        <!-- NAVIGATION LINKS -->
+        <div>
+          <div class="sidebar-section-title">Menu Principal</div>
+          <%= link_to dashboard_path, class: "sidebar-nav-link" do %>
+            <span class="material-symbols-outlined" style="color: var(--primary);">dashboard</span>
+            <span><%= t("app.dashboard") %></span>
+          <% end %>
+
+          <%= link_to transactions_path, class: "sidebar-nav-link" do %>
+            <span class="material-symbols-outlined" style="color: #34d399;">payments</span>
+            <span><%= t("app.transactions") %></span>
+          <% end %>
+        </div>
+
+        <!-- CADASTROS SECTION -->
+        <div>
+          <div class="sidebar-section-title"><%= t("app.registrations") %></div>
+          <div class="sidebar-subnav">
+            <%= link_to bank_accounts_path, class: "sidebar-subnav-link" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #60a5fa;">account_balance</span>
+              <span><%= t("app.bank_accounts") %></span>
+            <% end %>
+
+            <%= link_to credit_cards_path, class: "sidebar-subnav-link" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f472b6;">credit_card</span>
+              <span><%= t("app.credit_cards") %></span>
+            <% end %>
+
+            <%= link_to categories_path, class: "sidebar-subnav-link" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #a78bfa;">label</span>
+              <span><%= t("app.categories") %></span>
+            <% end %>
+
+            <%= link_to suppliers_path, class: "sidebar-subnav-link" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #34d399;">storefront</span>
+              <span>Fornecedores / Clientes</span>
+            <% end %>
+
+            <%= link_to cost_centers_path, class: "sidebar-subnav-link" do %>
+              <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #fbbf24;">pie_chart</span>
+              <span><%= t("app.cost_centers") %></span>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- AMBIENTES SECTION -->
+        <% if current_account %>
+          <div>
+            <div class="sidebar-section-title">Ambientes</div>
+            <%= link_to accounts_path, class: "sidebar-nav-link" do %>
+              <span class="material-symbols-outlined" style="color: #60a5fa;">settings</span>
+              <span><%= t("app.manage_accounts") %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- SIDEBAR FOOTER WITH USER EMAIL & LOGOUT BUTTON -->
+      <div class="sidebar-footer">
+        <div style="font-size: 0.8rem; color: var(--text-secondary); word-break: break-all;">
+          <span style="display: block; font-size: 0.72rem; color: var(--text-muted, #71717a); text-transform: uppercase;">Conectado como</span>
+          <strong style="color: var(--text-primary);"><%= current_user.email %></strong>
+        </div>
+
+        <%= button_to destroy_user_session_path, method: :delete, class: "btn btn-secondary", style: "width: 100%; display: flex; justify-content: center; align-items: center; gap: 0.5rem;" do %>
+          <span class="material-symbols-outlined" style="font-size: 1.1rem;">logout</span>
+          <span><%= t("app.logout") %></span>
+        <% end %>
+      </div>
+    </aside>
+  <% end %>
+</div>
