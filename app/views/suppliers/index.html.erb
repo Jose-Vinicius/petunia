@@ -1,5 +1,5 @@
-<div style="max-width: 800px; margin: 2rem auto; padding: 0 1rem;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+<div style="max-width: 900px; margin: 2rem auto; padding: 0 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
     <div>
       <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
         <%= t("suppliers.index.title") %>
@@ -19,28 +19,39 @@
       <%= link_to t("suppliers.index.new_button"), new_supplier_path, class: "btn btn-primary" %>
     </div>
   <% else %>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;">
-      <% @suppliers.each do |supplier| %>
-        <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem;">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
-            <div style="display: flex; align-items: center; gap: 0.6rem;">
-              <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.3rem;">store</span>
-              <h2 style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin: 0;"><%= supplier.name %></h2>
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 0.5rem; justify-content: flex-end; border-top: 1px solid var(--border, #27272a); padding-top: 0.75rem;">
-            <%= link_to edit_supplier_path(supplier), class: "btn btn-ghost", style: "padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
-              <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">edit</span>
-              <%= t("helpers.submit.update", model: "") %>
-            <% end %>
-            <%= button_to supplier_path(supplier), method: :delete, data: { turbo_confirm: t("suppliers.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
-              <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">delete</span>
-              <%= t("account_users.index.remove") %>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border, #27272a); background: var(--surface-hover, #18181b); color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
+            <th style="padding: 0.85rem 1rem;">Descrição</th>
+            <th style="padding: 0.85rem 1rem; text-align: right; width: 160px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @suppliers.each do |supplier| %>
+            <tr style="border-bottom: 1px solid var(--border, #27272a);">
+              <td style="padding: 0.85rem 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                  <span class="material-symbols-outlined" style="color: #34d399; font-size: 1.3rem;">storefront</span>
+                  <span style="font-weight: 600; color: var(--text-primary);"><%= supplier.name %></span>
+                </div>
+              </td>
+              <td style="padding: 0.85rem 1rem; text-align: right; white-space: nowrap;">
+                <div style="display: flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
+                  <%= link_to edit_supplier_path(supplier), class: "btn btn-ghost", style: "padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
+                    <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">edit</span>
+                    <%= t("helpers.submit.update", model: "") %>
+                  <% end %>
+                  <%= button_to supplier_path(supplier), method: :delete, data: { turbo_confirm: t("suppliers.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
+                    <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">delete</span>
+                    <%= t("account_users.index.remove") %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
     </div>
   <% end %>
 </div>
