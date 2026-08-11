@@ -29,6 +29,7 @@ Rails.application.routes.draw do
   # Dashboard & Spreadsheet Import
   get "dashboard" => "dashboard#index", as: :dashboard
   resources :imports, only: [ :new, :create ] do
+    post :preview, on: :collection
     get :download_template, on: :collection
   end
 

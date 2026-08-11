@@ -3,8 +3,55 @@ require 'tempfile'
 
 RSpec.describe TransactionImporterService, type: :service do
   let(:account) { create(:account) }
-  let(:bank_account) { create(:bank_account, account: account) }
-  let(:credit_card) { create(:credit_card, account: account, bank_account: bank_account) }
+  let!(:bank_account) { create(:bank_account, name: "Nubank", account: account) }
+  let!(:credit_card) { create(:credit_card, name: "Visa Itaú", account: account, bank_account: bank_account) }
+
+  describe '#parse_preview' do
+    let(:csv_content) do
+      <<~CSV
+        data,descrição,valor,tipo,categoria,fornecedor,centro_de_custo,banco,cartao
+        10/08/2026,Salário Mensal,3500.00,receita,Salário,Empresa ACME,Trabalho,Nubank,
+        11/08/2026,Supermercado Exemplo,-250.50,despesa,Alimentação,Mercado Centraall,Pessoal,,Visa Itaú
+      CSV
+    end
+
+    let(:temp_file) do
+      file = Tempfile.new([ 'transactions', '.csv' ])
+      file.write(csv_content)
+      file.rewind
+      file
+    end
+
+    after do
+      temp_file.close
+      temp_file.unlink
+    end
+
+    it 'retorna estrutura de preview identificando entidades existentes vs novas' do
+      service = described_class.new(
+        file_path: temp_file.path,
+        filename: 'transactions.csv',
+        account: account
+      )
+
+      preview = service.parse_preview
+      expect(preview[:errors]).to be_empty
+      expect(preview[:rows].size).to eq(2)
+
+      row1 = preview[:rows].first
+      expect(row1[:description]).to eq('Salário Mensal')
+      expect(row1[:amount]).to eq(3500.00)
+      expect(row1[:transaction_type]).to eq('income')
+      expect(row1[:bank_account][:id]).to eq(bank_account.id)
+      expect(row1[:bank_account][:is_new]).to be false
+
+      row2 = preview[:rows].second
+      expect(row2[:supplier][:name]).to eq('Mercado Centraall')
+      expect(row2[:supplier][:is_new]).to be true
+      expect(row2[:credit_card][:id]).to eq(credit_card.id)
+      expect(row2[:credit_card][:is_new]).to be false
+    end
+  end
 
   describe '#call' do
     context 'com um arquivo CSV válido contendo receitas e despesas' do
