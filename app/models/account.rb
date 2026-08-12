@@ -7,11 +7,26 @@ class Account < ApplicationRecord
   has_many :cost_centers, dependent: :destroy
   has_many :suppliers, dependent: :destroy
   has_many :transactions, dependent: :destroy
+  has_many :credit_card_invoice_payments, dependent: :destroy
 
 
   validates :name, presence: true
 
   after_create :seed_defaults
+
+  def reset_data!
+    transaction do
+      credit_card_invoice_payments.destroy_all
+      transactions.destroy_all
+      credit_cards.destroy_all
+      bank_accounts.destroy_all
+      categories.destroy_all
+      cost_centers.destroy_all
+      suppliers.destroy_all
+
+      seed_defaults
+    end
+  end
 
   private
 

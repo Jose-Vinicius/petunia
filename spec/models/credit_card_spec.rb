@@ -36,4 +36,18 @@ RSpec.describe CreditCard, type: :model do
       expect(cartao.errors[:bank_account]).to include("não é válido")
     end
   end
+
+  describe '#invoice_competence_for' do
+    let(:card) { create(:credit_card, closing_day: 25, due_day: 5) }
+
+    it 'atribui fatura do mês seguinte quando a compra é feita até o dia de fechamento' do
+      competence = card.invoice_competence_for(Date.new(2026, 8, 20))
+      expect(competence).to eq(Date.new(2026, 9, 5))
+    end
+
+    it 'atribui fatura do mês subsequente quando a compra é feita após o dia de fechamento' do
+      competence = card.invoice_competence_for(Date.new(2026, 8, 26))
+      expect(competence).to eq(Date.new(2026, 10, 5))
+    end
+  end
 end

@@ -1,4 +1,30 @@
 pt-BR:
+  date:
+    formats:
+      default: "%d/%m/%y"
+      short: "%d/%m/%y"
+      long: "%d de %B de %Y"
+  time:
+    formats:
+      default: "%d/%m/%y %H:%M"
+      short: "%d/%m/%y"
+      long: "%d de %B de %Y, %H:%M"
+  number:
+    format:
+      separator: ","
+      delimiter: "."
+      precision: 2
+      significant: false
+      strip_insignificant_zeros: false
+    currency:
+      format:
+        unit: "R$ "
+        format: "%u%n"
+        separator: ","
+        delimiter: "."
+        precision: 2
+        significant: false
+        strip_insignificant_zeros: false
   app:
     name: "Petunia"
     tagline: "Controle Financeiro Simples e Eficiente"
@@ -42,6 +68,14 @@ pt-BR:
     switch:
       success: "Ambiente alterado para '%{name}'."
       error: "Você não tem permissão para acessar esta conta."
+    reset:
+      title: "Zona de Perigo — Limpeza de Dados"
+      warning: "Esta ação irá apagar permanentemente todas as transações, cartões de crédito, contas bancárias e cadastros personalizados deste ambiente."
+      button: "Resetar Todos os Dados do Ambiente"
+      confirm: "ATENÇÃO! Tem certeza que deseja apagar TODOS os lançamentos, contas bancárias, cartões e cadastros deste ambiente? Esta ação é IRREVERSÍVEL!"
+      success: "Todos os dados do ambiente '%{name}' foram limpados e resetados com sucesso."
+      unauthorized: "Apenas o proprietário da conta tem permissão para resetar os dados."
+      not_found: "Ambiente não encontrado."
   account_users:
     index:
       title: "Membros do Ambiente '%{name}'"
@@ -214,6 +248,17 @@ pt-BR:
     form:
       select_supplier: "Selecione um Fornecedor / Cliente"
     filters:
+      start_date: "Data Início"
+      end_date: "Data Fim"
+      period: "Período"
+      period_this_month: "Este Mês"
+      period_last_month: "Mês Passado"
+      period_last_30_days: "Últimos 30 Dias"
+      period_this_year: "Este Ano"
+      period_all: "Histórico Completo"
+      period_custom: "Personalizado"
+      clear: "Limpar Filtros"
+      apply: "Filtrar"
       month: "Mês / Período"
       type: "Tipo de Lançamento"
       category: "Categoria"
@@ -228,6 +273,7 @@ pt-BR:
     types:
       income: "Receita"
       expense: "Despesa"
+      transfer: "Transferência"
     new:
       title: "Novo Lançamento"
       subtitle: "Registre uma nova entrada ou saída financeira"
@@ -328,3 +374,5 @@ pt-BR:
         bank_account_id: "Conta Bancária"
         credit_card: "Cartão de Crédito"
         credit_card_id: "Cartão de Crédito"
+        destination_bank_account: "Conta de Destino"
+        destination_bank_account_id: "Conta de Destino"

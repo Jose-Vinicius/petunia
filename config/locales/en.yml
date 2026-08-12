@@ -40,6 +40,14 @@ en:
     switch:
       success: "Switched to account '%{name}'."
       error: "You do not have permission to access this account."
+    reset:
+      title: "Danger Zone — Data Reset"
+      warning: "This action will permanently delete all transactions, credit cards, bank accounts, and custom records in this account."
+      button: "Reset All Account Data"
+      confirm: "WARNING! Are you sure you want to delete ALL transactions, bank accounts, credit cards, and custom records from this account? This action CANNOT be undone!"
+      success: "All data for account '%{name}' has been reset successfully."
+      unauthorized: "Only account owners are allowed to reset data."
+      not_found: "Account not found."
   account_users:
     index:
       title: "Members of '%{name}'"
@@ -183,6 +191,17 @@ en:
       balance: "Net Balance"
       source: "Payment Method"
     filters:
+      start_date: "Start Date"
+      end_date: "End Date"
+      period: "Period"
+      period_this_month: "This Month"
+      period_last_month: "Last Month"
+      period_last_30_days: "Last 30 Days"
+      period_this_year: "This Year"
+      period_all: "All Time"
+      period_custom: "Custom"
+      clear: "Clear Filters"
+      apply: "Filter"
       month: "Month / Period"
       type: "Entry Type"
       category: "Category"
@@ -195,6 +214,7 @@ en:
     types:
       income: "Income"
       expense: "Expense"
+      transfer: "Transfer"
     new:
       title: "New Transaction"
       subtitle: "Record a new financial entry or expense"
@@ -290,3 +310,5 @@ en:
         bank_account_id: "Bank Account"
         credit_card: "Credit Card"
         credit_card_id: "Credit Card"
+        destination_bank_account: "Destination Account"
+        destination_bank_account_id: "Destination Account"

@@ -3,7 +3,9 @@ class SuppliersController < ApplicationController
   before_action :set_supplier, only: [ :edit, :update, :destroy ]
 
   def index
-    @suppliers = current_account.suppliers.order(:name)
+    scope = current_account.suppliers
+    scope = scope.where("LOWER(name) LIKE ?", "%#{params[:search].downcase.strip}%") if params[:search].present?
+    @suppliers = scope.order(:name)
   end
 
   def new

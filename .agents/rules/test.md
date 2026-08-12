@@ -1,0 +1,1 @@
+Todos os testes devem ser escritos primeiros antes da criaçao de qualquer funcionalidade no sistema, sempre priorizando os principios do TDD

@@ -1,36 +1,242 @@
-<%= form_with url: transactions_path, method: :get, data: { turbo_frame: "transactions_content", turbo_action: "advance" }, style: "background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem; margin-bottom: 1.5rem;" do |f| %>
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; align-items: end;">
+<%= form_with url: transactions_path, method: :get, data: { turbo_frame: "transactions_content", turbo_action: "advance" }, style: "background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;" do |f| %>
+  <!-- Primary Filter Controls: Date Mode & Period -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; align-items: end;">
     <div>
-      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.month") %></label>
-      <input type="month" name="month" value="<%= @month == 'all' ? '' : @month %>" onchange="this.form.requestSubmit()" class="form-input" style="padding: 0.4rem 0.6rem; font-size: 0.85rem;" />
+      <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;">Visão / Competência</label>
+      <%= select_tag :date_mode, options_for_select([["Data da Fatura (Competência)", "competence"], ["Data da Compra (Lançamento)", "transaction"]], @date_mode || "competence"), onchange: "this.form.requestSubmit()", class: "form-input", style: "height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
     </div>
 
     <div>
-      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.type") %></label>
-      <%= select_tag :transaction_type, options_for_select([[t("transactions.filters.all_types"), ""], [t("transactions.types.income"), "income"], [t("transactions.types.expense"), "expense"]], @selected_type), onchange: "this.form.requestSubmit()", class: "form-input", style: "padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+      <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.period") %></label>
+      <% period_options = [
+        [t("transactions.filters.period_this_month"), "this_month"],
+        [t("transactions.filters.period_last_month"), "last_month"],
+        [t("transactions.filters.period_last_30_days"), "last_30_days"],
+        [t("transactions.filters.period_this_year"), "this_year"],
+        [t("transactions.filters.period_all"), "all"]
+      ] %>
+      <%= select_tag :period, options_for_select(period_options, @period || "this_month"), onchange: "this.form.requestSubmit()", class: "form-input", style: "height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
     </div>
 
     <div>
-      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.category") %></label>
-      <%= select_tag :category_id, options_for_select([[t("transactions.filters.all_categories"), ""]] + @categories.map { |c| [c.name, c.id] }, @selected_category_id), onchange: "this.form.requestSubmit()", class: "form-input", style: "padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+      <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;">Vcto. Inicial / Início</label>
+      <input type="date" name="start_date" value="<%= @start_date&.strftime('%Y-%m-%d') %>" onchange="this.form.requestSubmit()" class="form-input" style="height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" />
     </div>
 
     <div>
-      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.supplier") %></label>
-      <%= select_tag :supplier_id, options_for_select([[t("transactions.filters.all_suppliers"), ""]] + @suppliers.map { |s| [s.name, s.id] }, @selected_supplier_id), onchange: "this.form.requestSubmit()", class: "form-input", style: "padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+      <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;">Vcto. Final / Fim</label>
+      <input type="date" name="end_date" value="<%= @end_date&.strftime('%Y-%m-%d') %>" onchange="this.form.requestSubmit()" class="form-input" style="height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" />
+    </div>
+  </div>
+
+  <!-- Multi-Select Chips Section -->
+  <div style="display: flex; flex-direction: column; gap: 1rem; border-top: 1px solid var(--border, #27272a); padding-top: 1rem;">
+    
+    <!-- Type Chips -->
+    <div>
+      <div class="filter-group-title">
+        <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--primary);">tune</span>
+        <span>Tipo de Lançamento (<%= @selected_types.size.positive? ? "#{@selected_types.size} selecionados" : "Todos" %>)</span>
+      </div>
+      <div data-controller="multi-select-filter"
+           data-multi-select-filter-name-value="transaction_type"
+           data-multi-select-filter-selected-value="<%= @selected_types.to_json %>">
+        <div data-multi-select-filter-target="hiddenInputs">
+          <% @selected_types.each do |type| %>
+            <input type="hidden" name="transaction_type[]" value="<%= type %>">
+          <% end %>
+        </div>
+        <div class="filter-chips-container">
+          <div class="filter-chip <%= @selected_types.include?('income') ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+               data-multi-select-filter-target="chip"
+               data-value="income"
+               data-action="click->multi-select-filter#toggle">
+            🟢 Receita
+          </div>
+          <div class="filter-chip <%= @selected_types.include?('expense') ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+               data-multi-select-filter-target="chip"
+               data-value="expense"
+               data-action="click->multi-select-filter#toggle">
+            🔴 Despesa
+          </div>
+          <div class="filter-chip <%= @selected_types.include?('transfer') ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+               data-multi-select-filter-target="chip"
+               data-value="transfer"
+               data-action="click->multi-select-filter#toggle">
+            ⇄ Transferência
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- Category Chips with 5-item limit -->
     <div>
-      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.cost_center") %></label>
-      <%= select_tag :cost_center_id, options_for_select([[t("transactions.filters.all_cost_centers"), ""]] + @cost_centers.map { |cc| [cc.name, cc.id] }, @selected_cost_center_id), onchange: "this.form.requestSubmit()", class: "form-input", style: "padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+      <div class="filter-group-title">
+        <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--primary);">label</span>
+        <span>Categorias (<%= @selected_category_ids.size.positive? ? "#{@selected_category_ids.size} selecionadas" : "Todas" %>)</span>
+      </div>
+      <div data-controller="multi-select-filter"
+           data-multi-select-filter-name-value="category_id"
+           data-multi-select-filter-selected-value="<%= @selected_category_ids.to_json %>">
+        <div data-multi-select-filter-target="hiddenInputs">
+          <% @selected_category_ids.each do |cat_id| %>
+            <input type="hidden" name="category_id[]" value="<%= cat_id %>">
+          <% end %>
+        </div>
+        <div data-controller="collapsible-list" data-collapsible-list-limit-value="5">
+          <div class="filter-chips-container">
+            <% @categories.each do |cat| %>
+              <div class="filter-chip <%= @selected_category_ids.include?(cat.id.to_s) ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+                   data-multi-select-filter-target="chip"
+                   data-collapsible-list-target="item"
+                   data-value="<%= cat.id %>"
+                   data-action="click->multi-select-filter#toggle">
+                🏷️ <%= cat.name %>
+              </div>
+            <% end %>
+          </div>
+          <% if @categories.size > 5 %>
+            <button type="button"
+                    class="btn btn-ghost"
+                    style="margin-top: 0.4rem; padding: 0.2rem 0.6rem; font-size: 0.75rem; color: var(--primary); display: inline-flex; align-items: center; gap: 0.25rem;"
+                    data-collapsible-list-target="button"
+                    data-action="click->collapsible-list#toggle">
+              <span class="material-symbols-outlined" style="font-size: 1rem;" data-collapsible-list-target="buttonIcon">expand_more</span>
+              <span data-collapsible-list-target="buttonText">Mostrar todos (+<%= @categories.size - 5 %>)</span>
+            </button>
+          <% end %>
+        </div>
+      </div>
     </div>
 
+    <!-- Supplier Chips -->
+    <% if @suppliers.any? %>
+      <div>
+        <div class="filter-group-title">
+          <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--primary);">store</span>
+          <span>Fornecedores / Clientes (<%= @selected_supplier_ids.size.positive? ? "#{@selected_supplier_ids.size} selecionados" : "Todos" %>)</span>
+        </div>
+        <div data-controller="multi-select-filter"
+             data-multi-select-filter-name-value="supplier_id"
+             data-multi-select-filter-selected-value="<%= @selected_supplier_ids.to_json %>">
+          <div data-multi-select-filter-target="hiddenInputs">
+            <% @selected_supplier_ids.each do |sup_id| %>
+              <input type="hidden" name="supplier_id[]" value="<%= sup_id %>">
+            <% end %>
+          </div>
+          <div data-controller="collapsible-list" data-collapsible-list-limit-value="5">
+            <div class="filter-chips-container">
+              <% @suppliers.each do |sup| %>
+                <div class="filter-chip <%= @selected_supplier_ids.include?(sup.id.to_s) ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+                     data-multi-select-filter-target="chip"
+                     data-collapsible-list-target="item"
+                     data-value="<%= sup.id %>"
+                     data-action="click->multi-select-filter#toggle">
+                  🏢 <%= sup.name %>
+                </div>
+              <% end %>
+            </div>
+            <% if @suppliers.size > 5 %>
+              <button type="button"
+                      class="btn btn-ghost"
+                      style="margin-top: 0.4rem; padding: 0.2rem 0.6rem; font-size: 0.75rem; color: var(--primary); display: inline-flex; align-items: center; gap: 0.25rem;"
+                      data-collapsible-list-target="button"
+                      data-action="click->collapsible-list#toggle">
+                <span class="material-symbols-outlined" style="font-size: 1rem;" data-collapsible-list-target="buttonIcon">expand_more</span>
+                <span data-collapsible-list-target="buttonText">Mostrar todos (+<%= @suppliers.size - 5 %>)</span>
+              </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Cost Center Chips -->
+    <% if @cost_centers.any? %>
+      <div>
+        <div class="filter-group-title">
+          <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--primary);">target</span>
+          <span>Centros de Custo (<%= @selected_cost_center_ids.size.positive? ? "#{@selected_cost_center_ids.size} selecionados" : "Todos" %>)</span>
+        </div>
+        <div data-controller="multi-select-filter"
+             data-multi-select-filter-name-value="cost_center_id"
+             data-multi-select-filter-selected-value="<%= @selected_cost_center_ids.to_json %>">
+          <div data-multi-select-filter-target="hiddenInputs">
+            <% @selected_cost_center_ids.each do |cc_id| %>
+              <input type="hidden" name="cost_center_id[]" value="<%= cc_id %>">
+            <% end %>
+          </div>
+          <div data-controller="collapsible-list" data-collapsible-list-limit-value="5">
+            <div class="filter-chips-container">
+              <% @cost_centers.each do |cc| %>
+                <div class="filter-chip <%= @selected_cost_center_ids.include?(cc.id.to_s) ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+                     data-multi-select-filter-target="chip"
+                     data-collapsible-list-target="item"
+                     data-value="<%= cc.id %>"
+                     data-action="click->multi-select-filter#toggle">
+                  🎯 <%= cc.name %>
+                </div>
+              <% end %>
+            </div>
+            <% if @cost_centers.size > 5 %>
+              <button type="button"
+                      class="btn btn-ghost"
+                      style="margin-top: 0.4rem; padding: 0.2rem 0.6rem; font-size: 0.75rem; color: var(--primary); display: inline-flex; align-items: center; gap: 0.25rem;"
+                      data-collapsible-list-target="button"
+                      data-action="click->collapsible-list#toggle">
+                <span class="material-symbols-outlined" style="font-size: 1rem;" data-collapsible-list-target="buttonIcon">expand_more</span>
+                <span data-collapsible-list-target="buttonText">Mostrar todos (+<%= @cost_centers.size - 5 %>)</span>
+              </button>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Payment Source Chips -->
     <div>
-      <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.payment_source") %></label>
-      <% payment_options = [[t("transactions.filters.all_sources"), ""]] +
-                           @bank_accounts.map { |b| ["🏦 #{b.name}", "bank_#{b.id}"] } +
-                           @credit_cards.map { |c| ["💳 #{c.name}", "card_#{c.id}"] } %>
-      <%= select_tag :payment_source, options_for_select(payment_options, @selected_payment_source), onchange: "this.form.requestSubmit()", class: "form-input", style: "padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+      <div class="filter-group-title">
+        <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--primary);">account_balance_wallet</span>
+        <span>Contas & Cartões (<%= @selected_payment_sources.size.positive? ? "#{@selected_payment_sources.size} selecionados" : "Todos" %>)</span>
+      </div>
+      <div data-controller="multi-select-filter"
+           data-multi-select-filter-name-value="payment_source"
+           data-multi-select-filter-selected-value="<%= @selected_payment_sources.to_json %>">
+        <div data-multi-select-filter-target="hiddenInputs">
+          <% @selected_payment_sources.each do |ps| %>
+            <input type="hidden" name="payment_source[]" value="<%= ps %>">
+          <% end %>
+        </div>
+        <div class="filter-chips-container">
+          <% @bank_accounts.each do |b| %>
+            <% ps_val = "bank_#{b.id}" %>
+            <div class="filter-chip <%= @selected_payment_sources.include?(ps_val) ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+                 data-multi-select-filter-target="chip"
+                 data-value="<%= ps_val %>"
+                 data-action="click->multi-select-filter#toggle">
+              🏦 <%= b.name %>
+            </div>
+          <% end %>
+
+          <% @credit_cards.each do |c| %>
+            <% ps_val = "card_#{c.id}" %>
+            <div class="filter-chip <%= @selected_payment_sources.include?(ps_val) ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+                 data-multi-select-filter-target="chip"
+                 data-value="<%= ps_val %>"
+                 data-action="click->multi-select-filter#toggle">
+              💳 <%= c.name %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.5rem;">
+      <%= link_to transactions_path, data: { turbo_frame: "transactions_content" }, class: "btn btn-ghost", style: "height: 34px; padding: 0 1rem; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.35rem; border: 1px solid var(--border, #27272a);" do %>
+        <span class="material-symbols-outlined" style="font-size: 1rem;">filter_alt_off</span>
+        <span>Limpar Filtros</span>
+      <% end %>
     </div>
   </div>
 <% end %>

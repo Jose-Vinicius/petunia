@@ -68,14 +68,18 @@ export default class extends Controller {
       tr.dataset.rowIndex = index
       tr.style.borderBottom = "1px solid var(--border, #27272a)"
 
+      const formattedAmount = row.amount !== null && row.amount !== undefined ? String(row.amount).replace('.', ',') : '0,00'
+
       tr.innerHTML = `
         <td style="padding: 0.4rem 0.3rem;"><input type="date" value="${row.date}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="date" /></td>
+        <td style="padding: 0.4rem 0.3rem;"><input type="date" value="${row.competence_date || ''}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="competence_date" /></td>
         <td style="padding: 0.4rem 0.3rem;"><input type="text" value="${this.escapeHtml(row.description)}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="description" /></td>
-        <td style="padding: 0.4rem 0.3rem;"><input type="number" step="0.01" value="${row.amount}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="amount" /></td>
+        <td style="padding: 0.4rem 0.3rem;"><input type="text" inputmode="decimal" value="${formattedAmount}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="amount" /></td>
         <td style="padding: 0.4rem 0.3rem;">
           <select class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="transaction_type">
             <option value="expense" ${row.transaction_type === "expense" ? "selected" : ""}>Despesa</option>
             <option value="income" ${row.transaction_type === "income" ? "selected" : ""}>Receita</option>
+            <option value="transfer" ${row.transaction_type === "transfer" ? "selected" : ""}>Transferência</option>
           </select>
         </td>
         <td style="padding: 0.4rem 0.3rem;">${this.buildSelectHtml("category", row.category, this.collections.categories)}</td>
@@ -83,6 +87,9 @@ export default class extends Controller {
         <td style="padding: 0.4rem 0.3rem;">${this.buildSelectHtml("cost_center", row.cost_center, this.collections.cost_centers, true)}</td>
         <td style="padding: 0.4rem 0.3rem;">${this.buildSelectHtml("bank_account", row.bank_account, this.collections.bank_accounts, true)}</td>
         <td style="padding: 0.4rem 0.3rem;">${this.buildSelectHtml("credit_card", row.credit_card, this.collections.credit_cards, true)}</td>
+        <td style="padding: 0.4rem 0.3rem; text-align: center;">
+          <input type="checkbox" ${row.is_refund ? "checked" : ""} class="form-checkbox" data-field="is_refund" style="width: 16px; height: 16px;" />
+        </td>
         <td style="padding: 0.4rem 0.3rem; text-align: center;">
           <button type="button" class="btn btn-ghost" style="padding: 0.2rem 0.4rem; color: var(--error, #ef4444);" data-action="click->import-preview#removeRow">
             <span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle;">delete</span>
@@ -179,9 +186,12 @@ export default class extends Controller {
 
     trs.forEach(tr => {
       const date = tr.querySelector('[data-field="date"]')?.value
+      const competence_date = tr.querySelector('[data-field="competence_date"]')?.value
       const description = tr.querySelector('[data-field="description"]')?.value
-      const amount = tr.querySelector('[data-field="amount"]')?.value
+      const rawAmount = tr.querySelector('[data-field="amount"]')?.value || '0'
+      const amount = rawAmount.replace(/\./g, '').replace(',', '.')
       const transaction_type = tr.querySelector('[data-field="transaction_type"]')?.value
+      const is_refund = tr.querySelector('[data-field="is_refund"]')?.checked || false
 
       const catVal = tr.querySelector('[data-field="category"]')?.value
       const supVal = tr.querySelector('[data-field="supplier"]')?.value
@@ -191,9 +201,11 @@ export default class extends Controller {
 
       payloadTransactions.push({
         date: date,
+        competence_date: competence_date,
         description: description,
         amount: amount,
         transaction_type: transaction_type,
+        is_refund: is_refund,
         category: this.parseSelectPayload(catVal),
         supplier: this.parseSelectPayload(supVal),
         cost_center: this.parseSelectPayload(ccVal),

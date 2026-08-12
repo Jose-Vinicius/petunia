@@ -1,4 +1,4 @@
-<div style="max-width: 900px; margin: 2rem auto; padding: 0 1rem;">
+<div style="max-width: 96%; width: 100%; margin: 1.5rem auto; padding: 0 1rem;">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
     <div>
       <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
@@ -57,6 +57,26 @@
                     <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">group</span>
                     <%= t("accounts.index.manage_members") %>
                   <% end %>
+
+                  <details style="display: inline-block; text-align: left; position: relative;">
+                    <summary class="btn btn-ghost" style="padding: 0.3rem 0.5rem; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;" title="Opções avançadas de manutenção">
+                      <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--text-secondary);">warning</span>
+                      <span style="font-size: 0.75rem;">Zona de Perigo</span>
+                    </summary>
+                    <div style="position: absolute; right: 0; margin-top: 0.4rem; background: #18181b; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; padding: 0.85rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7); z-index: 50; width: 280px; white-space: normal;">
+                      <div style="font-weight: 600; color: #ef4444; font-size: 0.82rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.3rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1rem;">backspace</span>
+                        <span><%= t("accounts.reset.title") %></span>
+                      </div>
+                      <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0 0 0.75rem 0; line-height: 1.35;">
+                        <%= t("accounts.reset.warning") %>
+                      </p>
+                      <%= button_to reset_data_account_path(account), method: :post, data: { turbo_confirm: t("accounts.reset.confirm", name: account.name) }, class: "btn btn-ghost", style: "width: 100%; color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.78rem; padding: 0.4rem; justify-content: center; display: flex; align-items: center; gap: 0.3rem;" do %>
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem;">restart_alt</span>
+                        <span><%= t("accounts.reset.button") %></span>
+                      <% end %>
+                    </div>
+                  </details>
                 <% end %>
               </div>
             </td>

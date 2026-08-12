@@ -32,6 +32,22 @@ class AccountsController < ApplicationController
     end
   end
 
+  def reset_data
+    account = current_user.accounts.find_by(id: params[:id])
+
+    if account
+      account_user = current_user.account_users.find_by(account: account)
+      if account_user&.role == "owner"
+        account.reset_data!
+        redirect_to accounts_path, status: :see_other, notice: t("accounts.reset.success", name: account.name)
+      else
+        redirect_to accounts_path, status: :see_other, alert: t("accounts.reset.unauthorized")
+      end
+    else
+      redirect_to accounts_path, status: :see_other, alert: t("accounts.reset.not_found")
+    end
+  end
+
   private
 
   def account_params

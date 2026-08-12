@@ -20,12 +20,14 @@ RSpec.describe 'Página Inicial (Home)', type: :request do
     end
 
     context 'quando o usuário está autenticado' do
-      it 'exibe o botão de sair e o e-mail do usuário' do
+      it 'exibe o painel financeiro (dashboard), o e-mail do usuário e botão de sair' do
         usuario = create(:user, email: 'joao@petunia.local')
         sign_in usuario
 
         get root_path
 
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include('Painel Financeiro')
         expect(response.body).to include('joao@petunia.local')
         expect(response.body).to include('Sair')
       end

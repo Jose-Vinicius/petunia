@@ -74,7 +74,7 @@ a:hover {
 .app-main {
   flex: 1;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
@@ -110,7 +110,7 @@ a:hover {
 /* Flash Messages */
 .flash-container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 1rem auto 0 auto;
   padding: 0 1.5rem;
 }
@@ -671,5 +671,94 @@ a:hover {
   flex-direction: column;
   gap: 0.75rem;
   background: var(--surface-hover, #18181b);
+}
+
+/* Multi-select filter chips & charts */
+.filter-group-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary, #a1a1aa);
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.filter-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease-in-out;
+  line-height: 1.2;
+}
+
+.filter-chip--inactive {
+  background: var(--surface-hover, #18181b);
+  border: 1px solid var(--border, #27272a);
+  color: var(--text-secondary, #a1a1aa);
+}
+
+.filter-chip--inactive:hover {
+  border-color: var(--primary, #a78bfa);
+  color: var(--text-primary, #f4f4f5);
+  background: rgba(167, 139, 250, 0.08);
+}
+
+.filter-chip--active {
+  background: rgba(167, 139, 250, 0.18);
+  border: 1px solid rgba(167, 139, 250, 0.5);
+  color: var(--primary, #a78bfa);
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.15);
+}
+
+.filter-chip--active:hover {
+  background: rgba(167, 139, 250, 0.25);
+  border-color: var(--primary, #a78bfa);
+}
+
+.chart-card {
+  background: var(--surface-card, #121215);
+  border: 1px solid var(--border, #27272a);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.chart-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #f4f4f5);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chart-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 220px;
 }
 

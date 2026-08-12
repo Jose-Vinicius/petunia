@@ -34,6 +34,14 @@ RSpec.describe Transaction, type: :model do
       expect(tx.errors[:amount]).to include("deve ser maior que 0")
     end
 
+    it 'aceita valor numérico informado como string com vírgula (ex: "15,17" ou "1.200,50")' do
+      tx1 = build(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, amount: "15,17")
+      expect(tx1.amount).to eq(15.17)
+
+      tx2 = build(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, amount: "1.200,50")
+      expect(tx2.amount).to eq(1200.50)
+    end
+
     it 'rejeita receitas sem conta bancária' do
       tx = build(:transaction, :income, account: account, category: category, bank_account: nil)
       expect(tx).not_to be_valid
@@ -50,6 +58,15 @@ RSpec.describe Transaction, type: :model do
       tx = build(:transaction, :expense, account: account, category: category, bank_account: nil, credit_card: nil)
       expect(tx).not_to be_valid
       expect(tx.errors[:base]).to include("Informe uma Conta Bancária ou um Cartão de Crédito como forma de pagamento")
+    end
+
+    it 'permite estorno apenas para lançamentos em cartão de crédito' do
+      tx_bank = build(:transaction, :expense, account: account, category: category, supplier: supplier, bank_account: bank_account, credit_card: nil, is_refund: true)
+      expect(tx_bank).not_to be_valid
+      expect(tx_bank.errors[:is_refund]).to include("só pode ser aplicado em lançamentos de cartão de crédito")
+
+      tx_card = build(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, is_refund: true)
+      expect(tx_card).to be_valid
     end
 
     it 'impede associar categoria de outro ambiente' do
@@ -74,6 +91,25 @@ RSpec.describe Transaction, type: :model do
       tx = build(:transaction, account: account, category: category, bank_account: other_bank)
       expect(tx).not_to be_valid
       expect(tx.errors[:bank_account]).to include("inválida para esta conta")
+    end
+
+    describe 'atribuição de data de competência (competence_date)' do
+      let(:card_fechamento_25) { create(:credit_card, account: account, bank_account: bank_account, closing_day: 25, due_day: 5) }
+
+      it 'calcula automaticamente a data da fatura para lançamento em cartão' do
+        tx = create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: card_fechamento_25, bank_account: nil, date: Date.new(2026, 8, 20), competence_date: nil)
+        expect(tx.competence_date).to eq(Date.new(2026, 9, 5))
+      end
+
+      it 'atribui a mesma data da compra para lançamentos em conta bancária quando não informada' do
+        tx = create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, date: Date.new(2026, 8, 10), competence_date: nil)
+        expect(tx.competence_date).to eq(Date.new(2026, 8, 10))
+      end
+
+      it 'preserva a data de competência caso fornecida manualmente' do
+        tx = create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: card_fechamento_25, bank_account: nil, date: Date.new(2026, 8, 20), competence_date: Date.new(2026, 11, 5))
+        expect(tx.competence_date).to eq(Date.new(2026, 11, 5))
+      end
     end
   end
 end

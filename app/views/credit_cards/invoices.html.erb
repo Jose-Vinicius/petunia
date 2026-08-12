@@ -1,0 +1,158 @@
+<div style="max-width: 96%; width: 100%; margin: 1.5rem auto; padding: 0 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+        <%= link_to credit_cards_path, class: "btn btn-ghost", style: "padding: 0.2rem 0.4rem;" do %>
+          <span class="material-symbols-outlined" style="font-size: 1.2rem;">arrow_back</span>
+        <% end %>
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+          Fatura: <%= @credit_card.name %>
+        </h1>
+      </div>
+      <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem; padding-left: 2rem;">
+        Fechamento dia <strong><%= @credit_card.closing_day %></strong> • Vencimento dia <strong><%= @credit_card.due_day %></strong>
+      </p>
+    </div>
+
+    <!-- Mês da Fatura Selector -->
+    <%= form_with url: invoices_credit_card_path(@credit_card), method: :get, data: { turbo_frame: "_self" }, style: "display: flex; align-items: center; gap: 0.5rem;" do |f| %>
+      <label style="font-size: 0.85rem; color: var(--text-secondary);">Mês da Fatura:</label>
+      <input type="month" name="month" value="<%= @selected_month.strftime('%Y-%m') %>" onchange="this.form.requestSubmit()" class="form-input" style="padding: 0.4rem 0.6rem; font-size: 0.9rem;" />
+    <% end %>
+  </div>
+
+  <!-- Summary Card -->
+  <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+          <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Valor Líquido da Fatura</span>
+          <% if @is_paid %>
+            <span style="background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.3rem;">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">check_circle</span>
+              FATURA PAGA
+            </span>
+          <% else %>
+            <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.3rem;">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">pending</span>
+              EM ABERTO
+            </span>
+          <% end %>
+        </div>
+        <div style="font-size: 2rem; font-weight: 700; color: <%= @is_paid ? '#34d399' : '#ef4444' %>;">
+          <%= number_to_currency(@invoice_total, unit: "R$ ", separator: ",", delimiter: ".") %>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.35rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+          <span>🛒 Total de Compras: <strong><%= number_to_currency(@charges_total, unit: "R$ ", separator: ",", delimiter: ".") %></strong></span>
+          <% if @refunds_total > 0 %>
+            <span style="color: #34d399;">Reembolsos/Estornos: <strong>- <%= number_to_currency(@refunds_total, unit: "R$ ", separator: ",", delimiter: ".") %></strong></span>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @is_paid %>
+        <div style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 8px; padding: 1rem; text-align: right;">
+          <div style="color: #34d399; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.35rem; justify-content: flex-end;">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem;">verified</span>
+            <span>Paga em <%= l(@invoice_payment.paid_at, format: :short) rescue @invoice_payment.paid_at.to_s %></span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+            Debitado de <strong><%= @invoice_payment.bank_account.name %></strong> (R$ <%= number_with_precision(@invoice_payment.amount, precision: 2, separator: ",") %>)
+          </div>
+          <%= button_to unpay_invoice_credit_card_path(@credit_card, month: @selected_month.strftime('%Y-%m')), method: :post, data: { turbo_confirm: "Tem certeza que deseja desfazer o pagamento desta fatura? O limite do cartão voltará a ser ocupado." }, class: "btn btn-ghost", style: "color: #ef4444; font-size: 0.8rem; padding: 0.25rem 0.5rem; float: right;" do %>
+            <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">undo</span>
+            Desfazer Pagamento
+          <% end %>
+        </div>
+      <% elsif @invoice_total > 0 %>
+        <details style="background: var(--surface-container, #18181b); border: 1px solid var(--border, #27272a); border-radius: 8px; padding: 0.85rem 1rem;">
+          <summary style="cursor: pointer; font-weight: 600; color: var(--primary, #a78bfa); display: flex; align-items: center; gap: 0.4rem;">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem;">payments</span>
+            <span>Pagar Fatura</span>
+          </summary>
+          <div style="margin-top: 1rem; border-top: 1px solid var(--border, #27272a); padding-top: 1rem;">
+            <%= form_with url: pay_invoice_credit_card_path(@credit_card), method: :post, local: true do |f| %>
+              <%= hidden_field_tag :month, @selected_month.strftime('%Y-%m') %>
+              
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Debitar da Conta Bancária</label>
+                <%= select_tag :bank_account_id, options_for_select(@bank_accounts.map { |b| [b.name, b.id] }), class: "form-input", required: true, style: "padding: 0.4rem; font-size: 0.85rem;" %>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Data do Pagamento</label>
+                <input type="date" name="payment_date" value="<%= Date.current.strftime('%Y-%m-%d') %>" class="form-input" style="padding: 0.4rem; font-size: 0.85rem;" required />
+              </div>
+
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Valor Pago (R$)</label>
+                <input type="text" inputmode="decimal" name="amount" value="<%= number_with_precision(@invoice_total, precision: 2, separator: ",") %>" class="form-input" style="padding: 0.4rem; font-size: 0.85rem;" required />
+              </div>
+
+              <%= f.submit "Confirmar Pagamento", class: "btn btn-primary", style: "width: 100%; font-size: 0.85rem; padding: 0.5rem;" %>
+            <% end %>
+          </div>
+        </details>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Transactions Table -->
+  <h2 style="font-size: 1.15rem; font-weight: 600; color: var(--text-primary); margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+    <span class="material-symbols-outlined" style="color: var(--primary);">receipt_long</span>
+    Lançamentos nesta Fatura (<%= @transactions.count %>)
+  </h2>
+
+  <% if @transactions.empty? %>
+    <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 3rem 1.5rem; text-align: center; color: var(--text-secondary);">
+      <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--border, #27272a); margin-bottom: 1rem;">inbox</span>
+      <p style="margin: 0;">Nenhuma compra cadastrada nesta fatura.</p>
+    </div>
+  <% else %>
+    <div class="table-responsive" style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border, #27272a); background: var(--surface-hover, #18181b); color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
+            <th style="padding: 0.85rem 1rem;">Data Compra</th>
+            <th style="padding: 0.85rem 1rem;">Fatura (Competência)</th>
+            <th style="padding: 0.85rem 1rem;">Descrição</th>
+            <th style="padding: 0.85rem 1rem;">Categoria</th>
+            <th style="padding: 0.85rem 1rem;">Fornecedor</th>
+            <th style="padding: 0.85rem 1rem; text-align: right;">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @transactions.each do |tx| %>
+            <tr style="border-bottom: 1px solid var(--border, #27272a);">
+              <td style="padding: 0.85rem 1rem; color: var(--text-secondary);">
+                <%= l(tx.date, format: :short) rescue tx.date.to_s %>
+              </td>
+              <td style="padding: 0.85rem 1rem; color: var(--primary); font-weight: 500;">
+                <%= l(tx.competence_date, format: :short) rescue tx.competence_date.to_s %>
+              </td>
+              <td style="padding: 0.85rem 1rem; font-weight: 500; color: var(--text-primary);">
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <span><%= tx.description %></span>
+                  <% if tx.is_refund? %>
+                    <span style="font-size: 0.7rem; background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.1rem 0.4rem; border-radius: 999px; font-weight: 600;">
+                      Estorno
+                    </span>
+                  <% end %>
+                </div>
+              </td>
+              <td style="padding: 0.85rem 1rem; color: var(--text-secondary);">
+                🏷️ <%= tx.category.name %>
+              </td>
+              <td style="padding: 0.85rem 1rem; color: var(--text-secondary);">
+                <%= tx.supplier&.name || "-" %>
+              </td>
+              <td style="padding: 0.85rem 1rem; text-align: right; font-weight: 600; color: <%= tx.income? || tx.is_refund? ? '#34d399' : '#ef4444' %>;">
+                <%= tx.income? ? '+' : '-' %> <%= number_to_currency(tx.amount, unit: "R$ ", separator: ",", delimiter: ".") %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

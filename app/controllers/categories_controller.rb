@@ -3,7 +3,9 @@ class CategoriesController < ApplicationController
   before_action :set_category, only: [ :edit, :update, :destroy ]
 
   def index
-    @categories = current_account.categories.order(default: :desc, name: :asc)
+    scope = current_account.categories
+    scope = scope.where("LOWER(name) LIKE ?", "%#{params[:search].downcase.strip}%") if params[:search].present?
+    @categories = scope.order(default: :desc, name: :asc)
   end
 
   def new

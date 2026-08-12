@@ -79,6 +79,34 @@ RSpec.describe "Importação por Planilha (Imports)", type: :request do
         expect(tx).to be_present
         expect(tx.amount).to eq(150.00)
       end
+
+      it "cria automaticamente nova conta bancária e cartão de crédito se forem especificados como novos" do
+        payload = [
+          {
+            date: "08/08/2026",
+            description: "Festval Catuaicascavelbra",
+            amount: 15.17,
+            transaction_type: "expense",
+            category: { id: nil, name: "alimento" },
+            supplier: { id: nil, name: "Festval Catuai" },
+            cost_center: { id: nil, name: "beatriz" },
+            bank_account: { id: nil, name: "Itau" },
+            credit_card: { id: nil, name: "Azul" }
+          }
+        ]
+
+        expect {
+          post imports_path, params: { transactions: payload }, as: :json
+        }.to change(account.transactions, :count).by(1)
+         .and change(account.bank_accounts, :count).by(1)
+         .and change(account.credit_cards, :count).by(1)
+
+        expect(response).to have_http_status(:ok)
+        tx = account.transactions.find_by(description: "Festval Catuaicascavelbra")
+        expect(tx).to be_present
+        expect(tx.credit_card.name).to eq("Azul")
+        expect(tx.credit_card.bank_account.name).to eq("Itau")
+      end
     end
 
     describe "POST /imports (envio direto via form tradicional)" do
@@ -102,7 +130,7 @@ RSpec.describe "Importação por Planilha (Imports)", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.header['Content-Type']).to include('text/csv')
-        expect(response.body).to include("Data;Descrição;Valor;Tipo;Categoria;Fornecedor;Centro de Custo;Conta Bancária;Cartão de Crédito")
+        expect(response.body).to include("Data;Data Competência;Descrição;Valor;Tipo;Categoria;Fornecedor;Centro de Custo;Conta Bancária;Cartão de Crédito;Estorno")
       end
 
       it "faz o download do modelo com dados de exemplo" do

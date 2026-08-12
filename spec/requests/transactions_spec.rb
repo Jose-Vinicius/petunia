@@ -33,9 +33,18 @@ RSpec.describe "Transações (Transactions)", type: :request do
         income_tx = create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, description: "Receita Freelance")
         expense_tx = create(:transaction, :expense, account: account, category: category, supplier: supplier, bank_account: bank_account, description: "Supermercado")
 
-        get transactions_path, params: { transaction_type: "income", month: "all" }
+        get transactions_path, params: { transaction_type: "income", period: "all" }
         expect(response.body).to include("Receita Freelance")
         expect(response.body).not_to include("Supermercado")
+      end
+
+      it "filtra transações por intervalo de datas (start_date e end_date)" do
+        tx1 = create(:transaction, account: account, category: category, bank_account: bank_account, date: Date.new(2026, 1, 15), description: "Transação de Janeiro")
+        tx2 = create(:transaction, account: account, category: category, bank_account: bank_account, date: Date.new(2026, 3, 20), description: "Transação de Março")
+
+        get transactions_path, params: { start_date: "2026-03-01", end_date: "2026-03-31" }
+        expect(response.body).to include("Transação de Março")
+        expect(response.body).not_to include("Transação de Janeiro")
       end
     end
 
@@ -86,7 +95,7 @@ RSpec.describe "Transações (Transactions)", type: :request do
           }.to change(account.transactions, :count).by(1)
 
           expect(response).to redirect_to(transactions_path)
-          follow_redirect!
+          get transactions_path, params: { period: "all" }
           expect(response.body).to include("Restaurante")
         end
       end
@@ -145,6 +154,22 @@ RSpec.describe "Transações (Transactions)", type: :request do
         expect(response).to redirect_to(transactions_path)
         expect(tx.reload.description).to eq("Nova Descrição")
         expect(tx.amount).to eq(150)
+      end
+
+      it "atualiza a data da transação preservando a competência cadastrada para transações registradas" do
+        card = create(:credit_card, account: account, bank_account: bank_account, closing_day: 25, due_day: 5)
+        tx = create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: card, bank_account: nil, date: Date.new(2026, 8, 20))
+        expect(tx.competence_date).to eq(Date.new(2026, 9, 5))
+
+        patch transaction_path(tx), params: {
+          transaction: {
+            date: "2026-08-26",
+            supplier_id: supplier.id
+          }
+        }
+        expect(response).to redirect_to(transactions_path)
+        expect(tx.reload.date).to eq(Date.new(2026, 8, 26))
+        expect(tx.competence_date).to eq(Date.new(2026, 9, 5))
       end
     end
 

@@ -3,7 +3,9 @@ class BankAccountsController < ApplicationController
   before_action :set_bank_account, only: [ :edit, :update, :destroy ]
 
   def index
-    @bank_accounts = current_account.bank_accounts
+    scope = current_account.bank_accounts
+    scope = scope.where("LOWER(name) LIKE ?", "%#{params[:search].downcase.strip}%") if params[:search].present?
+    @bank_accounts = scope.order(:name)
   end
 
   def new

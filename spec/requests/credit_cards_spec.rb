@@ -142,5 +142,70 @@ RSpec.describe 'Cartões de Crédito (CreditCards)', type: :request do
         expect(flash[:notice]).to include('removido com sucesso')
       end
     end
+
+    describe 'GET /credit_cards/:id/invoices' do
+      it 'exibe os detalhes da fatura do mês selecionado' do
+        cartao = create(:credit_card, account: conta, bank_account: banco, closing_day: 25, due_day: 5)
+        cat = conta.categories.first
+        sup = create(:supplier, account: conta)
+
+        create(:transaction, :expense, account: conta, category: cat, supplier: sup, credit_card: cartao, bank_account: nil, amount: 250, date: Date.new(2026, 8, 20), description: "Compra Mercado")
+
+        get invoices_credit_card_path(cartao), params: { month: "2026-09" }
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include("Fatura: #{cartao.name}")
+        expect(response.body).to include("Compra Mercado")
+        expect(response.body).to include("250,00")
+      end
+    end
+
+    describe 'POST /credit_cards/:id/pay_invoice' do
+      it 'registra o pagamento de fatura debitando da conta bancária escolhida' do
+        cartao = create(:credit_card, account: conta, bank_account: banco)
+
+        expect {
+          post pay_invoice_credit_card_path(cartao), params: {
+            bank_account_id: banco.id,
+            payment_date: "2026-09-05",
+            amount: 500.00,
+            month: "2026-09"
+          }
+        }.to change(conta.transactions, :count).by(1)
+
+        expect(response).to redirect_to(invoices_credit_card_path(cartao, month: "2026-09"))
+        follow_redirect!
+        expect(response.body).to include("Pagamento da fatura registrado com sucesso")
+
+        tx_pagamento = conta.transactions.find_by(amount: 500.00)
+        expect(tx_pagamento.bank_account).to eq(banco)
+        expect(tx_pagamento.expense?).to be true
+
+        payment = cartao.invoice_payment_for(Date.new(2026, 9, 1))
+        expect(payment).to be_present
+        expect(payment.amount).to eq(500.00)
+      end
+    end
+
+    describe 'POST /credit_cards/:id/unpay_invoice' do
+      it 'cancela o pagamento registrado e atualiza o limite do cartão' do
+        cartao = create(:credit_card, account: conta, bank_account: banco)
+        post pay_invoice_credit_card_path(cartao), params: {
+          bank_account_id: banco.id,
+          payment_date: "2026-09-05",
+          amount: 500.00,
+          month: "2026-09"
+        }
+
+        expect(cartao.invoice_paid_for?(Date.new(2026, 9, 1))).to be true
+
+        expect {
+          post unpay_invoice_credit_card_path(cartao), params: { month: "2026-09" }
+        }.to change(CreditCardInvoicePayment, :count).by(-1)
+
+        expect(response).to redirect_to(invoices_credit_card_path(cartao, month: "2026-09"))
+        expect(cartao.invoice_paid_for?(Date.new(2026, 9, 1))).to be false
+      end
+    end
   end
 end

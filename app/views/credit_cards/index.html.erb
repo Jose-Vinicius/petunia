@@ -1,4 +1,4 @@
-<div style="max-width: 900px; margin: 2rem auto; padding: 0 1rem;">
+<div style="max-width: 96%; width: 100%; margin: 1.5rem auto; padding: 0 1rem;">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
     <div>
       <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
@@ -24,6 +24,27 @@
     </div>
   <% end %>
 
+  <%= form_with url: credit_cards_path, method: :get, style: "background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;" do |f| %>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem 1.25rem; align-items: end;">
+      <div style="grid-column: span 2 / -1;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;">Cartão de Crédito</label>
+        <input type="text" name="search" value="<%= params[:search] %>" placeholder="Pesquise por nome do cartão..." class="form-input" style="height: 38px; padding: 0.4rem 0.75rem; font-size: 0.85rem;" />
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button type="submit" class="btn btn-secondary" style="height: 38px; padding: 0 1.25rem; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--border, #27272a);">
+          <span class="material-symbols-outlined" style="font-size: 1.1rem;">search</span>
+          <span>Pesquisar</span>
+        </button>
+
+        <%= link_to credit_cards_path, class: "btn btn-ghost", style: "height: 38px; padding: 0 1.25rem; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--border, #27272a);" do %>
+          <span class="material-symbols-outlined" style="font-size: 1.1rem;">filter_alt_off</span>
+          <span>Limpar</span>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <% if @credit_cards.empty? %>
     <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 3rem 1.5rem; text-align: center; color: var(--text-secondary);">
       <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--border, #27272a); margin-bottom: 1rem;">credit_card</span>
@@ -36,13 +57,18 @@
         <thead>
           <tr style="border-bottom: 1px solid var(--border, #27272a); background: var(--surface-hover, #18181b); color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
             <th style="padding: 0.85rem 1rem;">Descrição</th>
-            <th style="padding: 0.85rem 1rem;">Conta Bancária Vinculada</th>
-            <th style="padding: 0.85rem 1rem; text-align: right;">Limite</th>
-            <th style="padding: 0.85rem 1rem; text-align: right; width: 160px;">Ações</th>
+            <th style="padding: 0.85rem 1rem;">Conta Bancária</th>
+            <th style="padding: 0.85rem 1rem;">Fechamento / Vencimento</th>
+            <th style="padding: 0.85rem 1rem; text-align: right;">Gasto Atual</th>
+            <th style="padding: 0.85rem 1rem; text-align: right;">Limite Total</th>
+            <th style="padding: 0.85rem 1rem; text-align: right;">Disponível</th>
+            <th style="padding: 0.85rem 1rem; text-align: right; width: 220px;">Ações</th>
           </tr>
         </thead>
         <tbody>
           <% @credit_cards.each do |credit_card| %>
+            <% card_spent = credit_card.spent_unpaid %>
+            <% card_avail = [credit_card.limit - card_spent, 0].max %>
             <tr style="border-bottom: 1px solid var(--border, #27272a);">
               <td style="padding: 0.85rem 1rem;">
                 <div style="display: flex; align-items: center; gap: 0.6rem;">
@@ -56,18 +82,30 @@
                   <span><%= credit_card.bank_account.name %></span>
                 </div>
               </td>
-              <td style="padding: 0.85rem 1rem; text-align: right; font-weight: 600; color: #34d399;">
+              <td style="padding: 0.85rem 1rem; color: var(--text-secondary); font-size: 0.85rem;">
+                <div>🔒 Fechamento: <strong>Dia <%= credit_card.closing_day %></strong></div>
+                <div>📅 Vencimento: <strong>Dia <%= credit_card.due_day %></strong></div>
+              </td>
+              <td style="padding: 0.85rem 1rem; text-align: right; font-weight: 700; color: #f472b6;">
+                <%= number_to_currency(card_spent, unit: "R$ ", separator: ",", delimiter: ".") %>
+              </td>
+              <td style="padding: 0.85rem 1rem; text-align: right; font-weight: 600; color: var(--text-primary);">
                 <%= number_to_currency(credit_card.limit, unit: "R$ ", separator: ",", delimiter: ".") %>
+              </td>
+              <td style="padding: 0.85rem 1rem; text-align: right; font-weight: 700; color: #34d399;">
+                <%= number_to_currency(card_avail, unit: "R$ ", separator: ",", delimiter: ".") %>
               </td>
               <td style="padding: 0.85rem 1rem; text-align: right; white-space: nowrap;">
                 <div style="display: flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
+                  <%= link_to invoices_credit_card_path(credit_card), class: "btn btn-secondary", style: "padding: 0.3rem 0.6rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.2rem;" do %>
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">receipt_long</span>
+                    Faturas
+                  <% end %>
                   <%= link_to edit_credit_card_path(credit_card), class: "btn btn-ghost", style: "padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
                     <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">edit</span>
-                    <%= t("helpers.submit.update", model: "") %>
                   <% end %>
                   <%= button_to credit_card_path(credit_card), method: :delete, data: { turbo_confirm: t("credit_cards.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
                     <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">delete</span>
-                    <%= t("account_users.index.remove") %>
                   <% end %>
                 </div>
               </td>

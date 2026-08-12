@@ -5,14 +5,16 @@ class TransactionImporterService
 
   HEADER_MAP = {
     date: [ "data", "date", "dt", "data transacao", "data transação" ],
+    competence_date: [ "competencia", "competência", "data_competencia", "data_competência", "fatura", "data competencia", "data competência", "data de competencia", "data de competência", "competencia/fatura", "competência/fatura", "fatura/competencia" ],
     description: [ "descrição", "descricao", "description", "historico", "histórico", "detalhe", "memorando" ],
     amount: [ "valor", "amount", "val", "quantia" ],
     type: [ "tipo", "type", "natureza", "operacao", "operação" ],
     category: [ "categoria", "category" ],
     supplier: [ "fornecedor", "cliente", "supplier", "payee", "local", "estabelecimentos" ],
-    cost_center: [ "centro_de_custo", "cost_center", "centro de custo", "centro de custo" ],
+    cost_center: [ "centro_de_custo", "cost_center", "centro de custo" ],
     bank_account: [ "banco", "bank", "bank_account", "conta", "conta bancaria", "conta bancária", "conta_bancaria" ],
-    credit_card: [ "cartao", "cartão", "credit_card", "cartao_de_credito", "cartão de crédito", "cartao de credito", "cartao_credito" ]
+    credit_card: [ "cartao", "cartão", "credit_card", "cartao_de_credito", "cartão de crédito", "cartao de credito", "cartao_credito" ],
+    is_refund: [ "estorno", "reembolso", "is_refund", "refund" ]
   }.freeze
 
   def initialize(file_path:, filename:, account:, bank_account_id: nil, credit_card_id: nil)
@@ -54,6 +56,7 @@ class TransactionImporterService
       raw_amount, is_negative = parse_amount(row_data[:amount])
       tx_type = determine_transaction_type(row_data[:type], is_negative)
       parsed_date = parse_date(row_data[:date]) || Date.current
+      parsed_competence_date = parse_date(row_data[:competence_date])
       description = row_data[:description].to_s.strip.presence || "Lançamento Importado"
 
       cat_name = row_data[:category].to_s.strip
@@ -74,11 +77,23 @@ class TransactionImporterService
       matched_card = credit_cards.find { |c| c.name.casecmp?(card_name) } if card_name.present?
       matched_card ||= credit_cards.find_by(id: @credit_card_id) if @credit_card_id.present?
 
+      if parsed_competence_date.nil?
+        if matched_card.present?
+          parsed_competence_date = matched_card.invoice_competence_for(parsed_date)
+        else
+          parsed_competence_date = parsed_date
+        end
+      end
+
+      is_refund_flag = determine_is_refund(row_data)
+
       preview_rows << {
         date: parsed_date.strftime("%Y-%m-%d"),
+        competence_date: parsed_competence_date.strftime("%Y-%m-%d"),
         description: description,
         amount: raw_amount,
         transaction_type: tx_type,
+        is_refund: is_refund_flag,
         category: {
           name: cat_name.presence || (cat&.name || "Alimentação"),
           id: cat&.id,
@@ -182,8 +197,18 @@ class TransactionImporterService
 
   def extract_headers(first_row)
     first_row.map do |cell|
-      col_name = cell.to_s.strip.downcase
-      HEADER_MAP.find { |_key, aliases| aliases.include?(col_name) }&.first || col_name.to_sym
+      raw = cell.to_s.strip.downcase
+      norm = ActiveSupport::Inflector.transliterate(raw).gsub(/[^a-z0-9]/, "")
+
+      match = HEADER_MAP.find do |_key, aliases|
+        aliases.any? do |a|
+          a_raw = a.to_s.strip.downcase
+          a_norm = ActiveSupport::Inflector.transliterate(a_raw).gsub(/[^a-z0-9]/, "")
+          raw == a_raw || norm == a_norm
+        end
+      end
+
+      match&.first || raw.to_sym
     end
   end
 
@@ -207,15 +232,39 @@ class TransactionImporterService
 
     payment_attrs = assign_payment_source(data, tx_type)
 
-    {
+    parsed_competence_date = parse_date(data[:competence_date])
+    if parsed_competence_date.nil?
+      if payment_attrs[:credit_card].present?
+        parsed_competence_date = payment_attrs[:credit_card].invoice_competence_for(parsed_date)
+      else
+        parsed_competence_date = parsed_date
+      end
+    end
+
+    is_refund_val = determine_is_refund(data)
+
+    attrs = {
       transaction_type: tx_type,
       amount: raw_amount,
       description: description,
       date: parsed_date,
+      competence_date: parsed_competence_date,
       category: category,
       supplier: supplier,
-      cost_center: cost_center
+      cost_center: cost_center,
+      is_refund: (payment_attrs[:credit_card].present? && is_refund_val)
     }.merge(payment_attrs)
+
+    attrs
+  end
+
+  def determine_is_refund(data)
+    ref_val = data[:is_refund].to_s.strip
+    return true if ref_val =~ /\A(sim|true|1|s|estorno|reembolso)\z/i
+
+    desc = data[:description].to_s.strip
+    type_str = data[:type].to_s.strip
+    (desc =~ /(estorno|reembolso)/i || type_str =~ /(estorno|reembolso)/i) ? true : false
   end
 
   def parse_amount(val)
@@ -240,9 +289,14 @@ class TransactionImporterService
   end
 
   def determine_transaction_type(type_val, is_negative)
+    type_str = type_val.to_s.strip.downcase
+
+    if type_str =~ /(transferencia|transferência|transf|transfer)/
+      return "transfer"
+    end
+
     return "expense" if is_negative
 
-    type_str = type_val.to_s.strip.downcase
     if type_str =~ /(despesa|saida|saída|expense|debito|débito)/
       "expense"
     else
@@ -250,20 +304,53 @@ class TransactionImporterService
     end
   end
 
-  def parse_date(val)
+  def self.parse_date(val)
     return nil if val.blank?
-    return val if val.is_a?(Date) || val.is_a?(Time) || val.is_a?(DateTime)
+    return val.to_date if val.is_a?(Date) || val.is_a?(Time) || val.is_a?(DateTime)
 
     str = val.to_s.strip
-    if str =~ %r{\A\d{1,2}/\d{1,2}/\d{4}\z}
-      Date.strptime(str, "%d/%m/%Y")
-    elsif str =~ %r{\A\d{4}-\d{2}-\d{2}\z}
-      Date.parse(str)
-    else
-      Date.parse(str)
+    return nil if str.empty?
+
+    # 1. ISO format: YYYY-MM-DD or YYYY/MM/DD (with optional time or T)
+    if str =~ %r{\A(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})(?:\s+|\z|T)}
+      year, month, day = $1.to_i, $2.to_i, $3.to_i
+      return Date.new(year, month, day) rescue nil
     end
-  rescue ArgumentError
+
+    # 2. Brazilian / European format: DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY (4-digit year, optional time or T)
+    if str =~ %r{\A(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})(?:\s+|\z|T)}
+      day, month, year = $1.to_i, $2.to_i, $3.to_i
+      return Date.new(year, month, day) rescue nil
+    end
+
+    # 3. 2-digit year format: DD/MM/YY, DD-MM-YY, DD.MM.YY (optional time or T)
+    if str =~ %r{\A(\d{1,2})[/.-](\d{1,2})[/.-](\d{2})(?:\s+|\z|T)}
+      day, month, short_year = $1.to_i, $2.to_i, $3.to_i
+      year = short_year + (short_year >= 70 ? 1900 : 2000)
+      return Date.new(year, month, day) rescue nil
+    end
+
+    # 4. Month/Year format: MM/YYYY or MM-YYYY or MM.YYYY (e.g. 08/2026 or 8/2026)
+    if str =~ %r{\A(\d{1,2})[/.-](\d{4})\z}
+      month, year = $1.to_i, $2.to_i
+      return Date.new(year, month, 1) rescue nil
+    end
+
+    # 5. Month/2-digit Year format: MM/YY or MM-YY or MM.YY (e.g. 08/26 or 8/26)
+    if str =~ %r{\A(\d{1,2})[/.-](\d{2})\z}
+      month, short_year = $1.to_i, $2.to_i
+      year = short_year + (short_year >= 70 ? 1900 : 2000)
+      return Date.new(year, month, 1) rescue nil
+    end
+
+    # 6. Fallback using Date.strptime for DD/MM/YYYY before Date.parse
+    Date.strptime(str, "%d/%m/%Y") rescue Date.parse(str) rescue nil
+  rescue StandardError
     nil
+  end
+
+  def parse_date(val)
+    self.class.parse_date(val)
   end
 
   def find_or_create_category(cat_name)
@@ -286,23 +373,45 @@ class TransactionImporterService
       @account.cost_centers.create!(name: name)
   end
 
+  def find_or_create_bank_account(name)
+    str = name.to_s.strip
+    return nil if str.blank?
+
+    @account.bank_accounts.find_by("LOWER(name) = ?", str.downcase) ||
+      @account.bank_accounts.create!(name: str)
+  end
+
+  def find_or_create_credit_card(name, bank_acc = nil)
+    str = name.to_s.strip
+    return nil if str.blank?
+
+    existing = @account.credit_cards.find_by("LOWER(name) = ?", str.downcase)
+    return existing if existing.present?
+
+    target_bank = bank_acc || @account.bank_accounts.first || @account.bank_accounts.create!(name: "Conta Principal")
+    @account.credit_cards.create!(name: str, bank_account: target_bank, limit: 0)
+  end
+
   def assign_payment_source(data, tx_type)
     bank_name = data[:bank_account].to_s.strip
     card_name = data[:credit_card].to_s.strip
 
-    bank_acc = @account.bank_accounts.find_by("LOWER(name) = ?", bank_name.downcase) if bank_name.present?
+    bank_acc = find_or_create_bank_account(bank_name) if bank_name.present?
     bank_acc ||= @account.bank_accounts.find_by(id: @bank_account_id) if @bank_account_id.present?
 
-    card = @account.credit_cards.find_by("LOWER(name) = ?", card_name.downcase) if card_name.present?
+    card = find_or_create_credit_card(card_name, bank_acc) if card_name.present?
     card ||= @account.credit_cards.find_by(id: @credit_card_id) if @credit_card_id.present?
 
-    bank_acc ||= @account.bank_accounts.first
-
     if tx_type == "income"
+      bank_acc ||= @account.bank_accounts.first || @account.bank_accounts.create!(name: "Conta Principal")
       { bank_account: bank_acc, credit_card: nil }
+    elsif tx_type == "transfer"
+      bank_acc ||= @account.bank_accounts.first || @account.bank_accounts.create!(name: "Conta Principal")
+      { bank_account: bank_acc, credit_card: card }
     elsif card.present?
       { bank_account: nil, credit_card: card }
     else
+      bank_acc ||= @account.bank_accounts.first || @account.bank_accounts.create!(name: "Conta Principal")
       { bank_account: bank_acc, credit_card: nil }
     end
   end

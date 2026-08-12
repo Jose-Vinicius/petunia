@@ -1,0 +1,5 @@
+<%= turbo_stream.update "modal", "" %>
+<%= turbo_stream.replace "transactions_content" do %>
+  <%= render "filters" %>
+  <%= render "list" %>
+<% end %>

@@ -1,4 +1,4 @@
-<div style="max-width: 900px; margin: 2rem auto; padding: 0 1rem;">
+<div style="max-width: 96%; width: 100%; margin: 1.5rem auto; padding: 0 1rem;">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
     <div>
       <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
@@ -12,6 +12,27 @@
     <%= link_to t("categories.index.new_button"), new_category_path, class: "btn btn-primary" %>
   </div>
 
+  <%= form_with url: categories_path, method: :get, style: "background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;" do |f| %>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem 1.25rem; align-items: end;">
+      <div style="grid-column: span 2 / -1;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;">Plano de Contas / Categoria</label>
+        <input type="text" name="search" value="<%= params[:search] %>" placeholder="Pesquise por nome..." class="form-input" style="height: 38px; padding: 0.4rem 0.75rem; font-size: 0.85rem;" />
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button type="submit" class="btn btn-secondary" style="height: 38px; padding: 0 1.25rem; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--border, #27272a);">
+          <span class="material-symbols-outlined" style="font-size: 1.1rem;">search</span>
+          <span>Pesquisar</span>
+        </button>
+
+        <%= link_to categories_path, class: "btn btn-ghost", style: "height: 38px; padding: 0 1.25rem; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--border, #27272a);" do %>
+          <span class="material-symbols-outlined" style="font-size: 1.1rem;">filter_alt_off</span>
+          <span>Limpar</span>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <% if @categories.empty? %>
     <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 3rem 1.5rem; text-align: center; color: var(--text-secondary);">
       <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--border, #27272a); margin-bottom: 1rem;">label</span>
@@ -19,51 +40,66 @@
       <%= link_to t("categories.index.new_button"), new_category_path, class: "btn btn-primary" %>
     </div>
   <% else %>
-    <div class="table-responsive" style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); overflow-x: auto;">
-      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-        <thead>
-          <tr style="border-bottom: 1px solid var(--border, #27272a); background: var(--surface-hover, #18181b); color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
-            <th style="padding: 0.85rem 1rem;">Descrição</th>
-            <th style="padding: 0.85rem 1rem; width: 140px;">Tipo</th>
-            <th style="padding: 0.85rem 1rem; text-align: right; width: 160px;">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @categories.each do |category| %>
-            <tr style="border-bottom: 1px solid var(--border, #27272a);">
-              <td style="padding: 0.85rem 1rem;">
-                <div style="display: flex; align-items: center; gap: 0.6rem;">
-                  <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.3rem;">label</span>
-                  <span style="font-weight: 600; color: var(--text-primary);"><%= category.name %></span>
-                </div>
-              </td>
-              <td style="padding: 0.85rem 1rem;">
-                <% if category.default? %>
-                  <span style="font-size: 0.75rem; background: rgba(167, 139, 250, 0.15); color: var(--primary, #a78bfa); border: 1px solid rgba(167, 139, 250, 0.3); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 500;">
-                    <%= t("categories.index.default_badge") %>
-                  </span>
-                <% else %>
-                  <span style="font-size: 0.75rem; background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 500;">
-                    <%= t("categories.index.custom_badge") %>
-                  </span>
-                <% end %>
-              </td>
-              <td style="padding: 0.85rem 1rem; text-align: right; white-space: nowrap;">
-                <div style="display: flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
-                  <%= link_to edit_category_path(category), class: "btn btn-ghost", style: "padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
-                    <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">edit</span>
-                    <%= t("helpers.submit.update", model: "") %>
-                  <% end %>
-                  <%= button_to category_path(category), method: :delete, data: { turbo_confirm: t("categories.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
-                    <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">delete</span>
-                    <%= t("account_users.index.remove") %>
-                  <% end %>
-                </div>
-              </td>
+    <div data-controller="collapsible-list" data-collapsible-list-limit-value="5" style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); overflow: hidden;">
+      <div class="table-responsive" style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border, #27272a); background: var(--surface-hover, #18181b); color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
+              <th style="padding: 0.85rem 1rem;">Descrição</th>
+              <th style="padding: 0.85rem 1rem; width: 140px;">Tipo</th>
+              <th style="padding: 0.85rem 1rem; text-align: right; width: 160px;">Ações</th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <% @categories.each do |category| %>
+              <tr style="border-bottom: 1px solid var(--border, #27272a);" data-collapsible-list-target="item">
+                <td style="padding: 0.85rem 1rem;">
+                  <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.3rem;">label</span>
+                    <span style="font-weight: 600; color: var(--text-primary);"><%= category.name %></span>
+                  </div>
+                </td>
+                <td style="padding: 0.85rem 1rem;">
+                  <% if category.default? %>
+                    <span style="font-size: 0.75rem; background: rgba(167, 139, 250, 0.15); color: var(--primary, #a78bfa); border: 1px solid rgba(167, 139, 250, 0.3); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 500;">
+                      <%= t("categories.index.default_badge") %>
+                    </span>
+                  <% else %>
+                    <span style="font-size: 0.75rem; background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 500;">
+                      <%= t("categories.index.custom_badge") %>
+                    </span>
+                  <% end %>
+                </td>
+                <td style="padding: 0.85rem 1rem; text-align: right; white-space: nowrap;">
+                  <div style="display: flex; gap: 0.35rem; justify-content: flex-end; align-items: center;">
+                    <%= link_to edit_category_path(category), class: "btn btn-ghost", style: "padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
+                      <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">edit</span>
+                      <%= t("helpers.submit.update", model: "") %>
+                    <% end %>
+                    <%= button_to category_path(category), method: :delete, data: { turbo_confirm: t("categories.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.3rem 0.5rem; font-size: 0.85rem;" do %>
+                      <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">delete</span>
+                      <%= t("account_users.index.remove") %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if @categories.size > 5 %>
+        <div style="padding: 0.85rem 1rem; text-align: center; border-top: 1px solid var(--border, #27272a); background: var(--surface-hover, #18181b);">
+          <button type="button"
+                  class="btn btn-ghost"
+                  style="width: 100%; font-size: 0.85rem; color: var(--primary); display: inline-flex; justify-content: center; align-items: center; gap: 0.35rem;"
+                  data-collapsible-list-target="button"
+                  data-action="click->collapsible-list#toggle">
+            <span class="material-symbols-outlined" style="font-size: 1.1rem;" data-collapsible-list-target="buttonIcon">expand_more</span>
+            <span data-collapsible-list-target="buttonText">Mostrar todos (+<%= @categories.size - 5 %>)</span>
+          </button>
+        </div>
+      <% end %>
     </div>
   <% end %>
 </div>

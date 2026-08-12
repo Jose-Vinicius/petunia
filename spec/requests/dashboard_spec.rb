@@ -30,6 +30,20 @@ RSpec.describe "Dashboard Financeiro", type: :request do
       expect(response.body).to include("Aluguel")
     end
 
+    it "filtra o dashboard por intervalo de datas e categoria" do
+      cat_alimentacao = create(:category, account: account, name: "Alimentação Específica")
+      cat_lazer = create(:category, account: account, name: "Lazer Específico")
+
+      create(:transaction, :expense, account: account, category: cat_alimentacao, bank_account: bank_account, amount: 120, date: Date.new(2026, 5, 10), description: "Jantar Especial")
+      create(:transaction, :expense, account: account, category: cat_lazer, bank_account: bank_account, amount: 200, date: Date.new(2026, 5, 15), description: "Cinema")
+
+      get dashboard_path, params: { start_date: "2026-05-01", end_date: "2026-05-31", category_id: cat_alimentacao.id }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Jantar Especial")
+      expect(response.body).not_to include("Cinema")
+    end
+
     it "exibe o link para o dashboard na página inicial quando autenticado" do
       get root_path
       expect(response).to have_http_status(:ok)

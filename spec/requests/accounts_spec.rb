@@ -90,5 +90,44 @@ RSpec.describe 'Gerenciamento de Contas / Ambientes (Accounts)', type: :request 
         expect(flash[:alert]).to eq('Você não tem permissão para acessar esta conta.')
       end
     end
+
+    describe 'POST /accounts/:id/reset_data' do
+      let(:account) { usuario.accounts.first }
+      let!(:bank_account) { create(:bank_account, account: account) }
+      let!(:credit_card) { create(:credit_card, account: account, bank_account: bank_account) }
+      let!(:category) { create(:category, account: account, name: 'Personalizada') }
+
+      before do
+        create(:transaction, account: account, bank_account: bank_account, category: category, amount: 150)
+      end
+
+      it 'reseta todas as transações, cartões, contas bancárias e recria cadastros padrão quando o usuário é proprietário' do
+        expect(account.transactions.count).to eq(1)
+        expect(account.bank_accounts.count).to eq(1)
+        expect(account.credit_cards.count).to eq(1)
+
+        post reset_data_account_path(account)
+
+        expect(response).to redirect_to(accounts_path)
+        follow_redirect!
+        expect(flash[:notice]).to include("resetados com sucesso")
+
+        account.reload
+        expect(account.transactions.count).to eq(0)
+        expect(account.bank_accounts.count).to eq(0)
+        expect(account.credit_cards.count).to eq(0)
+        expect(account.categories.pluck(:name)).to include('Alimentação', 'Moradia', 'Salário')
+        expect(account.categories.pluck(:name)).not_to include('Personalizada')
+      end
+
+      it 'impede o reset quando o usuário é apenas membro sem papel de proprietário' do
+        outra_conta = create(:account, name: 'Empresa Compartilhada')
+        create(:account_user, user: usuario, account: outra_conta, role: 'member')
+
+        post reset_data_account_path(outra_conta)
+
+        expect(flash[:alert]).to eq('Apenas o proprietário da conta tem permissão para resetar os dados.')
+      end
+    end
   end
 end

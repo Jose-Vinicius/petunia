@@ -83,23 +83,37 @@ class ImportsController < ApplicationController
         supplier = find_or_create_entity(Supplier, tx_data[:supplier])
         cost_center = find_or_create_entity(CostCenter, tx_data[:cost_center]) if tx_data[:cost_center].present?
 
-        bank_account = find_bank_account(tx_data[:bank_account])
-        credit_card = find_credit_card(tx_data[:credit_card])
+        bank_account = find_or_create_bank_account(tx_data[:bank_account])
+        credit_card = find_or_create_credit_card(tx_data[:credit_card], bank_account)
 
         tx_type = tx_data[:transaction_type].presence || "expense"
-        bank_account ||= current_account.bank_accounts.first if tx_type == "income" || credit_card.blank?
+        if tx_type == "income"
+          bank_account ||= current_account.bank_accounts.first || current_account.bank_accounts.create!(name: "Conta Principal")
+          credit_card = nil
+        elsif credit_card.present?
+          bank_account = nil
+        else
+          bank_account ||= current_account.bank_accounts.first || current_account.bank_accounts.create!(name: "Conta Principal")
+        end
 
-        tx = current_account.transactions.build(
+        is_refund_val = ActiveModel::Type::Boolean.new.cast(tx_data[:is_refund])
+        parsed_comp_date = TransactionImporterService.parse_date(tx_data[:competence_date])
+
+        tx_attrs = {
           description: tx_data[:description].to_s.strip,
           amount: tx_data[:amount].to_f.abs,
-          date: tx_data[:date].presence || Date.current,
+          date: TransactionImporterService.parse_date(tx_data[:date]) || Date.current,
           transaction_type: tx_type,
           category: category,
           supplier: supplier,
           cost_center: cost_center,
-          bank_account: tx_type == "income" ? bank_account : (credit_card.present? ? nil : bank_account),
-          credit_card: tx_type == "income" ? nil : credit_card
-        )
+          bank_account: bank_account,
+          credit_card: credit_card,
+          is_refund: (credit_card.present? && is_refund_val)
+        }
+        tx_attrs[:competence_date] = parsed_comp_date if parsed_comp_date.present?
+
+        tx = current_account.transactions.build(tx_attrs)
 
         if tx.save
           success_count += 1
@@ -120,14 +134,14 @@ class ImportsController < ApplicationController
 
   def download_template
     sample = params[:sample] == "true"
-    headers = [ "Data", "Descrição", "Valor", "Tipo", "Categoria", "Fornecedor", "Centro de Custo", "Conta Bancária", "Cartão de Crédito" ]
+    headers = [ "Data", "Data Competência", "Descrição", "Valor", "Tipo", "Categoria", "Fornecedor", "Centro de Custo", "Conta Bancária", "Cartão de Crédito", "Estorno" ]
 
     csv_data = CSV.generate(headers: true, col_sep: ";") do |csv|
       csv << headers
       if sample
-        csv << [ "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Empresa ACME", "Trabalho", "Nubank", "" ]
-        csv << [ "11/08/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Mercado Central", "Pessoal", "", "Visa Itaú" ]
-        csv << [ "12/08/2026", "Restaurante", "45,00", "Despesa", "Alimentação", "Restaurante Gourmet", "Pessoal", "Bradesco", "" ]
+        csv << [ "10/08/2026", "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Empresa ACME", "Trabalho", "Nubank", "", "Não" ]
+        csv << [ "11/08/2026", "10/09/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Mercado Central", "Pessoal", "", "Visa Itaú", "Não" ]
+        csv << [ "12/08/2026", "10/09/2026", "Estorno Compra", "45,00", "Despesa", "Alimentação", "Restaurante Gourmet", "Pessoal", "", "Visa Itaú", "Sim" ]
       end
     end
 
@@ -152,7 +166,7 @@ class ImportsController < ApplicationController
       current_account.public_send(klass.table_name).create!(name: name)
   end
 
-  def find_bank_account(bank_data)
+  def find_or_create_bank_account(bank_data)
     return nil if bank_data.blank?
 
     if bank_data[:id].present?
@@ -163,10 +177,11 @@ class ImportsController < ApplicationController
     name = bank_data[:name].to_s.strip
     return nil if name.blank?
 
-    current_account.bank_accounts.find_by("LOWER(name) = ?", name.downcase)
+    current_account.bank_accounts.find_by("LOWER(name) = ?", name.downcase) ||
+      current_account.bank_accounts.create!(name: name)
   end
 
-  def find_credit_card(card_data)
+  def find_or_create_credit_card(card_data, bank_account = nil)
     return nil if card_data.blank?
 
     if card_data[:id].present?
@@ -177,6 +192,10 @@ class ImportsController < ApplicationController
     name = card_data[:name].to_s.strip
     return nil if name.blank?
 
-    current_account.credit_cards.find_by("LOWER(name) = ?", name.downcase)
+    existing = current_account.credit_cards.find_by("LOWER(name) = ?", name.downcase)
+    return existing if existing.present?
+
+    target_bank = bank_account || current_account.bank_accounts.first || current_account.bank_accounts.create!(name: "Conta Principal")
+    current_account.credit_cards.create!(name: name, bank_account: target_bank, limit: 0)
   end
 end

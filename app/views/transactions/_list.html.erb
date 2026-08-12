@@ -11,6 +11,7 @@
         <thead>
           <tr style="border-bottom: 1px solid var(--border, #27272a); color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.date") %></th>
+            <th style="padding: 0.85rem 1.25rem;">Competência</th>
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.description") %></th>
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.supplier") %></th>
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.category") %></th>
@@ -23,12 +24,27 @@
           <% @transactions.each do |transaction| %>
             <tr style="border-bottom: 1px solid var(--border, #27272a);">
               <td style="padding: 0.85rem 1.25rem; color: var(--text-secondary); white-space: nowrap;">
-                <%= l(transaction.date, format: :short) rescue transaction.date.strftime("%d/%m/%Y") %>
+                <%= l(transaction.date, format: :short) rescue transaction.date.strftime("%d/%m/%y") %>
+              </td>
+              <td style="padding: 0.85rem 1.25rem; color: var(--text-secondary); white-space: nowrap;">
+                <%= l(transaction.competence_date, format: :short) rescue (transaction.competence_date&.strftime("%d/%m/%y") || "-") %>
               </td>
               <td style="padding: 0.85rem 1.25rem;">
-                <div style="font-weight: 600; color: var(--text-primary);"><%= transaction.description %></div>
+                <div style="font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                  <span><%= transaction.description %></span>
+                  <% if transaction.installment? %>
+                    <span style="font-size: 0.7rem; background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.3); padding: 0.1rem 0.4rem; border-radius: 999px; font-weight: 600;" title="Lançamento Parcelado">
+                      📦 <%= transaction.installment_number %>/<%= transaction.total_installments %>
+                    </span>
+                  <% end %>
+                  <% if transaction.is_refund? %>
+                    <span style="font-size: 0.7rem; background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); padding: 0.1rem 0.4rem; border-radius: 999px; font-weight: 600;">
+                      Estorno
+                    </span>
+                  <% end %>
+                </div>
                 <% if transaction.cost_center.present? %>
-                  <span style="font-size: 0.75rem; color: var(--text-secondary); background: var(--surface-hover, #18181b); border: 1px solid var(--border, #27272a); padding: 0.1rem 0.4rem; border-radius: 4px;">
+                  <span style="font-size: 0.75rem; color: var(--text-secondary); background: var(--surface-hover, #18181b); border: 1px solid var(--border, #27272a); padding: 0.1rem 0.4rem; border-radius: 4px; margin-top: 0.2rem; display: inline-block;">
                     🎯 <%= transaction.cost_center.name %>
                   </span>
                 <% end %>
@@ -42,7 +58,18 @@
                 </span>
               </td>
               <td style="padding: 0.85rem 1.25rem; color: var(--text-secondary);">
-                <% if transaction.bank_account.present? %>
+                <% if transaction.transfer? %>
+                  <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+                    <% if transaction.bank_account.present? %>
+                      <span>🏦 <%= transaction.bank_account.name %></span>
+                    <% elsif transaction.credit_card.present? %>
+                      <span>💳 <%= transaction.credit_card.name %></span>
+                    <% end %>
+                    <% if transaction.destination_bank_account.present? %>
+                      <span style="font-size: 0.75rem; color: #60a5fa;">➔ 🏦 <%= transaction.destination_bank_account.name %></span>
+                    <% end %>
+                  </div>
+                <% elsif transaction.bank_account.present? %>
                   <span>🏦 <%= transaction.bank_account.name %></span>
                 <% elsif transaction.credit_card.present? %>
                   <span>💳 <%= transaction.credit_card.name %></span>
@@ -50,8 +77,8 @@
                   <span>-</span>
                 <% end %>
               </td>
-              <td style="padding: 0.85rem 1.25rem; text-align: right; font-weight: 700; white-space: nowrap; color: <%= transaction.income? ? '#34d399' : '#ef4444' %>;">
-                <%= transaction.income? ? '+' : '-' %> <%= number_to_currency(transaction.amount, unit: "R$ ", separator: ",", delimiter: ".") %>
+              <td style="padding: 0.85rem 1.25rem; text-align: right; font-weight: 700; white-space: nowrap; color: <%= transaction.transfer? ? '#60a5fa' : (transaction.income? || transaction.is_refund? ? '#34d399' : '#ef4444') %>;">
+                <%= transaction.transfer? ? '⇄' : (transaction.income? ? '+' : '-') %> <%= number_to_currency(transaction.amount, unit: "R$ ", separator: ",", delimiter: ".") %>
               </td>
               <td style="padding: 0.85rem 1.25rem; text-align: right; white-space: nowrap;">
                 <div style="display: flex; justify-content: flex-end; gap: 0.25rem;">
@@ -59,8 +86,14 @@
                     <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">edit</span>
                   <% end %>
 
-                  <%= button_to transaction_path(transaction), method: :delete, data: { turbo_confirm: t("transactions.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.25rem 0.4rem; font-size: 0.8rem;" do %>
+                  <%= button_to transaction_path(transaction), method: :delete, data: { turbo_confirm: t("transactions.destroy.confirm") }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.25rem 0.4rem; font-size: 0.8rem;", title: "Excluir apenas esta parcela" do %>
                     <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">delete</span>
+                  <% end %>
+
+                  <% if transaction.installment? %>
+                    <%= button_to transaction_path(transaction, delete_all_installments: "1"), method: :delete, data: { turbo_confirm: "Deseja excluir TODAS as #{transaction.total_installments} parcelas deste lançamento?" }, class: "btn btn-ghost", style: "color: var(--error, #ef4444); padding: 0.25rem 0.4rem; font-size: 0.8rem;", title: "Excluir TODAS as parcelas" do %>
+                      <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">delete_sweep</span>
+                    <% end %>
                   <% end %>
                 </div>
               </td>

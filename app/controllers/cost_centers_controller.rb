@@ -3,7 +3,9 @@ class CostCentersController < ApplicationController
   before_action :set_cost_center, only: [ :edit, :update, :destroy ]
 
   def index
-    @cost_centers = current_account.cost_centers.order(default: :desc, name: :asc)
+    scope = current_account.cost_centers
+    scope = scope.where("LOWER(name) LIKE ?", "%#{params[:search].downcase.strip}%") if params[:search].present?
+    @cost_centers = scope.order(default: :desc, name: :asc)
   end
 
   def new

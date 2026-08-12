@@ -1,0 +1,49 @@
+<%= form_with(model: credit_card, local: true) do |f| %>
+  <% if credit_card.errors.any? %>
+    <div id="error_explanation" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error, #ef4444); border-radius: var(--radius-md, 8px); padding: 1rem; margin-bottom: 1.5rem; color: #fca5a5; font-size: 0.9rem;">
+      <ul style="margin: 0; padding-left: 1.25rem;">
+        <% credit_card.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group">
+    <%= f.label :name, t("activerecord.attributes.credit_card.name", default: "Nome do Cartão"), class: "form-label" %>
+    <%= f.text_field :name, autofocus: true, class: "form-input", placeholder: "Ex: Nubank Ultravioleta, Itaú Click" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :limit, t("activerecord.attributes.credit_card.limit", default: "Limite (R$)"), class: "form-label" %>
+    <%= f.text_field :limit,
+                     value: (credit_card.limit.present? ? number_with_precision(credit_card.limit, precision: 2, separator: ",") : nil),
+                     class: "form-input",
+                     placeholder: "5000,00",
+                     inputmode: "decimal" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :bank_account_id, t("activerecord.attributes.credit_card.bank_account", default: "Conta Bancária Vinculada"), class: "form-label" %>
+    <%= f.collection_select :bank_account_id, current_account.bank_accounts, :id, :name, { prompt: "Selecione uma conta bancária" }, { class: "form-input", required: true } %>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div class="form-group">
+      <%= f.label :closing_day, "Dia de Fechamento (Feche)", class: "form-label" %>
+      <%= f.number_field :closing_day, min: 1, max: 31, class: "form-input", placeholder: "25", required: true %>
+      <small style="color: var(--text-secondary); font-size: 0.75rem;">Dia do mês em que a fatura fecha</small>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :due_day, "Dia de Vencimento", class: "form-label" %>
+      <%= f.number_field :due_day, min: 1, max: 31, class: "form-input", placeholder: "5", required: true %>
+      <small style="color: var(--text-secondary); font-size: 0.75rem;">Dia do mês em que a fatura vence</small>
+    </div>
+  </div>
+
+  <div class="form-group" style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
+    <%= link_to t("devise.shared.links.back", default: "Voltar"), credit_cards_path, class: "btn btn-secondary" %>
+    <%= f.submit (credit_card.new_record? ? t("credit_cards.new.submit", default: "Salvar Cartão") : t("credit_cards.edit.submit", default: "Atualizar Cartão")), class: "btn btn-primary", style: "flex: 1;" %>
+  </div>
+<% end %>

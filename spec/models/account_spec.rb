@@ -27,4 +27,27 @@ RSpec.describe Account, type: :model do
       expect(account.cost_centers.where(default: true).count).to eq(3)
     end
   end
+
+  describe '#reset_data!' do
+    it 'apaga todas as transações, cartões, contas bancárias e restaura os cadastros padrão' do
+      account = create(:account)
+      bank_acc = create(:bank_account, account: account)
+      card = create(:credit_card, account: account, bank_account: bank_acc)
+      custom_cat = create(:category, account: account, name: 'Personalizada Extra')
+      create(:transaction, account: account, bank_account: bank_acc, category: custom_cat, amount: 250)
+
+      expect(account.transactions.count).to eq(1)
+      expect(account.bank_accounts.count).to eq(1)
+      expect(account.credit_cards.count).to eq(1)
+
+      account.reset_data!
+
+      account.reload
+      expect(account.transactions.count).to eq(0)
+      expect(account.bank_accounts.count).to eq(0)
+      expect(account.credit_cards.count).to eq(0)
+      expect(account.categories.pluck(:name)).to include('Alimentação', 'Moradia', 'Salário')
+      expect(account.categories.pluck(:name)).not_to include('Personalizada Extra')
+    end
+  end
 end

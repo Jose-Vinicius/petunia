@@ -15,12 +15,20 @@ Rails.application.routes.draw do
   # Account management, switching, and member management routes
   resources :accounts, only: [ :index, :new, :create ] do
     post :switch, on: :member
+    post :reset_data, on: :member
     resources :account_users, only: [ :index, :create, :destroy ], path: "members"
   end
 
   # Financial entities: Bank Accounts, Credit Cards, Categories, Cost Centers, Suppliers & Transactions
   resources :bank_accounts, except: [ :show ]
-  resources :credit_cards, except: [ :show ]
+  resources :credit_cards, except: [ :show ] do
+    member do
+      get :invoices
+      post :pay_invoice
+      post :unpay_invoice
+      delete :unpay_invoice
+    end
+  end
   resources :categories, except: [ :show ]
   resources :cost_centers, except: [ :show ]
   resources :suppliers, except: [ :show ]
@@ -28,6 +36,8 @@ Rails.application.routes.draw do
 
   # Dashboard & Spreadsheet Import
   get "dashboard" => "dashboard#index", as: :dashboard
+  get "dashboard/categories" => "dashboard#categories", as: :dashboard_categories
+  get "dashboard/transactions" => "dashboard#transactions", as: :dashboard_transactions
   resources :imports, only: [ :new, :create ] do
     post :preview, on: :collection
     get :download_template, on: :collection
@@ -35,5 +45,9 @@ Rails.application.routes.draw do
 
 
   # Defines the root path route ("/")
-  root "home#index"
+  authenticated :user do
+    root to: "dashboard#index", as: :authenticated_root
+  end
+
+  root to: "home#index"
 end

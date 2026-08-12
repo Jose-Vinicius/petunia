@@ -129,4 +129,50 @@ RSpec.describe TransactionImporterService, type: :service do
       end
     end
   end
+
+  describe '.parse_date' do
+    it 'interpreta corretamente datas no formato DD/MM/AAAA' do
+      expect(described_class.parse_date('05/04/2026')).to eq(Date.new(2026, 4, 5))
+      expect(described_class.parse_date('31/12/2025')).to eq(Date.new(2025, 12, 31))
+    end
+
+    it 'interpreta corretamente datas no formato DD-MM-AAAA' do
+      expect(described_class.parse_date('05-04-2026')).to eq(Date.new(2026, 4, 5))
+    end
+
+    it 'interpreta corretamente datas no formato DD.MM.AAAA' do
+      expect(described_class.parse_date('05.04.2026')).to eq(Date.new(2026, 4, 5))
+    end
+
+    it 'interpreta corretamente datas no formato DD/MM/YY (ano com 2 dígitos)' do
+      expect(described_class.parse_date('05/04/26')).to eq(Date.new(2026, 4, 5))
+    end
+
+    it 'interpreta corretamente datas acompanhadas de horário DD/MM/AAAA HH:MM:SS' do
+      expect(described_class.parse_date('05/04/2026 14:30:00')).to eq(Date.new(2026, 4, 5))
+      expect(described_class.parse_date('05-04-2026 00:00')).to eq(Date.new(2026, 4, 5))
+    end
+
+    it 'interpreta corretamente formato ISO YYYY-MM-DD' do
+      expect(described_class.parse_date('2026-04-05')).to eq(Date.new(2026, 4, 5))
+    end
+
+    it 'preserva objetos de data Date e DateTime' do
+      date_obj = Date.new(2026, 4, 5)
+      datetime_obj = DateTime.new(2026, 4, 5, 10, 0, 0)
+      expect(described_class.parse_date(date_obj)).to eq(date_obj)
+      expect(described_class.parse_date(datetime_obj)).to eq(date_obj)
+    end
+
+    it 'interpreta corretamente datas no formato MM/AAAA ou MM/YY (mês/ano de competência)' do
+      expect(described_class.parse_date('08/2026')).to eq(Date.new(2026, 8, 1))
+      expect(described_class.parse_date('08/26')).to eq(Date.new(2026, 8, 1))
+    end
+
+    it 'retorna nil para valores nulos ou inválidos' do
+      expect(described_class.parse_date(nil)).to be_nil
+      expect(described_class.parse_date('')).to be_nil
+      expect(described_class.parse_date('texto_invalido')).to be_nil
+    end
+  end
 end
