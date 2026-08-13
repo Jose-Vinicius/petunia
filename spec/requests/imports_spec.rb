@@ -107,6 +107,37 @@ RSpec.describe "Importação por Planilha (Imports)", type: :request do
         expect(tx.credit_card.name).to eq("Azul")
         expect(tx.credit_card.bank_account.name).to eq("Itau")
       end
+
+      it "cria múltiplas parcelas quando installments_count > 1 no payload" do
+        category = account.categories.first
+        supplier = create(:supplier, account: account)
+
+        payload = [
+          {
+            date: Date.current.to_s,
+            description: "Notebook Gamer",
+            amount: 3000.00,
+            transaction_type: "expense",
+            installments_count: 3,
+            category: { id: category.id },
+            supplier: { id: supplier.id },
+            bank_account: { id: bank_account.id }
+          }
+        ]
+
+        expect {
+          post imports_path, params: { transactions: payload }, as: :json
+        }.to change(account.transactions, :count).by(3)
+
+        expect(response).to have_http_status(:ok)
+        json = JSON.parse(response.body)
+        expect(json["success"]).to be true
+        expect(json["count"]).to eq(3)
+
+        txs = account.transactions.where("description LIKE ?", "Notebook Gamer%")
+        expect(txs.count).to eq(3)
+        expect(txs.pluck(:amount)).to eq([1000.0, 1000.0, 1000.0])
+      end
     end
 
     describe "POST /imports (envio direto via form tradicional)" do
@@ -130,7 +161,7 @@ RSpec.describe "Importação por Planilha (Imports)", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.header['Content-Type']).to include('text/csv')
-        expect(response.body).to include("Data;Data Competência;Descrição;Valor;Tipo;Categoria;Fornecedor;Centro de Custo;Conta Bancária;Cartão de Crédito;Estorno")
+        expect(response.body).to include("Data;Data Competência;Descrição;Valor;Tipo;Categoria;Fornecedor;Centro de Custo;Conta Bancária;Cartão de Crédito;Parcelas;Estorno")
       end
 
       it "faz o download do modelo com dados de exemplo" do

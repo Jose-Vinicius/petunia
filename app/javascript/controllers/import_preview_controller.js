@@ -87,6 +87,9 @@ export default class extends Controller {
         <td style="padding: 0.4rem 0.3rem;">${this.buildSelectHtml("cost_center", row.cost_center, this.collections.cost_centers, true)}</td>
         <td style="padding: 0.4rem 0.3rem;">${this.buildSelectHtml("bank_account", row.bank_account, this.collections.bank_accounts, true)}</td>
         <td style="padding: 0.4rem 0.3rem;">${this.buildSelectHtml("credit_card", row.credit_card, this.collections.credit_cards, true)}</td>
+        <td style="padding: 0.4rem 0.3rem;">
+          <input type="number" min="1" max="99" value="${row.installments_count || 1}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box; text-align: center;" data-field="installments_count" />
+        </td>
         <td style="padding: 0.4rem 0.3rem; text-align: center;">
           <input type="checkbox" ${row.is_refund ? "checked" : ""} class="form-checkbox" data-field="is_refund" style="width: 16px; height: 16px;" />
         </td>
@@ -191,6 +194,7 @@ export default class extends Controller {
       const rawAmount = tr.querySelector('[data-field="amount"]')?.value || '0'
       const amount = rawAmount.replace(/\./g, '').replace(',', '.')
       const transaction_type = tr.querySelector('[data-field="transaction_type"]')?.value
+      const installments_count = parseInt(tr.querySelector('[data-field="installments_count"]')?.value || '1', 10)
       const is_refund = tr.querySelector('[data-field="is_refund"]')?.checked || false
 
       const catVal = tr.querySelector('[data-field="category"]')?.value
@@ -205,6 +209,7 @@ export default class extends Controller {
         description: description,
         amount: amount,
         transaction_type: transaction_type,
+        installments_count: installments_count,
         is_refund: is_refund,
         category: this.parseSelectPayload(catVal),
         supplier: this.parseSelectPayload(supVal),

@@ -94,11 +94,13 @@ RSpec.describe TransactionImporterService, type: :service do
         expect(income_tx.amount).to eq(3500.00)
         expect(income_tx.transaction_type).to eq('income')
         expect(income_tx.bank_account).to eq(bank_account)
+        expect(income_tx.status).to eq('realized')
 
         expense_tx = account.transactions.find_by(description: 'Supermercado Exemplo')
         expect(expense_tx).to be_present
         expect(expense_tx.amount).to eq(250.50)
         expect(expense_tx.transaction_type).to eq('expense')
+        expect(expense_tx.status).to eq('realized')
       end
 
       it 'trata formato de moeda brasileira com vírgula e R$' do
@@ -123,6 +125,34 @@ RSpec.describe TransactionImporterService, type: :service do
 
         tx = account.transactions.find_by(description: 'Aluguel')
         expect(tx.amount).to eq(1200.50)
+
+        file.close
+        file.unlink
+      end
+
+      it 'cria parcelas quando a coluna Parcelas ou parcelamento na descrição for informada' do
+        inst_csv = <<~CSV
+          data,descrição,valor,tipo,categoria,cartao,parcelas
+          12/08/2026,Smartphone Novo,1200.00,despesa,Eletrônicos,Visa Itaú,3
+        CSV
+
+        file = Tempfile.new([ 'inst_tx', '.csv' ])
+        file.write(inst_csv)
+        file.rewind
+
+        service = described_class.new(
+          file_path: file.path,
+          filename: 'inst_tx.csv',
+          account: account
+        )
+
+        result = service.call
+        expect(result.success_count).to eq(3)
+        expect(result.error_count).to eq(0)
+
+        txs = account.transactions.where("description LIKE ?", "Smartphone Novo%")
+        expect(txs.count).to eq(3)
+        expect(txs.pluck(:amount)).to eq([400.0, 400.0, 400.0])
 
         file.close
         file.unlink

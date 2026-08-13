@@ -12,6 +12,7 @@
           <tr style="border-bottom: 1px solid var(--border, #27272a); color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase;">
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.date") %></th>
             <th style="padding: 0.85rem 1.25rem;">Competência</th>
+            <th style="padding: 0.85rem 1.25rem;">Status</th>
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.description") %></th>
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.supplier") %></th>
             <th style="padding: 0.85rem 1.25rem;"><%= t("activerecord.attributes.transaction.category") %></th>
@@ -28,6 +29,11 @@
               </td>
               <td style="padding: 0.85rem 1.25rem; color: var(--text-secondary); white-space: nowrap;">
                 <%= l(transaction.competence_date, format: :short) rescue (transaction.competence_date&.strftime("%d/%m/%y") || "-") %>
+              </td>
+              <td style="padding: 0.85rem 1.25rem; white-space: nowrap;">
+                <%= button_to toggle_status_transaction_path(transaction), method: :patch, class: "btn btn-ghost", style: "padding: 0.15rem 0.5rem; font-size: 0.75rem; border-radius: 999px; border: 1px solid #{transaction.realized? ? 'rgba(52, 211, 153, 0.3)' : 'rgba(251, 191, 36, 0.3)'}; background: #{transaction.realized? ? 'rgba(52, 211, 153, 0.1)' : 'rgba(251, 191, 36, 0.1)'}; color: #{transaction.realized? ? '#34d399' : '#fbbf24'}; font-weight: 600;", title: (transaction.realized? ? "Clique para marcar como Pendente" : "Clique de 1-Clique para Efetivar") do %>
+                  <%= transaction.realized? ? "🟢 Efetivada" : "🟡 Pendente" %>
+                <% end %>
               </td>
               <td style="padding: 0.85rem 1.25rem;">
                 <div style="font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">

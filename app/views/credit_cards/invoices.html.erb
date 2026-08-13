@@ -81,7 +81,7 @@
 
               <div class="form-group" style="margin-bottom: 0.75rem;">
                 <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.3rem;">Data do Pagamento</label>
-                <input type="date" name="payment_date" value="<%= Date.current.strftime('%Y-%m-%d') %>" class="form-input" style="padding: 0.4rem; font-size: 0.85rem;" required />
+                <input type="text" name="payment_date" value="<%= Date.current.strftime('%d/%m/%Y') %>" data-controller="datepicker" placeholder="dd/mm/aaaa" class="form-input" style="padding: 0.4rem; font-size: 0.85rem;" required />
               </div>
 
               <div class="form-group" style="margin-bottom: 1rem;">

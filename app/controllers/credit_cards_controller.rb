@@ -85,7 +85,8 @@ class CreditCardsController < ApplicationController
         date: payment_date,
         bank_account: bank_account,
         category: category,
-        supplier: supplier
+        supplier: supplier,
+        status: "realized"
       )
 
       current_account.credit_card_invoice_payments.create!(

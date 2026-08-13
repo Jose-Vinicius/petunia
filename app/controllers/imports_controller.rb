@@ -97,12 +97,18 @@ class ImportsController < ApplicationController
         end
 
         is_refund_val = ActiveModel::Type::Boolean.new.cast(tx_data[:is_refund])
-        parsed_comp_date = TransactionImporterService.parse_date(tx_data[:competence_date])
+        tx_date = TransactionImporterService.parse_date(tx_data[:date]) || Date.current
+        parsed_comp_date = if credit_card.present?
+                             credit_card.invoice_competence_for(tx_date)
+                           else
+                             TransactionImporterService.parse_date(tx_data[:competence_date]) || tx_date
+                           end
 
         tx_attrs = {
           description: tx_data[:description].to_s.strip,
           amount: tx_data[:amount].to_f.abs,
-          date: TransactionImporterService.parse_date(tx_data[:date]) || Date.current,
+          date: tx_date,
+          competence_date: parsed_comp_date,
           transaction_type: tx_type,
           category: category,
           supplier: supplier,
@@ -111,14 +117,42 @@ class ImportsController < ApplicationController
           credit_card: credit_card,
           is_refund: (credit_card.present? && is_refund_val)
         }
-        tx_attrs[:competence_date] = parsed_comp_date if parsed_comp_date.present?
 
-        tx = current_account.transactions.build(tx_attrs)
-
-        if tx.save
-          success_count += 1
+        installments_cnt = tx_data[:installments_count].to_i
+        if installments_cnt > 1
+          base_params = {
+            description: tx_attrs[:description],
+            date: tx_attrs[:date],
+            competence_date: tx_attrs[:competence_date],
+            transaction_type: tx_type,
+            category_id: category&.id,
+            supplier_id: supplier&.id,
+            cost_center_id: cost_center&.id,
+            bank_account_id: bank_account&.id,
+            credit_card_id: credit_card&.id,
+            is_refund: tx_attrs[:is_refund],
+            status: "realized"
+          }
+          creator = InstallmentTransactionCreator.new(
+            account: current_account,
+            base_params: base_params,
+            installments_count: installments_cnt,
+            total_amount: tx_attrs[:amount]
+          )
+          created_txs = creator.call
+          if created_txs.present?
+            success_count += created_txs.size
+          else
+            errors << "Linha #{idx + 1}: Não foi possível criar as #{installments_cnt} parcelas."
+          end
         else
-          errors << "Linha #{idx + 1}: #{tx.errors.full_messages.join(', ')}"
+          tx = current_account.transactions.build(tx_attrs)
+
+          if tx.save
+            success_count += 1
+          else
+            errors << "Linha #{idx + 1}: #{tx.errors.full_messages.join(', ')}"
+          end
         end
       end
 
@@ -134,14 +168,15 @@ class ImportsController < ApplicationController
 
   def download_template
     sample = params[:sample] == "true"
-    headers = [ "Data", "Data Competência", "Descrição", "Valor", "Tipo", "Categoria", "Fornecedor", "Centro de Custo", "Conta Bancária", "Cartão de Crédito", "Estorno" ]
+    headers = [ "Data", "Data Competência", "Descrição", "Valor", "Tipo", "Categoria", "Fornecedor", "Centro de Custo", "Conta Bancária", "Cartão de Crédito", "Parcelas", "Estorno" ]
 
     csv_data = CSV.generate(headers: true, col_sep: ";") do |csv|
       csv << headers
       if sample
-        csv << [ "10/08/2026", "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Empresa ACME", "Trabalho", "Nubank", "", "Não" ]
-        csv << [ "11/08/2026", "10/09/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Mercado Central", "Pessoal", "", "Visa Itaú", "Não" ]
-        csv << [ "12/08/2026", "10/09/2026", "Estorno Compra", "45,00", "Despesa", "Alimentação", "Restaurante Gourmet", "Pessoal", "", "Visa Itaú", "Sim" ]
+        csv << [ "10/08/2026", "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Empresa ACME", "Trabalho", "Nubank", "", "1", "Não" ]
+        csv << [ "11/08/2026", "10/09/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Mercado Central", "Pessoal", "", "Visa Itaú", "1", "Não" ]
+        csv << [ "12/08/2026", "10/09/2026", "Smartphone Novo", "1200,00", "Despesa", "Eletrônicos", "Loja Tech", "Pessoal", "", "Visa Itaú", "10", "Não" ]
+        csv << [ "13/08/2026", "10/09/2026", "Estorno Compra", "45,00", "Despesa", "Alimentação", "Restaurante Gourmet", "Pessoal", "", "Visa Itaú", "1", "Sim" ]
       end
     end
 

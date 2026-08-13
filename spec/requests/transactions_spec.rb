@@ -173,6 +173,19 @@ RSpec.describe "Transações (Transactions)", type: :request do
       end
     end
 
+    describe "PATCH /transactions/:id/toggle_status" do
+      it "alterna o status da transação entre realized e pending" do
+        tx = create(:transaction, account: account, category: category, supplier: supplier, bank_account: bank_account, status: "realized")
+        expect(tx).to be_realized
+
+        patch toggle_status_transaction_path(tx)
+        expect(tx.reload).to be_pending
+
+        patch toggle_status_transaction_path(tx)
+        expect(tx.reload).to be_realized
+      end
+    end
+
     describe "DELETE /transactions/:id" do
       it "remove a transação do ambiente" do
         tx = create(:transaction, account: account, category: category, bank_account: bank_account)

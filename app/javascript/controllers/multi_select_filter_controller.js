@@ -28,7 +28,6 @@ export default class extends Controller {
     this.selectedValue = selected
     this.updateChips()
     this.updateHiddenInputs()
-    this.submitForm()
   }
 
   updateChips() {

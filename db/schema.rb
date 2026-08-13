@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_201500) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_13_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -88,6 +88,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_201500) do
     t.index ["account_id", "name"], name: "index_credit_cards_on_account_id_and_name", unique: true
     t.index ["account_id"], name: "index_credit_cards_on_account_id"
     t.index ["bank_account_id"], name: "index_credit_cards_on_bank_account_id"
+  end
+
+  create_table "recurring_transactions", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.boolean "active", default: true, null: false
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.bigint "bank_account_id"
+    t.bigint "category_id", null: false
+    t.bigint "cost_center_id"
+    t.datetime "created_at", null: false
+    t.bigint "credit_card_id"
+    t.string "description", null: false
+    t.date "end_date"
+    t.string "frequency", default: "monthly", null: false
+    t.boolean "is_refund", default: false, null: false
+    t.date "start_date", null: false
+    t.bigint "supplier_id"
+    t.string "transaction_type", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_recurring_transactions_on_account_id"
+    t.index ["bank_account_id"], name: "index_recurring_transactions_on_bank_account_id"
+    t.index ["category_id"], name: "index_recurring_transactions_on_category_id"
+    t.index ["cost_center_id"], name: "index_recurring_transactions_on_cost_center_id"
+    t.index ["credit_card_id"], name: "index_recurring_transactions_on_credit_card_id"
+    t.index ["supplier_id"], name: "index_recurring_transactions_on_supplier_id"
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -256,6 +281,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_201500) do
     t.string "installment_group_id"
     t.integer "installment_number"
     t.boolean "is_refund", default: false, null: false
+    t.bigint "recurring_transaction_id"
+    t.string "status", default: "realized", null: false
     t.bigint "supplier_id"
     t.integer "total_installments"
     t.string "transaction_type", null: false
@@ -263,6 +290,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_201500) do
     t.index ["account_id", "category_id"], name: "index_transactions_on_account_id_and_category_id"
     t.index ["account_id", "competence_date"], name: "index_transactions_on_account_id_and_competence_date"
     t.index ["account_id", "date"], name: "index_transactions_on_account_id_and_date"
+    t.index ["account_id", "status"], name: "index_transactions_on_account_id_and_status"
     t.index ["account_id", "transaction_type"], name: "index_transactions_on_account_id_and_transaction_type"
     t.index ["account_id"], name: "index_transactions_on_account_id"
     t.index ["bank_account_id"], name: "index_transactions_on_bank_account_id"
@@ -272,6 +300,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_201500) do
     t.index ["destination_bank_account_id"], name: "index_transactions_on_destination_bank_account_id"
     t.index ["installment_group_id"], name: "index_transactions_on_installment_group_id"
     t.index ["is_refund"], name: "index_transactions_on_is_refund"
+    t.index ["recurring_transaction_id"], name: "index_transactions_on_recurring_transaction_id"
     t.index ["supplier_id"], name: "index_transactions_on_supplier_id"
   end
 
@@ -297,6 +326,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_201500) do
   add_foreign_key "credit_card_invoice_payments", "credit_cards"
   add_foreign_key "credit_cards", "accounts"
   add_foreign_key "credit_cards", "bank_accounts"
+  add_foreign_key "recurring_transactions", "accounts"
+  add_foreign_key "recurring_transactions", "bank_accounts"
+  add_foreign_key "recurring_transactions", "categories"
+  add_foreign_key "recurring_transactions", "cost_centers"
+  add_foreign_key "recurring_transactions", "credit_cards"
+  add_foreign_key "recurring_transactions", "suppliers"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -310,5 +345,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_201500) do
   add_foreign_key "transactions", "categories"
   add_foreign_key "transactions", "cost_centers"
   add_foreign_key "transactions", "credit_cards"
+  add_foreign_key "transactions", "recurring_transactions"
   add_foreign_key "transactions", "suppliers"
 end

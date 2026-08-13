@@ -111,5 +111,35 @@ RSpec.describe Transaction, type: :model do
         expect(tx.competence_date).to eq(Date.new(2026, 11, 5))
       end
     end
+
+    describe 'regras de status da transação (pending vs realized)' do
+      it 'atribui status realized por padrão para lançamentos com data de hoje ou passada' do
+        tx = create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, date: Date.current)
+        expect(tx.status).to eq("realized")
+        expect(tx).to be_realized
+      end
+
+      it 'atribui status pending por padrão para lançamentos com data no futuro' do
+        tx = create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, date: Date.current + 5.days, status: nil)
+        expect(tx.status).to eq("pending")
+        expect(tx).to be_pending
+      end
+
+      it 'permite criar lançamento futuro como realized caso especificado' do
+        tx = create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, date: Date.current + 5.days, status: "realized")
+        expect(tx.status).to eq("realized")
+      end
+
+      it 'filtra corretamente via scopes realized e pending' do
+        realized_tx = create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, date: Date.current, status: "realized")
+        pending_tx = create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, date: Date.current + 2.days, status: "pending")
+
+        expect(account.transactions.realized).to include(realized_tx)
+        expect(account.transactions.realized).not_to include(pending_tx)
+
+        expect(account.transactions.pending).to include(pending_tx)
+        expect(account.transactions.pending).not_to include(realized_tx)
+      end
+    end
   end
 end

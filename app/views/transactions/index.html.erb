@@ -17,9 +17,8 @@
     </div>
   </div>
 
-  <%= render "summary_cards" %>
-
   <%= turbo_frame_tag "transactions_content" do %>
+    <%= render "summary_cards" %>
     <%= render "filters" %>
     <%= render "list" %>
   <% end %>

@@ -1,11 +1,43 @@
 <div id="summary_cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
   <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+      <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Caixa Atual (Saldo Real)</span>
+      <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.4rem;">account_balance</span>
+    </div>
+    <div style="font-size: 1.5rem; font-weight: 700; color: <%= @consolidated_balance >= 0 ? 'var(--text-primary)' : '#ef4444' %>;">
+      <%= number_to_currency(@consolidated_balance, unit: "R$ ", separator: ",", delimiter: ".") %>
+    </div>
+    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem;">
+      Apenas movimentações efetivadas no banco
+    </div>
+  </div>
+
+  <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+      <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;">Saldo Projetado</span>
+      <span class="material-symbols-outlined" style="color: #60a5fa; font-size: 1.4rem;">finance_chip</span>
+    </div>
+    <div style="font-size: 1.5rem; font-weight: 700; color: <%= @projected_balance >= 0 ? '#60a5fa' : '#ef4444' %>;">
+      <%= number_to_currency(@projected_balance, unit: "R$ ", separator: ",", delimiter: ".") %>
+    </div>
+    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem;">
+      Inclui lançamentos pendentes do período
+    </div>
+  </div>
+
+  <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
       <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;"><%= t("transactions.index.total_income") %></span>
       <span class="material-symbols-outlined" style="color: #34d399; font-size: 1.4rem;">arrow_downward</span>
     </div>
     <div style="font-size: 1.5rem; font-weight: 700; color: #34d399;">
       <%= number_to_currency(@total_income, unit: "R$ ", separator: ",", delimiter: ".") %>
+    </div>
+    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem; display: flex; gap: 0.5rem;">
+      <span style="color: #34d399;">✓ <%= number_to_currency(@total_realized_income, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+      <% if @total_pending_income > 0 %>
+        <span style="color: #fbbf24;">⏳ <%= number_to_currency(@total_pending_income, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+      <% end %>
     </div>
   </div>
 
@@ -17,15 +49,11 @@
     <div style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">
       <%= number_to_currency(@total_expense, unit: "R$ ", separator: ",", delimiter: ".") %>
     </div>
-  </div>
-
-  <div style="background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem;">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-      <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;"><%= t("transactions.index.balance") %></span>
-      <span class="material-symbols-outlined" style="color: var(--primary, #a78bfa); font-size: 1.4rem;">account_balance_wallet</span>
-    </div>
-    <div style="font-size: 1.5rem; font-weight: 700; color: <%= @balance >= 0 ? 'var(--text-primary)' : '#ef4444' %>;">
-      <%= number_to_currency(@balance, unit: "R$ ", separator: ",", delimiter: ".") %>
+    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.35rem; display: flex; gap: 0.5rem;">
+      <span style="color: #ef4444;">✓ <%= number_to_currency(@total_realized_expense, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+      <% if @total_pending_expense > 0 %>
+        <span style="color: #fbbf24;">⏳ <%= number_to_currency(@total_pending_expense, unit: "R$ ", separator: ",", delimiter: ".") %></span>
+      <% end %>
     </div>
   </div>
 </div>

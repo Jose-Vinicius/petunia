@@ -1,0 +1,111 @@
+<div style="max-width: 96%; width: 100%; margin: 1.5rem auto; padding: 0 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.5rem 0;">
+        🔄 Lançamentos Recorrentes
+      </h1>
+      <p style="color: var(--text-secondary); margin: 0; font-size: 0.95rem;">
+        Gerencie despesas e receitas contínuas sem limite de parcelas (Aluguel, Copel, Sanepar, Assinaturas, Salário).
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+      <%= link_to "+ Nova Recorrência", new_recurrence_path, data: { turbo_frame: "modal" }, class: "btn btn-primary" %>
+      <%= link_to "+ Novo Lançamento", new_transaction_path, data: { turbo_frame: "modal" }, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <% if notice.present? %>
+    <div style="background: rgba(52, 211, 153, 0.1); border: 1px solid var(--success, #10b981); border-radius: var(--radius-md, 8px); padding: 0.85rem 1.25rem; margin-bottom: 1.5rem; color: #34d399; font-size: 0.9rem;">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <% if @recurring_transactions.empty? %>
+    <div style="text-align: center; padding: 3.5rem 1rem; background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px);">
+      <div style="font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-muted);">🔄</div>
+      <h3 style="color: var(--text-primary); margin: 0 0 0.5rem 0; font-size: 1.15rem;">Nenhuma recorrência cadastrada</h3>
+      <p style="color: var(--text-secondary); margin: 0 0 1.5rem 0; font-size: 0.9rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+        Cadastre contas fixas recorrentes (como aluguel, condomínio, assinaturas ou salário) para projetar seu fluxo de caixa mensal automaticamente.
+      </p>
+      <%= link_to "+ Cadastrar Primeira Recorrência", new_recurrence_path, data: { turbo_frame: "modal" }, class: "btn btn-primary" %>
+    </div>
+  <% else %>
+    <div style="border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); overflow: hidden; background: var(--surface-card, #121215);">
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border, #27272a); background: var(--surface-hover, #18181b); color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">
+              <th style="padding: 0.85rem 1rem;">Descrição</th>
+              <th style="padding: 0.85rem 1rem;">Valor</th>
+              <th style="padding: 0.85rem 1rem;">Frequência</th>
+              <th style="padding: 0.85rem 1rem;">Categoria</th>
+              <th style="padding: 0.85rem 1rem;">Fornecedor</th>
+              <th style="padding: 0.85rem 1rem;">Meio de Pagamento</th>
+              <th style="padding: 0.85rem 1rem; text-align: center;">Status</th>
+              <th style="padding: 0.85rem 1rem; text-align: right;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recurring_transactions.each do |rec| %>
+              <tr style="border-bottom: 1px solid var(--border, #27272a); <%= rec.active? ? '' : 'opacity: 0.65; background: rgba(0,0,0,0.15);' %>">
+                <td style="padding: 0.85rem 1rem; font-weight: 600; color: var(--text-primary);">
+                  <%= rec.description %>
+                </td>
+                <td style="padding: 0.85rem 1rem; font-weight: 700; color: <%= rec.income? ? '#34d399' : '#f87171' %>;">
+                  <%= rec.income? ? '+ ' : '- ' %> R$ <%= number_with_precision(rec.amount, precision: 2, separator: ',') %>
+                </td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-secondary);">
+                  <span class="chip" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.06); border-radius: 4px;">
+                    <%= rec.frequency == 'yearly' ? '📅 Anual' : '🗓️ Mensal' %>
+                  </span>
+                </td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-secondary);">
+                  <%= rec.category&.name %>
+                </td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-secondary);">
+                  <%= rec.supplier&.name || '-' %>
+                </td>
+                <td style="padding: 0.85rem 1rem; color: var(--text-secondary);">
+                  <% if rec.credit_card.present? %>
+                    💳 <%= rec.credit_card.name %>
+                  <% elsif rec.bank_account.present? %>
+                    🏦 <%= rec.bank_account.name %>
+                  <% else %>
+                    -
+                  <% end %>
+                </td>
+                <td style="padding: 0.85rem 1rem; text-align: center;">
+                  <% if rec.active? %>
+                    <span style="display: inline-block; padding: 0.2rem 0.55rem; background: rgba(52, 211, 153, 0.15); color: #34d399; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                      🟢 Ativa
+                    </span>
+                  <% else %>
+                    <span style="display: inline-block; padding: 0.2rem 0.55rem; background: rgba(156, 163, 175, 0.15); color: #9ca3af; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                      ⏸️ Pausada
+                    </span>
+                  <% end %>
+                </td>
+                <td style="padding: 0.85rem 1rem; text-align: right; white-space: nowrap;">
+                  <div style="display: inline-flex; gap: 0.4rem; align-items: center;">
+                    <%= button_to toggle_active_recurrence_path(rec), method: :patch, class: "btn btn-ghost", style: "padding: 0.25rem 0.5rem; font-size: 0.8rem; color: var(--text-secondary);", title: rec.active? ? "Pausar Recorrência" : "Ativar Recorrência" do %>
+                      <%= rec.active? ? "⏸️ Pausar" : "▶️ Ativar" %>
+                    <% end %>
+
+                    <%= link_to edit_recurrence_path(rec), data: { turbo_frame: "modal" }, class: "btn btn-ghost", style: "padding: 0.25rem 0.5rem; font-size: 0.8rem; color: var(--primary);", title: "Editar" do %>
+                      ✏️ Editar
+                    <% end %>
+
+                    <%= button_to recurrence_path(rec), method: :delete, data: { turbo_confirm: "Tem certeza? Isso excluirá a regra de recorrência e todas as movimentações futuras pendentes." }, class: "btn btn-ghost", style: "padding: 0.25rem 0.5rem; font-size: 0.8rem; color: var(--error, #ef4444);", title: "Excluir" do %>
+                      🗑️
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+</div>

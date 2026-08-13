@@ -4,7 +4,7 @@ export default class extends Controller {
   static targets = [
     "checkbox",
     "fields",
-    "installmentsInput",
+    "monthsInput",
     "amountInput",
     "previewText"
   ]
@@ -22,10 +22,11 @@ export default class extends Controller {
     }
 
     if (isChecked) {
-      const recurringCheckbox = document.querySelector('input[name="is_recurring"]')
-      if (recurringCheckbox && recurringCheckbox.checked) {
-        recurringCheckbox.checked = false
-        recurringCheckbox.dispatchEvent(new Event("change", { bubbles: true }))
+      // Uncheck installment checkbox if present in form
+      const installmentCheckbox = document.querySelector('input[name="is_installment"]')
+      if (installmentCheckbox && installmentCheckbox.checked) {
+        installmentCheckbox.checked = false
+        installmentCheckbox.dispatchEvent(new Event("change", { bubbles: true }))
       }
       this.calculate()
     }
@@ -35,18 +36,22 @@ export default class extends Controller {
     if (!this.hasPreviewTextTarget) return
 
     const amountStr = this.hasAmountInputTarget ? this.amountInputTarget.value : "0"
-    const countStr = this.hasInstallmentsInputTarget ? this.installmentsInputTarget.value : "2"
+    const monthsStr = this.hasMonthsInputTarget ? this.monthsInputTarget.value : "12"
 
-    const totalAmount = this.parseCurrency(amountStr)
-    const count = parseInt(countStr, 10) || 2
+    const amount = this.parseCurrency(amountStr)
+    const months = parseInt(monthsStr, 10) || 12
 
-    if (totalAmount > 0 && count >= 2) {
-      const perInstallment = (totalAmount / count).toLocaleString("pt-BR", {
+    if (amount > 0 && months >= 1) {
+      const formattedAmount = amount.toLocaleString("pt-BR", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       })
 
-      this.previewTextTarget.textContent = `Serão geradas ${count} parcelas de R$ ${perInstallment} cada.`
+      if (months === 1) {
+        this.previewTextTarget.textContent = `Será gerado 1 lançamento recorrente de R$ ${formattedAmount}.`
+      } else {
+        this.previewTextTarget.textContent = `Serão gerados ${months} lançamentos recorrentes mensais de R$ ${formattedAmount} cada.`
+      }
       this.previewTextTarget.style.display = "block"
     } else {
       this.previewTextTarget.textContent = ""

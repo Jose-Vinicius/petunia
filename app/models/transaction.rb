@@ -1,5 +1,6 @@
 class Transaction < ApplicationRecord
   enum :transaction_type, { income: "income", expense: "expense", transfer: "transfer" }
+  enum :status, { pending: "pending", realized: "realized" }
 
   belongs_to :account
   belongs_to :category
@@ -8,9 +9,13 @@ class Transaction < ApplicationRecord
   belongs_to :bank_account, optional: true
   belongs_to :credit_card, optional: true
   belongs_to :destination_bank_account, class_name: "BankAccount", optional: true
+  belongs_to :recurring_transaction, optional: true
 
   scope :charges, -> { where(is_refund: false) }
   scope :refunds, -> { where(is_refund: true) }
+  scope :pending, -> { where(status: "pending") }
+  scope :realized, -> { where(status: "realized") }
+  scope :recurring, -> { where.not(recurring_transaction_id: nil) }
   scope :by_group, ->(group_id) { where(installment_group_id: group_id) }
   scope :without_invoice_payments, -> {
     left_joins(:category).where("categories.id IS NULL OR LOWER(categories.name) NOT LIKE ?", "%pagamento%fatura%")
@@ -20,12 +25,17 @@ class Transaction < ApplicationRecord
     installment_group_id.present?
   end
 
-  validates :description, :date, :competence_date, :amount, :transaction_type, :supplier_id, presence: true
+  def recurring?
+    recurring_transaction_id.present?
+  end
+
+  validates :description, :date, :competence_date, :amount, :transaction_type, :supplier_id, :status, presence: true
   validates :amount, numericality: { greater_than: 0 }
   validates :is_refund, inclusion: { in: [true, false] }
 
   before_validation :set_default_is_refund
   before_validation :set_default_competence_date
+  before_validation :set_default_status, on: :create
 
   validate :must_have_valid_payment_source
   validate :same_account_associations
@@ -77,6 +87,17 @@ class Transaction < ApplicationRecord
       self.competence_date = credit_card.invoice_competence_for(date)
     else
       self.competence_date = date
+    end
+  end
+
+  def set_default_status
+    return unless has_attribute?(:status)
+    return if status.present?
+
+    if date.present? && date > Date.current
+      self.status = "pending"
+    else
+      self.status = "realized"
     end
   end
 

@@ -180,6 +180,7 @@ RSpec.describe 'Cartões de Crédito (CreditCards)', type: :request do
         tx_pagamento = conta.transactions.find_by(amount: 500.00)
         expect(tx_pagamento.bank_account).to eq(banco)
         expect(tx_pagamento.expense?).to be true
+        expect(tx_pagamento.status).to eq("realized")
 
         payment = cartao.invoice_payment_for(Date.new(2026, 9, 1))
         expect(payment).to be_present

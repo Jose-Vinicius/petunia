@@ -9,7 +9,8 @@ export default class extends Controller {
     "competenceDateInput",
     "refundGroup",
     "refundCheckbox",
-    "destinationBankAccountGroup"
+    "destinationBankAccountGroup",
+    "statusSelect"
   ]
 
   static values = {
@@ -86,10 +87,27 @@ export default class extends Controller {
     if (closingDay && dueDay && this.hasCompetenceDateInputTarget) {
       const calculatedDate = this.calculateCompetenceDate(purchaseDateStr, closingDay, dueDay)
       if (calculatedDate) {
-        this.competenceDateInputTarget.value = calculatedDate
+        this.setInputValue(this.competenceDateInputTarget, calculatedDate)
       }
     } else if (this.hasCompetenceDateInputTarget) {
-      this.competenceDateInputTarget.value = purchaseDateStr
+      this.setInputValue(this.competenceDateInputTarget, purchaseDateStr)
+    }
+
+    if (this.hasStatusSelectTarget) {
+      const todayStr = new Date().toISOString().split("T")[0]
+      if (purchaseDateStr > todayStr) {
+        this.statusSelectTarget.value = "pending"
+      } else {
+        this.statusSelectTarget.value = "realized"
+      }
+    }
+  }
+
+  setInputValue(target, val) {
+    if (!target) return
+    target.value = val
+    if (target._flatpickr) {
+      target._flatpickr.setDate(val, true, "Y-m-d")
     }
   }
 

@@ -5,18 +5,27 @@ class DashboardController < ApplicationController
   def index
     scope = filtered_transactions_scope
 
-    @monthly_income = scope.income.sum(:amount)
-    @monthly_expense = scope.expense.charges.without_invoice_payments.sum(:amount)
+    @monthly_realized_income = scope.income.realized.sum(:amount)
+    @monthly_pending_income = scope.income.pending.sum(:amount)
+    @monthly_income = @monthly_realized_income + @monthly_pending_income
+
+    @monthly_realized_expense = scope.expense.charges.without_invoice_payments.realized.sum(:amount)
+    @monthly_pending_expense = scope.expense.charges.without_invoice_payments.pending.sum(:amount)
+    @monthly_expense = @monthly_realized_expense + @monthly_pending_expense
+
     @monthly_balance = @monthly_income - @monthly_expense
 
-    # Total consolidated liquid balance across all bank accounts
+    # Total consolidated liquid balance across all bank accounts (ONLY realized transactions)
     @consolidated_balance = current_account.bank_accounts.sum do |bank_acc|
-      income = bank_acc.transactions.income.sum(:amount)
-      expense = bank_acc.transactions.expense.sum(:amount)
-      transfers_out = bank_acc.transactions.transfer.sum(:amount)
-      transfers_in = current_account.transactions.transfer.where(destination_bank_account_id: bank_acc.id).sum(:amount)
+      income = bank_acc.transactions.income.realized.sum(:amount)
+      expense = bank_acc.transactions.expense.realized.sum(:amount)
+      transfers_out = bank_acc.transactions.transfer.realized.sum(:amount)
+      transfers_in = current_account.transactions.transfer.realized.where(destination_bank_account_id: bank_acc.id).sum(:amount)
       income + transfers_in - expense - transfers_out
     end
+
+    # Projected balance considering pending income and expenses
+    @projected_balance = @consolidated_balance + @monthly_pending_income - @monthly_pending_expense
 
     # Consolidated Credit Card limit metrics
     @total_credit_limit = current_account.credit_cards.sum(:limit)
@@ -147,29 +156,34 @@ class DashboardController < ApplicationController
     @selected_cost_center_ids = normalize_array_param(params[:cost_center_id])
     @selected_payment_sources = normalize_array_param(params[:payment_source])
     @selected_types = normalize_array_param(params[:transaction_type])
+    @selected_statuses = normalize_array_param(params[:status])
     @date_mode = params[:date_mode].presence || "competence"
 
-    @period = params[:period].presence
-    if @period == "all" || params[:clear_dates] == "true"
-      @start_date = nil
-      @end_date = nil
-    elsif @period == "last_month"
-      last_m = Date.current.prev_month
-      @start_date = last_m.beginning_of_month
-      @end_date = last_m.end_of_month
-    elsif @period == "last_30_days"
-      @start_date = 30.days.ago.to_date
-      @end_date = Date.current
-    elsif @period == "this_year"
-      @start_date = Date.current.beginning_of_year
-      @end_date = Date.current.end_of_year
-    elsif @period == "this_month"
-      @start_date = Date.current.beginning_of_month
-      @end_date = Date.current.end_of_month
-    elsif params[:start_date].present? || params[:end_date].present?
+    if params[:start_date].present? || params[:end_date].present?
       @start_date = parse_date_param(params[:start_date])
       @end_date = parse_date_param(params[:end_date])
+      @period = "custom"
+    elsif params[:period].present?
+      @period = params[:period]
+      if @period == "all" || params[:clear_dates] == "true"
+        @start_date = nil
+        @end_date = nil
+      elsif @period == "last_month"
+        last_m = Date.current.prev_month
+        @start_date = last_m.beginning_of_month
+        @end_date = last_m.end_of_month
+      elsif @period == "last_30_days"
+        @start_date = 30.days.ago.to_date
+        @end_date = Date.current
+      elsif @period == "this_year"
+        @start_date = Date.current.beginning_of_year
+        @end_date = Date.current.end_of_year
+      elsif @period == "this_month"
+        @start_date = Date.current.beginning_of_month
+        @end_date = Date.current.end_of_month
+      end
     else
+      @period = "this_month"
       @start_date = Date.current.beginning_of_month
       @end_date = Date.current.end_of_month
     end
@@ -191,6 +205,7 @@ class DashboardController < ApplicationController
     scope = scope.where(supplier_id: @selected_supplier_ids) if @selected_supplier_ids.present?
     scope = scope.where(cost_center_id: @selected_cost_center_ids) if @selected_cost_center_ids.present?
     scope = scope.where(transaction_type: @selected_types) if @selected_types.present?
+    scope = scope.where(status: @selected_statuses) if @selected_statuses.present?
 
     if @selected_payment_sources.present?
       bank_ids = []
@@ -220,6 +235,6 @@ class DashboardController < ApplicationController
 
   def parse_date_param(param_val)
     return nil if param_val.blank?
-    Date.parse(param_val.to_s) rescue nil
+    TransactionImporterService.parse_date(param_val)
   end
 end

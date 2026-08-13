@@ -44,6 +44,22 @@ RSpec.describe "Dashboard Financeiro", type: :request do
       expect(response.body).not_to include("Cinema")
     end
 
+    it "calcula Caixa Atual considerando apenas transações efetivadas e Saldo Projetado incluindo pendentes" do
+      supplier = create(:supplier, account: account)
+      # Salário de 5000 no futuro / pendente
+      create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, amount: 5000, date: Date.current + 10.days, status: "pending", description: "Salário Futuro")
+      # Receita efetivada de 1000
+      create(:transaction, :income, account: account, category: category, supplier: supplier, bank_account: bank_account, amount: 1000, date: Date.current, status: "realized", description: "Venda Hoje")
+
+      get dashboard_path, params: { period: "all" }
+
+      expect(response).to have_http_status(:ok)
+      # Caixa Atual (Saldo Realizado) deve ser apenas 1000, e não 6000
+      expect(controller.instance_variable_get(:@consolidated_balance)).to eq(1000.0)
+      # Saldo Projetado deve ser 6000 (1000 real + 5000 pendente)
+      expect(controller.instance_variable_get(:@projected_balance)).to eq(6000.0)
+    end
+
     it "exibe o link para o dashboard na página inicial quando autenticado" do
       get root_path
       expect(response).to have_http_status(:ok)

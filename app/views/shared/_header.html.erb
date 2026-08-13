@@ -48,6 +48,7 @@
       <% if user_signed_in? %>
         <%= link_to t("app.dashboard"), dashboard_path, class: "btn btn-ghost" %>
         <%= link_to t("app.transactions"), transactions_path, class: "btn btn-ghost" %>
+        <%= link_to "Recorrências", recurrences_path, class: "btn btn-ghost" %>
 
         <!-- CADASTROS DROPDOWN MENU -->
         <div class="dropdown" data-controller="dropdown">
@@ -124,6 +125,11 @@
           <%= link_to transactions_path, class: "sidebar-nav-link" do %>
             <span class="material-symbols-outlined" style="color: #34d399;">payments</span>
             <span><%= t("app.transactions") %></span>
+          <% end %>
+
+          <%= link_to recurrences_path, class: "sidebar-nav-link" do %>
+            <span class="material-symbols-outlined" style="color: #60a5fa;">sync</span>
+            <span>Recorrências</span>
           <% end %>
         </div>
 

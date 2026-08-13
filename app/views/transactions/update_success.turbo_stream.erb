@@ -1,4 +1,5 @@
 <%= turbo_stream.update "modal", "" %>
+<%= turbo_stream.replace "summary_cards", partial: "summary_cards" %>
 <%= turbo_stream.replace "transactions_content" do %>
   <%= render "filters" %>
   <%= render "list" %>

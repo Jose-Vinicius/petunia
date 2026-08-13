@@ -14,7 +14,8 @@ class TransactionImporterService
     cost_center: [ "centro_de_custo", "cost_center", "centro de custo" ],
     bank_account: [ "banco", "bank", "bank_account", "conta", "conta bancaria", "conta bancária", "conta_bancaria" ],
     credit_card: [ "cartao", "cartão", "credit_card", "cartao_de_credito", "cartão de crédito", "cartao de credito", "cartao_credito" ],
-    is_refund: [ "estorno", "reembolso", "is_refund", "refund" ]
+    is_refund: [ "estorno", "reembolso", "is_refund", "refund" ],
+    installments_count: [ "parcelas", "parcela", "qtd_parcelas", "qtd parcelas", "quantidade parcelas", "numero_parcelas", "número parcelas", "total_installments", "installments_count", "installments" ]
   }.freeze
 
   def initialize(file_path:, filename:, account:, bank_account_id: nil, credit_card_id: nil)
@@ -77,15 +78,14 @@ class TransactionImporterService
       matched_card = credit_cards.find { |c| c.name.casecmp?(card_name) } if card_name.present?
       matched_card ||= credit_cards.find_by(id: @credit_card_id) if @credit_card_id.present?
 
-      if parsed_competence_date.nil?
-        if matched_card.present?
-          parsed_competence_date = matched_card.invoice_competence_for(parsed_date)
-        else
-          parsed_competence_date = parsed_date
-        end
-      end
+      parsed_competence_date = if matched_card.present?
+                                 matched_card.invoice_competence_for(parsed_date)
+                               else
+                                 parse_date(row_data[:competence_date]) || parsed_date
+                               end
 
       is_refund_flag = determine_is_refund(row_data)
+      installments_cnt = parse_installments_count(row_data[:installments_count], row_data[:description])
 
       preview_rows << {
         date: parsed_date.strftime("%Y-%m-%d"),
@@ -94,6 +94,7 @@ class TransactionImporterService
         amount: raw_amount,
         transaction_type: tx_type,
         is_refund: is_refund_flag,
+        installments_count: installments_cnt,
         category: {
           name: cat_name.presence || (cat&.name || "Alimentação"),
           id: cat&.id,
@@ -146,13 +147,30 @@ class TransactionImporterService
       row_data = map_row_to_headers(headers, row)
 
       transaction_attributes = build_transaction_attributes(row_data)
-      transaction = @account.transactions.build(transaction_attributes)
+      installments_cnt = parse_installments_count(row_data[:installments_count], row_data[:description])
 
-      if transaction.save
-        success_count += 1
+      if installments_cnt > 1
+        creator = InstallmentTransactionCreator.new(
+          account: @account,
+          base_params: transaction_attributes.except(:amount),
+          installments_count: installments_cnt,
+          total_amount: transaction_attributes[:amount]
+        )
+        created = creator.call
+        if created.present?
+          success_count += created.size
+        else
+          error_count += 1
+          errors << "Linha #{index + 2}: Não foi possível criar as parcelas."
+        end
       else
-        error_count += 1
-        errors << "Linha #{index + 2}: #{transaction.errors.full_messages.join(', ')}"
+        transaction = @account.transactions.build(transaction_attributes)
+        if transaction.save
+          success_count += 1
+        else
+          error_count += 1
+          errors << "Linha #{index + 2}: #{transaction.errors.full_messages.join(', ')}"
+        end
       end
     rescue StandardError => e
       error_count += 1
@@ -232,14 +250,11 @@ class TransactionImporterService
 
     payment_attrs = assign_payment_source(data, tx_type)
 
-    parsed_competence_date = parse_date(data[:competence_date])
-    if parsed_competence_date.nil?
-      if payment_attrs[:credit_card].present?
-        parsed_competence_date = payment_attrs[:credit_card].invoice_competence_for(parsed_date)
-      else
-        parsed_competence_date = parsed_date
-      end
-    end
+    parsed_competence_date = if payment_attrs[:credit_card].present?
+                               payment_attrs[:credit_card].invoice_competence_for(parsed_date)
+                             else
+                               parse_date(data[:competence_date]) || parsed_date
+                             end
 
     is_refund_val = determine_is_refund(data)
 
@@ -252,6 +267,7 @@ class TransactionImporterService
       category: category,
       supplier: supplier,
       cost_center: cost_center,
+      status: "realized",
       is_refund: (payment_attrs[:credit_card].present? && is_refund_val)
     }.merge(payment_attrs)
 
@@ -265,6 +281,28 @@ class TransactionImporterService
     desc = data[:description].to_s.strip
     type_str = data[:type].to_s.strip
     (desc =~ /(estorno|reembolso)/i || type_str =~ /(estorno|reembolso)/i) ? true : false
+  end
+
+  def parse_installments_count(val, description = nil)
+    if val.present?
+      str = val.to_s.strip
+      if str =~ %r{\d+/(\d+)}
+        return [ $1.to_i, 1 ].max
+      elsif str =~ /(\d+)/
+        return [ $1.to_i, 1 ].max
+      end
+    end
+
+    if description.present?
+      desc = description.to_s.strip
+      if desc =~ %r{\(\d+/(\d+)\)}
+        return [ $1.to_i, 1 ].max
+      elsif desc =~ /\b(\d+)\s*x\b/i
+        return [ $1.to_i, 1 ].max
+      end
+    end
+
+    1
   end
 
   def parse_amount(val)

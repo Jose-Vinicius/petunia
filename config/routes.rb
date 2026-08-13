@@ -32,7 +32,12 @@ Rails.application.routes.draw do
   resources :categories, except: [ :show ]
   resources :cost_centers, except: [ :show ]
   resources :suppliers, except: [ :show ]
-  resources :transactions, except: [ :show ]
+  resources :transactions, except: [ :show ] do
+    patch :toggle_status, on: :member
+  end
+  resources :recurrences do
+    patch :toggle_active, on: :member
+  end
 
   # Dashboard & Spreadsheet Import
   get "dashboard" => "dashboard#index", as: :dashboard

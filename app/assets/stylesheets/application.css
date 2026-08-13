@@ -762,3 +762,46 @@ a:hover {
   min-height: 220px;
 }
 
+/* Flatpickr Custom Petunia Dark Theme Overrides */
+.flatpickr-calendar {
+  background: var(--surface-card, #18181b) !important;
+  border: 1px solid var(--border-color, #27272a) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+  border-radius: var(--radius-lg, 12px) !important;
+  font-family: var(--font-geist) !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.selected:focus,
+.flatpickr-day.selected:hover,
+.flatpickr-day.selected.prevMonthDay,
+.flatpickr-day.selected.nextMonthDay {
+  background: var(--primary, #a78bfa) !important;
+  border-color: var(--primary, #a78bfa) !important;
+  color: #09090b !important;
+  font-weight: 600 !important;
+}
+
+.flatpickr-day:hover {
+  background: var(--surface-hover, #27272a) !important;
+}
+
+.flatpickr-months .flatpickr-month {
+  background: var(--surface-card, #18181b) !important;
+  color: var(--text-primary, #fafafa) !important;
+}
+
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+  color: var(--text-primary, #fafafa) !important;
+  font-weight: 600 !important;
+}
+
+span.flatpickr-weekday {
+  color: var(--text-secondary, #a1a1aa) !important;
+  font-weight: 500 !important;
+}
+

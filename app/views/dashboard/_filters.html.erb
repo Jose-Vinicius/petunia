@@ -1,36 +1,79 @@
-<%= form_with url: dashboard_path, method: :get, data: { turbo_frame: "dashboard_content", turbo_action: "advance" }, style: "background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem 1.5rem; margin-bottom: 2rem;" do |f| %>
-  <!-- Primary Filter Controls: Period & Dates -->
-  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; align-items: end;">
+<%= form_with url: dashboard_path, method: :get, data: { turbo_frame: "dashboard_content" }, style: "background: var(--surface-card, #121215); border: 1px solid var(--border, #27272a); border-radius: var(--radius-lg, 12px); padding: 1.25rem 1.5rem; margin-bottom: 2rem;" do |f| %>
+  <!-- Primary Filter Controls: Date Mode, Period, Dates & Actions -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 1.25rem; align-items: end;">
     <div>
       <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;">Visão / Competência</label>
-      <%= select_tag :date_mode, options_for_select([["Data da Fatura (Competência)", "competence"], ["Data da Compra (Lançamento)", "transaction"]], @date_mode || "competence"), onchange: "this.form.requestSubmit()", class: "form-input", style: "height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+      <%= select_tag :date_mode, options_for_select([["Data da Fatura (Competência)", "competence"], ["Data da Compra (Lançamento)", "transaction"]], @date_mode || "competence"), class: "form-input", style: "height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
     </div>
 
     <div>
       <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;"><%= t("transactions.filters.period") %></label>
       <% period_options = [
+        ["Personalizado", "custom"],
         [t("transactions.filters.period_this_month"), "this_month"],
         [t("transactions.filters.period_last_month"), "last_month"],
         [t("transactions.filters.period_last_30_days"), "last_30_days"],
         [t("transactions.filters.period_this_year"), "this_year"],
         [t("transactions.filters.period_all"), "all"]
       ] %>
-      <%= select_tag :period, options_for_select(period_options, @period || "this_month"), onchange: "this.form.requestSubmit()", class: "form-input", style: "height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
+      <%= select_tag :period, options_for_select(period_options, @period || "this_month"), class: "form-input", style: "height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" %>
     </div>
 
     <div>
       <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;">Vcto. Inicial / Início</label>
-      <input type="date" name="start_date" value="<%= @start_date&.strftime('%Y-%m-%d') %>" onchange="this.form.requestSubmit()" class="form-input" style="height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" />
+      <input type="text" name="start_date" value="<%= @start_date&.strftime('%d/%m/%Y') %>" data-controller="datepicker" placeholder="dd/mm/aaaa" class="form-input" style="height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" />
     </div>
 
     <div>
       <label style="display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem;">Vcto. Final / Fim</label>
-      <input type="date" name="end_date" value="<%= @end_date&.strftime('%Y-%m-%d') %>" onchange="this.form.requestSubmit()" class="form-input" style="height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" />
+      <input type="text" name="end_date" value="<%= @end_date&.strftime('%d/%m/%Y') %>" data-controller="datepicker" placeholder="dd/mm/aaaa" class="form-input" style="height: 38px; padding: 0.4rem 0.6rem; font-size: 0.85rem;" />
+    </div>
+
+    <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-start;">
+      <button type="submit" class="btn btn-primary" style="height: 38px; padding: 0 1.1rem; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; white-space: nowrap; flex: 1;">
+        <span class="material-symbols-outlined" style="font-size: 1.1rem;">search</span>
+        <span>Pesquisar</span>
+      </button>
+
+      <%= link_to dashboard_path, data: { turbo_frame: "dashboard_content" }, class: "btn btn-ghost", title: "Limpar Filtros", style: "height: 38px; padding: 0 0.85rem; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; border: 1px solid var(--border, #27272a); white-space: nowrap;" do %>
+        <span class="material-symbols-outlined" style="font-size: 1.1rem;">filter_alt_off</span>
+        <span>Limpar</span>
+      <% end %>
     </div>
   </div>
 
   <!-- Multi-Select Chip Section: Category & Payment Source -->
   <div style="display: flex; flex-direction: column; gap: 1rem; border-top: 1px solid var(--border, #27272a); padding-top: 1rem;">
+    <!-- Status Chips -->
+    <div>
+      <div class="filter-group-title">
+        <span class="material-symbols-outlined" style="font-size: 1rem; color: var(--primary);">verified</span>
+        <span>Status (<%= @selected_statuses.size.positive? ? "#{@selected_statuses.size} selecionados" : "Todos" %>)</span>
+      </div>
+      <div data-controller="multi-select-filter"
+           data-multi-select-filter-name-value="status"
+           data-multi-select-filter-selected-value="<%= @selected_statuses.to_json %>">
+        <div data-multi-select-filter-target="hiddenInputs">
+          <% @selected_statuses.each do |st| %>
+            <input type="hidden" name="status[]" value="<%= st %>">
+          <% end %>
+        </div>
+        <div class="filter-chips-container">
+          <div class="filter-chip <%= @selected_statuses.include?('realized') ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+               data-multi-select-filter-target="chip"
+               data-value="realized"
+               data-action="click->multi-select-filter#toggle">
+            🟢 Efetivada
+          </div>
+          <div class="filter-chip <%= @selected_statuses.include?('pending') ? 'filter-chip--active' : 'filter-chip--inactive' %>"
+               data-multi-select-filter-target="chip"
+               data-value="pending"
+               data-action="click->multi-select-filter#toggle">
+            🟡 Pendente
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Category Chips with 5-item limit -->
     <div>
       <div class="filter-group-title">
@@ -107,14 +150,6 @@
           <% end %>
         </div>
       </div>
-    </div>
-
-    <!-- Action Bar -->
-    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; align-items: center; margin-top: 0.5rem;">
-      <%= link_to dashboard_path, data: { turbo_frame: "dashboard_content" }, class: "btn btn-ghost", style: "height: 34px; padding: 0 1rem; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.35rem; border: 1px solid var(--border, #27272a);" do %>
-        <span class="material-symbols-outlined" style="font-size: 1rem;">filter_alt_off</span>
-        <span>Limpar Filtros</span>
-      <% end %>
     </div>
   </div>
 <% end %>

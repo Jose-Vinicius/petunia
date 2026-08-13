@@ -1,6 +1,6 @@
 class TransactionsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_transaction, only: [ :edit, :update, :destroy ]
+  before_action :set_transaction, only: [ :edit, :update, :destroy, :toggle_status ]
 
   def index
     load_index_data
@@ -19,7 +19,33 @@ class TransactionsController < ApplicationController
   end
 
   def create
-    if params[:is_installment] == "1" && params[:total_installments].to_i >= 2
+    if params[:is_recurring] == "1"
+      months_count = params[:recurring_months_count].presence || 12
+      creator = RecurringTransactionCreator.new(
+        account: current_account,
+        base_params: transaction_params,
+        amount: transaction_params[:amount],
+        months_count: months_count
+      )
+      txs = creator.call
+
+      if txs.present?
+        respond_to do |format|
+          msg = "#{txs.size} lançamentos recorrentes criados com sucesso!"
+          format.html { redirect_to recurrences_path, status: :see_other, notice: msg }
+          format.turbo_stream do
+            load_index_data
+            flash.now[:notice] = msg
+            render :update_success
+          end
+        end
+      else
+        @transaction = current_account.transactions.build(transaction_params)
+        @transaction.errors.add(:base, "Não foi possível criar os lançamentos recorrentes. Verifique os dados fornecidos.")
+        load_form_options
+        render :new, status: :unprocessable_content
+      end
+    elsif params[:is_installment] == "1" && params[:total_installments].to_i >= 2
       creator = InstallmentTransactionCreator.new(
         account: current_account,
         base_params: transaction_params,
@@ -83,6 +109,24 @@ class TransactionsController < ApplicationController
     end
   end
 
+  def toggle_status
+    if @transaction.realized?
+      @transaction.pending!
+    else
+      @transaction.realized!
+    end
+
+    respond_to do |format|
+      status_label = @transaction.realized? ? "Efetivada" : "Pendente"
+      format.html { redirect_to transactions_path, notice: "Status da transação atualizado para #{status_label}!" }
+      format.turbo_stream do
+        load_index_data
+        flash.now[:notice] = "Status alterado para #{status_label}!"
+        render :update_success
+      end
+    end
+  end
+
   def destroy
     if params[:delete_all_installments] == "1" && @transaction.installment?
       count = current_account.transactions.by_group(@transaction.installment_group_id).destroy_all.size
@@ -105,7 +149,7 @@ class TransactionsController < ApplicationController
 
   def parse_date_param(param_val)
     return nil if param_val.blank?
-    Date.parse(param_val.to_s) rescue nil
+    TransactionImporterService.parse_date(param_val)
   end
 
   def load_form_options
@@ -128,28 +172,32 @@ class TransactionsController < ApplicationController
     @selected_supplier_ids = normalize_array_param(params[:supplier_id])
     @selected_cost_center_ids = normalize_array_param(params[:cost_center_id])
     @selected_payment_sources = normalize_array_param(params[:payment_source])
+    @selected_statuses = normalize_array_param(params[:status])
     @date_mode = params[:date_mode].presence || "competence"
 
-    @period = params[:period].presence
-    if @period == "all" || params[:clear_dates] == "true"
-      @start_date = nil
-      @end_date = nil
-    elsif @period == "last_month"
-      last_m = Date.current.prev_month
-      @start_date = last_m.beginning_of_month
-      @end_date = last_m.end_of_month
-    elsif @period == "last_30_days"
-      @start_date = 30.days.ago.to_date
-      @end_date = Date.current
-    elsif @period == "this_year"
-      @start_date = Date.current.beginning_of_year
-      @end_date = Date.current.end_of_year
-    elsif @period == "this_month"
-      @start_date = Date.current.beginning_of_month
-      @end_date = Date.current.end_of_month
-    elsif params[:start_date].present? || params[:end_date].present?
+    if params[:start_date].present? || params[:end_date].present?
       @start_date = parse_date_param(params[:start_date])
       @end_date = parse_date_param(params[:end_date])
+      @period = "custom"
+    elsif params[:period].present?
+      @period = params[:period]
+      if @period == "all" || params[:clear_dates] == "true"
+        @start_date = nil
+        @end_date = nil
+      elsif @period == "last_month"
+        last_m = Date.current.prev_month
+        @start_date = last_m.beginning_of_month
+        @end_date = last_m.end_of_month
+      elsif @period == "last_30_days"
+        @start_date = 30.days.ago.to_date
+        @end_date = Date.current
+      elsif @period == "this_year"
+        @start_date = Date.current.beginning_of_year
+        @end_date = Date.current.end_of_year
+      elsif @period == "this_month"
+        @start_date = Date.current.beginning_of_month
+        @end_date = Date.current.end_of_month
+      end
     elsif params[:month].present?
       if params[:month] == "all"
         @start_date = nil
@@ -160,6 +208,7 @@ class TransactionsController < ApplicationController
         @end_date = @start_date.end_of_month
       end
     else
+      @period = "this_month"
       @start_date = Date.current.beginning_of_month
       @end_date = Date.current.end_of_month
     end
@@ -180,6 +229,7 @@ class TransactionsController < ApplicationController
     scope = scope.where(category_id: @selected_category_ids) if @selected_category_ids.present?
     scope = scope.where(supplier_id: @selected_supplier_ids) if @selected_supplier_ids.present?
     scope = scope.where(cost_center_id: @selected_cost_center_ids) if @selected_cost_center_ids.present?
+    scope = scope.where(status: @selected_statuses) if @selected_statuses.present?
 
     if @selected_payment_sources.present?
       bank_ids = []
@@ -201,9 +251,27 @@ class TransactionsController < ApplicationController
 
     @transactions = scope.order(date: :desc, created_at: :desc)
 
-    @total_income = scope.income.sum(:amount)
-    @total_expense = scope.expense.charges.without_invoice_payments.sum(:amount)
+    @total_realized_income = scope.income.realized.sum(:amount)
+    @total_pending_income = scope.income.pending.sum(:amount)
+    @total_income = @total_realized_income + @total_pending_income
+
+    @total_realized_expense = scope.expense.charges.without_invoice_payments.realized.sum(:amount)
+    @total_pending_expense = scope.expense.charges.without_invoice_payments.pending.sum(:amount)
+    @total_expense = @total_realized_expense + @total_pending_expense
+
     @balance = @total_income - @total_expense
+
+    # Caixa Efetivo em contas bancárias (somente transações efetivadas)
+    @consolidated_balance = current_account.bank_accounts.sum do |bank_acc|
+      inc = bank_acc.transactions.income.realized.sum(:amount)
+      exp = bank_acc.transactions.expense.realized.sum(:amount)
+      t_out = bank_acc.transactions.transfer.realized.sum(:amount)
+      t_in = current_account.transactions.transfer.realized.where(destination_bank_account_id: bank_acc.id).sum(:amount)
+      inc + t_in - exp - t_out
+    end
+
+    # Saldo Projetado ao fim do período
+    @projected_balance = @consolidated_balance + @total_pending_income - @total_pending_expense
   end
 
   private
@@ -226,7 +294,8 @@ class TransactionsController < ApplicationController
       :bank_account_id,
       :credit_card_id,
       :destination_bank_account_id,
-      :is_refund
+      :is_refund,
+      :status
     )
   end
 end
