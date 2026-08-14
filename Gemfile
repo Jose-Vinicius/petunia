@@ -46,7 +46,7 @@ gem "devise-i18n"
 
 # Spreadsheet parsing (CSV & XLSX)
 gem "csv"
-gem "roo", "~> 2.10"
+gem "roo", "~> 3.0"
 
 
 
