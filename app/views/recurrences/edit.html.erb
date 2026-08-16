@@ -1,3 +1,17 @@
-<%= render "shared/modal", title: "Editar Recorrência" do %>
-  <%= render "form", recurring_transaction: @recurring_transaction %>
+<%= turbo_frame_tag "modal" do %>
+  <div class="modal-backdrop">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Editar Recorrência</h2>
+          <p class="modal-subtitle">Atualize os dados da regra de recorrência</p>
+        </div>
+        <%= link_to recurrences_path, data: { turbo_frame: "_top" }, class: "modal-close", title: "Fechar" do %>
+          <span class="material-symbols-outlined">close</span>
+        <% end %>
+      </div>
+
+      <%= render "form", recurring_transaction: @recurring_transaction %>
+    </div>
+  </div>
 <% end %>

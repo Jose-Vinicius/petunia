@@ -11,7 +11,7 @@ class RecurringTransaction < ApplicationRecord
   validates :description, presence: true
   validates :amount, presence: true, numericality: { greater_than: 0 }
   validates :transaction_type, presence: true, inclusion: { in: %w[expense income] }
-  validates :frequency, presence: true, inclusion: { in: %w[monthly yearly] }
+  validates :frequency, presence: true, inclusion: { in: %w[weekly monthly yearly] }
   validates :start_date, presence: true
 
   scope :active, -> { where(active: true) }

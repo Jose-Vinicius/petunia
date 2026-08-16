@@ -174,7 +174,7 @@ RSpec.describe "Transações (Transactions)", type: :request do
 
       it "preserva os filtros ativos ao atualizar uma transação via Turbo Stream" do
         tx = create(:transaction, account: account, category: category, supplier: supplier, bank_account: bank_account, description: "Antes", amount: 50, date: Date.current.prev_month)
-        referrer_url = transactions_url(period: "last_month", category_id: [category.id.to_s])
+        referrer_url = transactions_url(start_date: "01/07/2026", end_date: "31/07/2026", category_id: [category.id.to_s])
 
         patch transaction_path(tx), params: {
           transaction: { description: "Depois", amount: 75, supplier_id: supplier.id }
@@ -184,7 +184,7 @@ RSpec.describe "Transações (Transactions)", type: :request do
         expect(response.media_type).to eq("text/vnd.turbo-stream.html")
         expect(response.body).to include("transactions_content")
         expect(response.body).to include("Depois")
-        expect(response.body).to include("last_month")
+        expect(response.body).to include("01/07/2026")
       end
     end
 

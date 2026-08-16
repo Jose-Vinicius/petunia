@@ -50,14 +50,14 @@
             <% @recurring_transactions.each do |rec| %>
               <tr style="border-bottom: 1px solid var(--border, #27272a); <%= rec.active? ? '' : 'opacity: 0.65; background: rgba(0,0,0,0.15);' %>">
                 <td style="padding: 0.85rem 1rem; font-weight: 600; color: var(--text-primary);">
-                  <%= rec.description %>
+                  <%= link_to rec.description, recurrence_path(rec), style: "color: var(--text-primary); text-decoration: none; font-weight: 600;" %>
                 </td>
                 <td style="padding: 0.85rem 1rem; font-weight: 700; color: <%= rec.income? ? '#34d399' : '#f87171' %>;">
                   <%= rec.income? ? '+ ' : '- ' %> R$ <%= number_with_precision(rec.amount, precision: 2, separator: ',') %>
                 </td>
                 <td style="padding: 0.85rem 1rem; color: var(--text-secondary);">
                   <span class="chip" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.06); border-radius: 4px;">
-                    <%= rec.frequency == 'yearly' ? '📅 Anual' : '🗓️ Mensal' %>
+                    <%= rec.frequency == 'yearly' ? '📅 Anual' : (rec.frequency == 'weekly' ? '🗓️ Semanal' : '🗓️ Mensal') %>
                   </span>
                 </td>
                 <td style="padding: 0.85rem 1rem; color: var(--text-secondary);">
