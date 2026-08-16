@@ -49,13 +49,28 @@ RSpec.describe "Categorias (Categories)", type: :request do
         end
       end
 
-      context "com parâmetros inválidos" do
-        it "rejeita a criação com nome em branco" do
+      context "com parâmetros válidos (JSON - cadastro rápido)" do
+        it "retorna JSON com id e nome da nova categoria" do
           expect {
-            post categories_path, params: { category: { name: "" } }
+            post categories_path, params: { category: { name: "Pets" } }, as: :json
+          }.to change(account.categories, :count).by(1)
+
+          expect(response).to have_http_status(:created)
+          json = JSON.parse(response.body)
+          expect(json["id"]).to be_present
+          expect(json["name"]).to eq("Pets")
+        end
+      end
+
+      context "com parâmetros inválidos (JSON)" do
+        it "retorna mensagens de erro em JSON" do
+          expect {
+            post categories_path, params: { category: { name: "" } }, as: :json
           }.not_to change(Category, :count)
 
           expect(response).to have_http_status(:unprocessable_content)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include("Nome da Categoria não pode ficar em branco")
         end
       end
     end

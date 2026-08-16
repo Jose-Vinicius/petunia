@@ -1,20 +1,26 @@
 class InstallmentTransactionCreator
-  def initialize(account:, base_params:, installments_count:, total_amount:)
+  def initialize(account:, base_params:, installments_count: nil, total_installments: nil, current_installment: 1, amount_per_installment: nil, total_amount: nil)
     @account = account
     @base_params = base_params.to_h.symbolize_keys
-    @installments_count = installments_count.to_i
-    @total_amount = total_amount.to_f
+    @total_installments = (total_installments || installments_count).to_i
+    @current_installment = [ current_installment.to_i, 1 ].max
+
+    raw_amount = (amount_per_installment || total_amount).to_f
+
+    if raw_amount > 0
+      if @current_installment > 1
+        @amount_per_installment = raw_amount
+      else
+        @total_amount = raw_amount
+      end
+    end
   end
 
   def call
-    return nil if @installments_count < 2 || @total_amount <= 0
+    return nil if @total_installments < 2 || @current_installment > @total_installments
+    return nil if @amount_per_installment.nil? && (@total_amount.nil? || @total_amount <= 0)
 
     group_id = SecureRandom.uuid
-    total_cents = (@total_amount * 100).round
-    per_installment_cents = total_cents / @installments_count
-    remainder_cents = total_cents % @installments_count
-
-    created_transactions = []
     base_date = parse_date(@base_params[:date]) || Date.current
     credit_card = @account.credit_cards.find_by(id: @base_params[:credit_card_id]) if @base_params[:credit_card_id].present?
 
@@ -25,27 +31,53 @@ class InstallmentTransactionCreator
                          end
 
     base_description = @base_params[:description].to_s.gsub(/\s*\(\d+\/\d+\)\z/, "")
+    created_transactions = []
 
     Transaction.transaction do
-      (1..@installments_count).each do |i|
-        cents = per_installment_cents + (i == 1 ? remainder_cents : 0)
-        amount = (cents / 100.0).round(2)
+      if @amount_per_installment.present?
+        (@current_installment..@total_installments).each do |i|
+          month_offset = i - @current_installment
+          comp_date = initial_competence >> month_offset
+          tx_date = credit_card.present? ? base_date : (base_date >> month_offset)
 
-        comp_date = initial_competence >> (i - 1)
-        tx_date = credit_card.present? ? base_date : (base_date >> (i - 1))
+          tx = @account.transactions.build(@base_params.merge(
+            amount: @amount_per_installment,
+            date: tx_date,
+            competence_date: comp_date,
+            description: "#{base_description} (#{i}/#{@total_installments})",
+            installment_group_id: group_id,
+            installment_number: i,
+            total_installments: @total_installments
+          ))
 
-        tx = @account.transactions.build(@base_params.merge(
-          amount: amount,
-          date: tx_date,
-          competence_date: comp_date,
-          description: "#{base_description} (#{i}/#{@installments_count})",
-          installment_group_id: group_id,
-          installment_number: i,
-          total_installments: @installments_count
-        ))
+          tx.save!
+          created_transactions << tx
+        end
+      else
+        total_cents = (@total_amount * 100).round
+        per_installment_cents = total_cents / @total_installments
+        remainder_cents = total_cents % @total_installments
 
-        tx.save!
-        created_transactions << tx
+        (1..@total_installments).each do |i|
+          cents = per_installment_cents + (i == 1 ? remainder_cents : 0)
+          amount = (cents / 100.0).round(2)
+
+          comp_date = initial_competence >> (i - 1)
+          tx_date = credit_card.present? ? base_date : (base_date >> (i - 1))
+
+          tx = @account.transactions.build(@base_params.merge(
+            amount: amount,
+            date: tx_date,
+            competence_date: comp_date,
+            description: "#{base_description} (#{i}/#{@total_installments})",
+            installment_group_id: group_id,
+            installment_number: i,
+            total_installments: @total_installments
+          ))
+
+          tx.save!
+          created_transactions << tx
+        end
       end
     end
 

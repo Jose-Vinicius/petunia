@@ -101,5 +101,36 @@ RSpec.describe InstallmentTransactionCreator do
         expect(txs[5].date).to eq(Date.new(2027, 1, 10))
       end
     end
+
+    context "quando a parcela atual é superior a 1 (ex: parcela 10 de 12)" do
+      it "cria apenas as parcelas restantes (10/12, 11/12, 12/12) com o valor da parcela fornecido" do
+        base_params = {
+          transaction_type: "expense",
+          description: "Geladeira",
+          amount: 150.0,
+          date: Date.new(2026, 8, 10),
+          category_id: category.id,
+          supplier_id: supplier.id,
+          credit_card_id: credit_card.id
+        }
+
+        creator = described_class.new(
+          account: account,
+          base_params: base_params,
+          total_installments: 12,
+          current_installment: 10,
+          amount_per_installment: 150.0
+        )
+
+        txs = creator.call
+        expect(txs.size).to eq(3) # 10, 11 e 12
+        expect(txs.map(&:installment_number)).to eq([10, 11, 12])
+        expect(txs.map(&:total_installments)).to all(eq(12))
+        expect(txs.map(&:amount)).to all(eq(150.0))
+        expect(txs[0].description).to eq("Geladeira (10/12)")
+        expect(txs[1].description).to eq("Geladeira (11/12)")
+        expect(txs[2].description).to eq("Geladeira (12/12)")
+      end
+    end
   end
 end

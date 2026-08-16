@@ -145,6 +145,10 @@ en:
       title: "Edit Category"
       subtitle: "Update category name"
       submit: "Update Category"
+    quick_add:
+      button: "New"
+      placeholder: "Category Name"
+      save: "Save"
     create:
       success: "Category '%{name}' created successfully."
     update:
@@ -170,6 +174,10 @@ en:
       title: "Edit Cost Center"
       subtitle: "Update cost center name"
       submit: "Update Cost Center"
+    quick_add:
+      button: "New"
+      placeholder: "Cost Center Name"
+      save: "Save"
     create:
       success: "Cost center '%{name}' created successfully."
     update:

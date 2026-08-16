@@ -57,7 +57,7 @@ class TransactionsController < ApplicationController
       if txs.present?
         respond_to do |format|
           msg = "#{txs.size} parcelas criadas com sucesso!"
-          format.html { redirect_to transactions_path, status: :see_other, notice: msg }
+          format.html { redirect_to (request.referrer.presence || transactions_path), status: :see_other, notice: msg }
           format.turbo_stream do
             load_index_data
             flash.now[:notice] = msg
@@ -75,7 +75,7 @@ class TransactionsController < ApplicationController
 
       if @transaction.save
         respond_to do |format|
-          format.html { redirect_to transactions_path, status: :see_other, notice: t("transactions.create.success") }
+          format.html { redirect_to (request.referrer.presence || transactions_path), status: :see_other, notice: t("transactions.create.success") }
           format.turbo_stream do
             load_index_data
             flash.now[:notice] = t("transactions.create.success")
@@ -96,7 +96,7 @@ class TransactionsController < ApplicationController
   def update
     if @transaction.update(transaction_params)
       respond_to do |format|
-        format.html { redirect_to transactions_path, status: :see_other, notice: t("transactions.update.success") }
+        format.html { redirect_to (request.referrer.presence || transactions_path), status: :see_other, notice: t("transactions.update.success") }
         format.turbo_stream do
           load_index_data
           flash.now[:notice] = t("transactions.update.success")
@@ -118,7 +118,7 @@ class TransactionsController < ApplicationController
 
     respond_to do |format|
       status_label = @transaction.realized? ? "Efetivada" : "Pendente"
-      format.html { redirect_to transactions_path, notice: "Status da transação atualizado para #{status_label}!" }
+      format.html { redirect_to (request.referrer.presence || transactions_path), status: :see_other, notice: "Status da transação atualizado para #{status_label}!" }
       format.turbo_stream do
         load_index_data
         flash.now[:notice] = "Status alterado para #{status_label}!"
@@ -136,7 +136,14 @@ class TransactionsController < ApplicationController
       msg = t("transactions.destroy.success")
     end
 
-    redirect_to transactions_path, notice: msg
+    respond_to do |format|
+      format.html { redirect_to (request.referrer.presence || transactions_path), status: :see_other, notice: msg }
+      format.turbo_stream do
+        load_index_data
+        flash.now[:notice] = msg
+        render :update_success
+      end
+    end
   end
 
   private
@@ -152,6 +159,27 @@ class TransactionsController < ApplicationController
     TransactionImporterService.parse_date(param_val)
   end
 
+  def extract_filter_params
+    filter_keys = %w[transaction_type category_id supplier_id cost_center_id payment_source status date_mode period start_date end_date month clear_dates]
+
+    if filter_keys.any? { |k| params[k].present? }
+      params
+    elsif request.referrer.present?
+      begin
+        uri = URI.parse(request.referrer)
+        if uri.query.present?
+          Rack::Utils.parse_nested_query(uri.query).with_indifferent_access
+        else
+          params
+        end
+      rescue StandardError
+        params
+      end
+    else
+      params
+    end
+  end
+
   def load_form_options
     @categories = current_account.categories.order(:name)
     @suppliers = current_account.suppliers.order(:name)
@@ -161,27 +189,29 @@ class TransactionsController < ApplicationController
   end
 
   def load_index_data
+    filter_params = extract_filter_params
+
     @categories = current_account.categories.order(:name)
     @suppliers = current_account.suppliers.order(:name)
     @cost_centers = current_account.cost_centers.order(:name)
     @bank_accounts = current_account.bank_accounts.order(:name)
     @credit_cards = current_account.credit_cards.order(:name)
 
-    @selected_types = normalize_array_param(params[:transaction_type])
-    @selected_category_ids = normalize_array_param(params[:category_id])
-    @selected_supplier_ids = normalize_array_param(params[:supplier_id])
-    @selected_cost_center_ids = normalize_array_param(params[:cost_center_id])
-    @selected_payment_sources = normalize_array_param(params[:payment_source])
-    @selected_statuses = normalize_array_param(params[:status])
-    @date_mode = params[:date_mode].presence || "competence"
+    @selected_types = normalize_array_param(filter_params[:transaction_type])
+    @selected_category_ids = normalize_array_param(filter_params[:category_id])
+    @selected_supplier_ids = normalize_array_param(filter_params[:supplier_id])
+    @selected_cost_center_ids = normalize_array_param(filter_params[:cost_center_id])
+    @selected_payment_sources = normalize_array_param(filter_params[:payment_source])
+    @selected_statuses = normalize_array_param(filter_params[:status])
+    @date_mode = filter_params[:date_mode].presence || "competence"
 
-    if params[:start_date].present? || params[:end_date].present?
-      @start_date = parse_date_param(params[:start_date])
-      @end_date = parse_date_param(params[:end_date])
+    if filter_params[:start_date].present? || filter_params[:end_date].present?
+      @start_date = parse_date_param(filter_params[:start_date])
+      @end_date = parse_date_param(filter_params[:end_date])
       @period = "custom"
-    elsif params[:period].present?
-      @period = params[:period]
-      if @period == "all" || params[:clear_dates] == "true"
+    elsif filter_params[:period].present?
+      @period = filter_params[:period]
+      if @period == "all" || filter_params[:clear_dates] == "true"
         @start_date = nil
         @end_date = nil
       elsif @period == "last_month"
@@ -198,12 +228,12 @@ class TransactionsController < ApplicationController
         @start_date = Date.current.beginning_of_month
         @end_date = Date.current.end_of_month
       end
-    elsif params[:month].present?
-      if params[:month] == "all"
+    elsif filter_params[:month].present?
+      if filter_params[:month] == "all"
         @start_date = nil
         @end_date = nil
-      elsif params[:month] =~ /\A\d{4}-\d{2}\z/
-        year, month_num = params[:month].split("-").map(&:to_i)
+      elsif filter_params[:month] =~ /\A\d{4}-\d{2}\z/
+        year, month_num = filter_params[:month].split("-").map(&:to_i)
         @start_date = Date.new(year, month_num, 1)
         @end_date = @start_date.end_of_month
       end

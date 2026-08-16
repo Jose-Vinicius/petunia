@@ -15,10 +15,14 @@ class CostCentersController < ApplicationController
   def create
     @cost_center = current_account.cost_centers.build(cost_center_params)
 
-    if @cost_center.save
-      redirect_to cost_centers_path, notice: t("cost_centers.create.success", name: @cost_center.name)
-    else
-      render :new, status: :unprocessable_content
+    respond_to do |format|
+      if @cost_center.save
+        format.html { redirect_to cost_centers_path, notice: t("cost_centers.create.success", name: @cost_center.name) }
+        format.json { render json: { id: @cost_center.id, name: @cost_center.name }, status: :created }
+      else
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: { errors: @cost_center.errors.full_messages }, status: :unprocessable_content }
+      end
     end
   end
 

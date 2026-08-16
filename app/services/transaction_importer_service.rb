@@ -15,7 +15,8 @@ class TransactionImporterService
     bank_account: [ "banco", "bank", "bank_account", "conta", "conta bancaria", "conta bancária", "conta_bancaria" ],
     credit_card: [ "cartao", "cartão", "credit_card", "cartao_de_credito", "cartão de crédito", "cartao de credito", "cartao_credito" ],
     is_refund: [ "estorno", "reembolso", "is_refund", "refund" ],
-    installments_count: [ "parcelas", "parcela", "qtd_parcelas", "qtd parcelas", "quantidade parcelas", "numero_parcelas", "número parcelas", "total_installments", "installments_count", "installments" ]
+    current_installment: [ "parcela_atual", "parcela atual", "parc_atual", "parc atual", "current_installment", "num_parcela", "número parcela", "n_parcela" ],
+    total_installments: [ "parcela_total", "parcela total", "total_parcelas", "total de parcelas", "parcelas_total", "parc_total", "parc total", "qtd_parcelas", "qtd parcelas", "quantidade parcelas", "numero_parcelas", "número parcelas", "total_installments", "installments_count", "installments", "parcelas" ]
   }.freeze
 
   def initialize(file_path:, filename:, account:, bank_account_id: nil, credit_card_id: nil)
@@ -85,16 +86,18 @@ class TransactionImporterService
                                end
 
       is_refund_flag = determine_is_refund(row_data)
-      installments_cnt = parse_installments_count(row_data[:installments_count], row_data[:description])
+      current_inst, total_inst = parse_installments_info(row_data)
 
       preview_rows << {
-        date: parsed_date.strftime("%Y-%m-%d"),
-        competence_date: parsed_competence_date.strftime("%Y-%m-%d"),
+        date: parsed_date.strftime("%d/%m/%Y"),
+        competence_date: parsed_competence_date&.strftime("%d/%m/%Y"),
         description: description,
         amount: raw_amount,
         transaction_type: tx_type,
         is_refund: is_refund_flag,
-        installments_count: installments_cnt,
+        current_installment: current_inst,
+        total_installments: total_inst,
+        installments_count: total_inst,
         category: {
           name: cat_name.presence || (cat&.name || "Alimentação"),
           id: cat&.id,
@@ -147,21 +150,22 @@ class TransactionImporterService
       row_data = map_row_to_headers(headers, row)
 
       transaction_attributes = build_transaction_attributes(row_data)
-      installments_cnt = parse_installments_count(row_data[:installments_count], row_data[:description])
+      current_inst, total_inst = parse_installments_info(row_data)
 
-      if installments_cnt > 1
+      if total_inst > 1
         creator = InstallmentTransactionCreator.new(
           account: @account,
           base_params: transaction_attributes.except(:amount),
-          installments_count: installments_cnt,
-          total_amount: transaction_attributes[:amount]
+          total_installments: total_inst,
+          current_installment: current_inst,
+          amount_per_installment: transaction_attributes[:amount]
         )
         created = creator.call
         if created.present?
           success_count += created.size
         else
           error_count += 1
-          errors << "Linha #{index + 2}: Não foi possível criar as parcelas."
+          errors << "Linha #{index + 2}: Não foi possível criar as parcelas (#{current_inst}/#{total_inst})."
         end
       else
         transaction = @account.transactions.build(transaction_attributes)
@@ -283,26 +287,43 @@ class TransactionImporterService
     (desc =~ /(estorno|reembolso)/i || type_str =~ /(estorno|reembolso)/i) ? true : false
   end
 
-  def parse_installments_count(val, description = nil)
-    if val.present?
-      str = val.to_s.strip
-      if str =~ %r{\d+/(\d+)}
-        return [ $1.to_i, 1 ].max
-      elsif str =~ /(\d+)/
-        return [ $1.to_i, 1 ].max
+  def parse_installments_info(row_data)
+    curr = nil
+    tot = nil
+
+    if row_data[:current_installment].present?
+      c_val = row_data[:current_installment].to_s.strip
+      if c_val =~ %r{(\d+)/(\d+)}
+        curr = $1.to_i
+        tot = $2.to_i
+      elsif c_val =~ /(\d+)/
+        curr = $1.to_i
       end
     end
 
-    if description.present?
-      desc = description.to_s.strip
-      if desc =~ %r{\(\d+/(\d+)\)}
-        return [ $1.to_i, 1 ].max
+    if row_data[:total_installments].present? || row_data[:installments_count].present?
+      t_val = (row_data[:total_installments] || row_data[:installments_count]).to_s.strip
+      if t_val =~ %r{(\d+)/(\d+)}
+        curr ||= $1.to_i
+        tot ||= $2.to_i
+      elsif t_val =~ /(\d+)/
+        tot ||= $1.to_i
+      end
+    end
+
+    if desc = row_data[:description].to_s.strip.presence
+      if desc =~ %r{\(?(\d+)/(\d+)\)?}
+        curr ||= $1.to_i
+        tot ||= $2.to_i
       elsif desc =~ /\b(\d+)\s*x\b/i
-        return [ $1.to_i, 1 ].max
+        tot ||= $1.to_i
       end
     end
 
-    1
+    current_inst = [ curr || 1, 1 ].max
+    total_inst = [ tot || current_inst, current_inst ].max
+
+    [ current_inst, total_inst ]
   end
 
   def parse_amount(val)

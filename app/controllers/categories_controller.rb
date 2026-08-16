@@ -15,10 +15,14 @@ class CategoriesController < ApplicationController
   def create
     @category = current_account.categories.build(category_params)
 
-    if @category.save
-      redirect_to categories_path, notice: t("categories.create.success", name: @category.name)
-    else
-      render :new, status: :unprocessable_content
+    respond_to do |format|
+      if @category.save
+        format.html { redirect_to categories_path, notice: t("categories.create.success", name: @category.name) }
+        format.json { render json: { id: @category.id, name: @category.name }, status: :created }
+      else
+        format.html { render :new, status: :unprocessable_content }
+        format.json { render json: { errors: @category.errors.full_messages }, status: :unprocessable_content }
+      end
     end
   end
 

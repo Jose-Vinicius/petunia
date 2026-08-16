@@ -49,13 +49,28 @@ RSpec.describe "Centros de Custo (CostCenters)", type: :request do
         end
       end
 
-      context "com parâmetros inválidos" do
-        it "rejeita a criação com nome em branco" do
+      context "com parâmetros válidos (JSON - cadastro rápido)" do
+        it "retorna JSON com id e nome do novo centro de custo" do
           expect {
-            post cost_centers_path, params: { cost_center: { name: "" } }
+            post cost_centers_path, params: { cost_center: { name: "Projetos 2026" } }, as: :json
+          }.to change(account.cost_centers, :count).by(1)
+
+          expect(response).to have_http_status(:created)
+          json = JSON.parse(response.body)
+          expect(json["id"]).to be_present
+          expect(json["name"]).to eq("Projetos 2026")
+        end
+      end
+
+      context "com parâmetros inválidos (JSON)" do
+        it "retorna mensagens de erro em JSON" do
+          expect {
+            post cost_centers_path, params: { cost_center: { name: "" } }, as: :json
           }.not_to change(CostCenter, :count)
 
           expect(response).to have_http_status(:unprocessable_content)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include("Nome do Centro de Custo não pode ficar em branco")
         end
       end
     end

@@ -157,6 +157,36 @@ RSpec.describe TransactionImporterService, type: :service do
         file.close
         file.unlink
       end
+
+      it 'cria apenas as parcelas restantes quando informado parcela_atual e parcela_total (ex: 10 de 12)' do
+        inst_csv = <<~CSV
+          data,descrição,valor,tipo,categoria,cartao,parcela_atual,parcela_total
+          12/08/2026,Eletrodoméstico,100.00,despesa,Eletrônicos,Visa Itaú,10,12
+        CSV
+
+        file = Tempfile.new([ 'inst_current_tx', '.csv' ])
+        file.write(inst_csv)
+        file.rewind
+
+        service = described_class.new(
+          file_path: file.path,
+          filename: 'inst_current_tx.csv',
+          account: account
+        )
+
+        result = service.call
+        expect(result.success_count).to eq(3)
+        expect(result.error_count).to eq(0)
+
+        txs = account.transactions.where("description LIKE ?", "Eletrodoméstico%").order(:installment_number)
+        expect(txs.count).to eq(3)
+        expect(txs.pluck(:installment_number)).to eq([10, 11, 12])
+        expect(txs.pluck(:total_installments)).to all(eq(12))
+        expect(txs.pluck(:amount)).to all(eq(100.0))
+
+        file.close
+        file.unlink
+      end
     end
   end
 

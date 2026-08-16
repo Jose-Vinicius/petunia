@@ -173,6 +173,10 @@ pt-BR:
       title: "Editar Categoria"
       subtitle: "Altere o nome da categoria"
       submit: "Atualizar Categoria"
+    quick_add:
+      button: "Nova"
+      placeholder: "Nome da Categoria"
+      save: "Salvar"
     create:
       success: "Categoria '%{name}' criada com sucesso."
     update:
@@ -198,6 +202,10 @@ pt-BR:
       title: "Editar Centro de Custo"
       subtitle: "Altere o nome do centro de custo"
       submit: "Atualizar Centro de Custo"
+    quick_add:
+      button: "Novo"
+      placeholder: "Nome do Centro de Custo"
+      save: "Salvar"
     create:
       success: "Centro de custo '%{name}' criado com sucesso."
     update:

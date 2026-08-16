@@ -118,8 +118,11 @@ class ImportsController < ApplicationController
           is_refund: (credit_card.present? && is_refund_val)
         }
 
-        installments_cnt = tx_data[:installments_count].to_i
-        if installments_cnt > 1
+        current_inst = [ tx_data[:current_installment].to_i, 1 ].max
+        total_inst = [ (tx_data[:total_installments].presence || tx_data[:installments_count].presence || 1).to_i, 1 ].max
+        total_inst = [ total_inst, current_inst ].max
+
+        if total_inst > 1
           base_params = {
             description: tx_attrs[:description],
             date: tx_attrs[:date],
@@ -136,14 +139,15 @@ class ImportsController < ApplicationController
           creator = InstallmentTransactionCreator.new(
             account: current_account,
             base_params: base_params,
-            installments_count: installments_cnt,
-            total_amount: tx_attrs[:amount]
+            total_installments: total_inst,
+            current_installment: current_inst,
+            amount_per_installment: tx_attrs[:amount]
           )
           created_txs = creator.call
           if created_txs.present?
             success_count += created_txs.size
           else
-            errors << "Linha #{idx + 1}: Não foi possível criar as #{installments_cnt} parcelas."
+            errors << "Linha #{idx + 1}: Não foi possível criar as parcelas (#{current_inst}/#{total_inst})."
           end
         else
           tx = current_account.transactions.build(tx_attrs)
@@ -168,15 +172,15 @@ class ImportsController < ApplicationController
 
   def download_template
     sample = params[:sample] == "true"
-    headers = [ "Data", "Data Competência", "Descrição", "Valor", "Tipo", "Categoria", "Fornecedor", "Centro de Custo", "Conta Bancária", "Cartão de Crédito", "Parcelas", "Estorno" ]
+    headers = [ "Data", "Data Competência", "Descrição", "Valor", "Tipo", "Categoria", "Fornecedor", "Centro de Custo", "Conta Bancária", "Cartão de Crédito", "Parcela Atual", "Parcela Total", "Estorno" ]
 
     csv_data = CSV.generate(headers: true, col_sep: ";") do |csv|
       csv << headers
       if sample
-        csv << [ "10/08/2026", "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Empresa ACME", "Trabalho", "Nubank", "", "1", "Não" ]
-        csv << [ "11/08/2026", "10/09/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Mercado Central", "Pessoal", "", "Visa Itaú", "1", "Não" ]
-        csv << [ "12/08/2026", "10/09/2026", "Smartphone Novo", "1200,00", "Despesa", "Eletrônicos", "Loja Tech", "Pessoal", "", "Visa Itaú", "10", "Não" ]
-        csv << [ "13/08/2026", "10/09/2026", "Estorno Compra", "45,00", "Despesa", "Alimentação", "Restaurante Gourmet", "Pessoal", "", "Visa Itaú", "1", "Sim" ]
+        csv << [ "10/08/2026", "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Empresa ACME", "Trabalho", "Nubank", "", "1", "1", "Não" ]
+        csv << [ "11/08/2026", "10/09/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Mercado Central", "Pessoal", "", "Visa Itaú", "1", "1", "Não" ]
+        csv << [ "12/08/2026", "10/09/2026", "Smartphone Novo", "100,00", "Despesa", "Eletrônicos", "Loja Tech", "Pessoal", "", "Visa Itaú", "10", "12", "Não" ]
+        csv << [ "13/08/2026", "10/09/2026", "Estorno Compra", "45,00", "Despesa", "Alimentação", "Restaurante Gourmet", "Pessoal", "", "Visa Itaú", "1", "1", "Sim" ]
       end
     end
 

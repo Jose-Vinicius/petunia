@@ -39,20 +39,22 @@
     <div class="app-container">
       <%= render "shared/header" %>
 
-      <% if notice.present? || alert.present? %>
-        <div class="flash-container">
-          <% if notice.present? %>
-            <div class="flash-message flash-notice">
-              <span><%= notice %></span>
-            </div>
-          <% end %>
-          <% if alert.present? %>
-            <div class="flash-message flash-alert">
-              <span><%= alert %></span>
-            </div>
-          <% end %>
-        </div>
-      <% end %>
+      <div id="flash_messages">
+        <% if notice.present? || alert.present? %>
+          <div class="flash-container">
+            <% if notice.present? %>
+              <div class="flash-message flash-notice">
+                <span><%= notice %></span>
+              </div>
+            <% end %>
+            <% if alert.present? %>
+              <div class="flash-message flash-alert">
+                <span><%= alert %></span>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
 
       <main class="app-main">
         <%= yield %>

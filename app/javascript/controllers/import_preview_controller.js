@@ -69,10 +69,12 @@ export default class extends Controller {
       tr.style.borderBottom = "1px solid var(--border, #27272a)"
 
       const formattedAmount = row.amount !== null && row.amount !== undefined ? String(row.amount).replace('.', ',') : '0,00'
+      const formattedDate = this.formatDateToBr(row.date)
+      const formattedCompetenceDate = this.formatDateToBr(row.competence_date)
 
       tr.innerHTML = `
-        <td style="padding: 0.4rem 0.3rem;"><input type="date" value="${row.date}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="date" /></td>
-        <td style="padding: 0.4rem 0.3rem;"><input type="date" value="${row.competence_date || ''}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="competence_date" /></td>
+        <td style="padding: 0.4rem 0.3rem;"><input type="text" placeholder="dd/mm/aaaa" value="${formattedDate}" class="form-input preview-date-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="date" /></td>
+        <td style="padding: 0.4rem 0.3rem;"><input type="text" placeholder="dd/mm/aaaa" value="${formattedCompetenceDate}" class="form-input preview-date-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="competence_date" /></td>
         <td style="padding: 0.4rem 0.3rem;"><input type="text" value="${this.escapeHtml(row.description)}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="description" /></td>
         <td style="padding: 0.4rem 0.3rem;"><input type="text" inputmode="decimal" value="${formattedAmount}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box;" data-field="amount" /></td>
         <td style="padding: 0.4rem 0.3rem;">
@@ -88,7 +90,10 @@ export default class extends Controller {
         <td style="padding: 0.4rem 0.3rem;">${this.buildSelectHtml("bank_account", row.bank_account, this.collections.bank_accounts, true)}</td>
         <td style="padding: 0.4rem 0.3rem;">${this.buildSelectHtml("credit_card", row.credit_card, this.collections.credit_cards, true)}</td>
         <td style="padding: 0.4rem 0.3rem;">
-          <input type="number" min="1" max="99" value="${row.installments_count || 1}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box; text-align: center;" data-field="installments_count" />
+          <input type="number" min="1" max="99" value="${row.current_installment || 1}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box; text-align: center;" data-field="current_installment" />
+        </td>
+        <td style="padding: 0.4rem 0.3rem;">
+          <input type="number" min="1" max="99" value="${row.total_installments || row.installments_count || 1}" class="form-input" style="padding: 0.3rem; font-size: 0.8rem; width: 100%; box-sizing: border-box; text-align: center;" data-field="total_installments" />
         </td>
         <td style="padding: 0.4rem 0.3rem; text-align: center;">
           <input type="checkbox" ${row.is_refund ? "checked" : ""} class="form-checkbox" data-field="is_refund" style="width: 16px; height: 16px;" />
@@ -104,11 +109,60 @@ export default class extends Controller {
       this.applyFieldHighlights(tr)
     })
 
+    this.initDateInputs()
+
     this.tableBodyTarget.querySelectorAll("select, input").forEach(element => {
       element.addEventListener("change", (e) => {
         const rowTr = e.target.closest("tr")
         if (rowTr) this.applyFieldHighlights(rowTr)
       })
+    })
+  }
+
+  formatDateToBr(dateStr) {
+    if (!dateStr) return ""
+    if (typeof dateStr === "string" && dateStr.includes("-")) {
+      const parts = dateStr.split("T")[0].split("-")
+      if (parts.length === 3) {
+        return `${parts[2].padStart(2, "0")}/${parts[1].padStart(2, "0")}/${parts[0]}`
+      }
+    }
+    return dateStr
+  }
+
+  initDateInputs() {
+    const inputs = this.tableBodyTarget.querySelectorAll(".preview-date-input")
+    inputs.forEach(input => {
+      input.addEventListener("input", (e) => {
+        if (e.inputType && e.inputType.startsWith("delete")) return
+        let val = input.value
+        let digits = val.replace(/\D/g, "").slice(0, 8)
+        let formatted = ""
+        if (digits.length > 0) {
+          formatted = digits.slice(0, 2)
+          if (digits.length >= 3) formatted += "/" + digits.slice(2, 4)
+          if (digits.length >= 5) formatted += "/" + digits.slice(4, 8)
+        }
+        input.value = formatted
+      })
+
+      if (window.flatpickr) {
+        window.flatpickr(input, {
+          locale: {
+            firstDayOfWeek: 1,
+            weekdays: { shorthand: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"], longhand: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"] },
+            months: {
+              shorthand: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+              longhand: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+            }
+          },
+          dateFormat: "d/m/Y",
+          allowInput: true,
+          onChange: () => {
+            input.dispatchEvent(new Event("change", { bubbles: true }))
+          }
+        })
+      }
     })
   }
 
@@ -194,7 +248,8 @@ export default class extends Controller {
       const rawAmount = tr.querySelector('[data-field="amount"]')?.value || '0'
       const amount = rawAmount.replace(/\./g, '').replace(',', '.')
       const transaction_type = tr.querySelector('[data-field="transaction_type"]')?.value
-      const installments_count = parseInt(tr.querySelector('[data-field="installments_count"]')?.value || '1', 10)
+      const current_installment = parseInt(tr.querySelector('[data-field="current_installment"]')?.value || '1', 10)
+      const total_installments = parseInt(tr.querySelector('[data-field="total_installments"]')?.value || '1', 10)
       const is_refund = tr.querySelector('[data-field="is_refund"]')?.checked || false
 
       const catVal = tr.querySelector('[data-field="category"]')?.value
@@ -209,7 +264,9 @@ export default class extends Controller {
         description: description,
         amount: amount,
         transaction_type: transaction_type,
-        installments_count: installments_count,
+        current_installment: current_installment,
+        total_installments: total_installments,
+        installments_count: total_installments,
         is_refund: is_refund,
         category: this.parseSelectPayload(catVal),
         supplier: this.parseSelectPayload(supVal),
