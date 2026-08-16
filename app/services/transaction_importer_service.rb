@@ -73,57 +73,104 @@ class TransactionImporterService
       bank_name = row_data[:bank_account].to_s.strip
       matched_bank = bank_accounts.find { |b| b.name.casecmp?(bank_name) } if bank_name.present?
       matched_bank ||= bank_accounts.find_by(id: @bank_account_id) if @bank_account_id.present?
-      matched_bank ||= bank_accounts.first
 
       card_name = row_data[:credit_card].to_s.strip
       matched_card = credit_cards.find { |c| c.name.casecmp?(card_name) } if card_name.present?
       matched_card ||= credit_cards.find_by(id: @credit_card_id) if @credit_card_id.present?
 
-      parsed_competence_date = if matched_card.present?
-                                 matched_card.invoice_competence_for(parsed_date)
-                               else
-                                 parse_date(row_data[:competence_date]) || parsed_date
-                               end
+      raw_comp_date = parse_date(row_data[:competence_date])
+      parsed_competence_date = raw_comp_date || (matched_card.present? ? matched_card.invoice_competence_for(parsed_date) : parsed_date)
 
       is_refund_flag = determine_is_refund(row_data)
       current_inst, total_inst = parse_installments_info(row_data)
 
-      preview_rows << {
-        date: parsed_date.strftime("%d/%m/%Y"),
-        competence_date: parsed_competence_date&.strftime("%d/%m/%Y"),
-        description: description,
-        amount: raw_amount,
-        transaction_type: tx_type,
-        is_refund: is_refund_flag,
-        current_installment: current_inst,
-        total_installments: total_inst,
-        installments_count: total_inst,
-        category: {
-          name: cat_name.presence || (cat&.name || "Alimentação"),
-          id: cat&.id,
-          is_new: cat.nil?
-        },
-        supplier: {
-          name: sup_name.presence || (sup&.name || "Geral"),
-          id: sup&.id,
-          is_new: sup.nil?
-        },
-        cost_center: {
-          name: cc_name,
-          id: cc&.id,
-          is_new: cc_name.present? && cc.nil?
-        },
-        bank_account: {
-          name: bank_name.presence || matched_bank&.name,
-          id: matched_bank&.id,
-          is_new: bank_name.present? && matched_bank.nil?
-        },
-        credit_card: {
-          name: card_name.presence || matched_card&.name,
-          id: matched_card&.id,
-          is_new: card_name.present? && matched_card.nil?
+      if total_inst > 1
+        group_id = SecureRandom.uuid
+        base_desc = description.gsub(/\s*\(\d+\/\d+\)\z/, "")
+
+        (current_inst..total_inst).each do |i|
+          month_offset = i - current_inst
+          inst_comp_date = parsed_competence_date >> month_offset
+          inst_date = parsed_date
+          inst_desc = "#{base_desc} (#{i}/#{total_inst})"
+
+          preview_rows << {
+            date: inst_date.strftime("%d/%m/%Y"),
+            competence_date: inst_comp_date&.strftime("%d/%m/%Y"),
+            description: inst_desc,
+            amount: raw_amount,
+            transaction_type: tx_type,
+            is_refund: is_refund_flag,
+            current_installment: i,
+            total_installments: total_inst,
+            installments_count: total_inst,
+            installment_group_id: group_id,
+            category: {
+              name: cat_name.presence || (cat&.name || "Alimentação"),
+              id: cat&.id,
+              is_new: cat.nil?
+            },
+            supplier: {
+              name: sup_name.presence || (sup&.name || "Geral"),
+              id: sup&.id,
+              is_new: sup.nil?
+            },
+            cost_center: {
+              name: cc_name,
+              id: cc&.id,
+              is_new: cc_name.present? && cc.nil?
+            },
+            bank_account: {
+              name: bank_name.presence || matched_bank&.name,
+              id: matched_bank&.id,
+              is_new: bank_name.present? && matched_bank.nil?
+            },
+            credit_card: {
+              name: card_name.presence || matched_card&.name,
+              id: matched_card&.id,
+              is_new: card_name.present? && matched_card.nil?
+            }
+          }
+        end
+      else
+        preview_rows << {
+          date: parsed_date.strftime("%d/%m/%Y"),
+          competence_date: parsed_competence_date&.strftime("%d/%m/%Y"),
+          description: description,
+          amount: raw_amount,
+          transaction_type: tx_type,
+          is_refund: is_refund_flag,
+          current_installment: current_inst,
+          total_installments: total_inst,
+          installments_count: total_inst,
+          installment_group_id: nil,
+          category: {
+            name: cat_name.presence || (cat&.name || "Alimentação"),
+            id: cat&.id,
+            is_new: cat.nil?
+          },
+          supplier: {
+            name: sup_name.presence || (sup&.name || "Geral"),
+            id: sup&.id,
+            is_new: sup.nil?
+          },
+          cost_center: {
+            name: cc_name,
+            id: cc&.id,
+            is_new: cc_name.present? && cc.nil?
+          },
+          bank_account: {
+            name: bank_name.presence || matched_bank&.name,
+            id: matched_bank&.id,
+            is_new: bank_name.present? && matched_bank.nil?
+          },
+          credit_card: {
+            name: card_name.presence || matched_card&.name,
+            id: matched_card&.id,
+            is_new: card_name.present? && matched_card.nil?
+          }
         }
-      }
+      end
     end
 
     { errors: [], rows: preview_rows }
@@ -254,11 +301,8 @@ class TransactionImporterService
 
     payment_attrs = assign_payment_source(data, tx_type)
 
-    parsed_competence_date = if payment_attrs[:credit_card].present?
-                               payment_attrs[:credit_card].invoice_competence_for(parsed_date)
-                             else
-                               parse_date(data[:competence_date]) || parsed_date
-                             end
+    raw_comp_date = parse_date(data[:competence_date])
+    parsed_competence_date = raw_comp_date || (payment_attrs[:credit_card].present? ? payment_attrs[:credit_card].invoice_competence_for(parsed_date) : parsed_date)
 
     is_refund_val = determine_is_refund(data)
 
@@ -461,16 +505,9 @@ class TransactionImporterService
     card = find_or_create_credit_card(card_name, bank_acc) if card_name.present?
     card ||= @account.credit_cards.find_by(id: @credit_card_id) if @credit_card_id.present?
 
-    if tx_type == "income"
-      bank_acc ||= @account.bank_accounts.first || @account.bank_accounts.create!(name: "Conta Principal")
-      { bank_account: bank_acc, credit_card: nil }
-    elsif tx_type == "transfer"
-      bank_acc ||= @account.bank_accounts.first || @account.bank_accounts.create!(name: "Conta Principal")
-      { bank_account: bank_acc, credit_card: card }
-    elsif card.present?
+    if card.present?
       { bank_account: nil, credit_card: card }
     else
-      bank_acc ||= @account.bank_accounts.first || @account.bank_accounts.create!(name: "Conta Principal")
       { bank_account: bank_acc, credit_card: nil }
     end
   end

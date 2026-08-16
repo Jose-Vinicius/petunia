@@ -73,7 +73,7 @@ RSpec.describe InstallmentTransactionCreator do
     end
 
     context "com lançamento parcelado em conta bancária" do
-      it "incrementa tanto a data do lançamento quanto a competência a cada mês" do
+      it "mantém a data da compra original e incrementa a competência a cada mês" do
         base_params = {
           transaction_type: "expense",
           description: "Curso Anual",
@@ -96,9 +96,10 @@ RSpec.describe InstallmentTransactionCreator do
         expect(txs.size).to eq(6)
         expect(txs.map(&:amount)).to all(eq(100.0))
 
-        expect(txs[0].date).to eq(Date.new(2026, 8, 10))
-        expect(txs[1].date).to eq(Date.new(2026, 9, 10))
-        expect(txs[5].date).to eq(Date.new(2027, 1, 10))
+        expect(txs.pluck(:date)).to all(eq(Date.new(2026, 8, 10)))
+        expect(txs[0].competence_date).to eq(Date.new(2026, 8, 10))
+        expect(txs[1].competence_date).to eq(Date.new(2026, 9, 10))
+        expect(txs[5].competence_date).to eq(Date.new(2027, 1, 10))
       end
     end
 

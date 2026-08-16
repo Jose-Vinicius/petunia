@@ -26,7 +26,7 @@ RSpec.describe "Importação por Planilha (Imports)", type: :request do
     end
 
     describe "POST /imports/preview" do
-      it "retorna JSON com as linhas do preview e coleções" do
+      it "renderiza a tela dedicada de preview em HTML quando a requisição é HTML" do
         file = fixture_file_upload(
           Rails.root.join('spec/fixtures/files/sample_transactions.csv'),
           'text/csv'
@@ -35,17 +35,30 @@ RSpec.describe "Importação por Planilha (Imports)", type: :request do
         post preview_imports_path, params: { file: file, bank_account_id: bank_account.id }
 
         expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Pré-visualização da Importação")
+        expect(response.body).to include("Confirmar Importação")
+      end
+
+      it "retorna JSON com as linhas do preview e coleções quando a requisição é JSON" do
+        file = fixture_file_upload(
+          Rails.root.join('spec/fixtures/files/sample_transactions.csv'),
+          'text/csv'
+        )
+
+        post preview_imports_path, params: { file: file, bank_account_id: bank_account.id }, headers: { "Accept" => "application/json" }
+
+        expect(response).to have_http_status(:ok)
         json = JSON.parse(response.body)
         expect(json["rows"]).to be_an(Array)
         expect(json["collections"]).to be_present
       end
 
-      it "rejeita requisição sem arquivo no preview" do
+      it "redireciona para /imports/new com alerta quando a requisição HTML não envia arquivo" do
         post preview_imports_path, params: {}
 
-        expect(response).to have_http_status(:unprocessable_content)
-        json = JSON.parse(response.body)
-        expect(json["errors"]).to include("Por favor, selecione um arquivo de planilha válido para enviar.")
+        expect(response).to redirect_to(new_import_path)
+        follow_redirect!
+        expect(response.body).to include("Por favor, selecione um arquivo de planilha válido para enviar.")
       end
     end
 
@@ -138,6 +151,79 @@ RSpec.describe "Importação por Planilha (Imports)", type: :request do
         expect(txs.count).to eq(3)
         expect(txs.pluck(:amount)).to eq([1000.0, 1000.0, 1000.0])
       end
+
+      it "preserva a data de competência informada no payload mesmo quando cartão é utilizado" do
+        category = account.categories.first
+        supplier = create(:supplier, account: account)
+        credit_card = create(:credit_card, account: account, bank_account: bank_account)
+
+        payload = [
+          {
+            date: "10/08/2026",
+            competence_date: "05/08/2026",
+            description: "Compra no Cartão com Competência Própria",
+            amount: 200.00,
+            transaction_type: "expense",
+            category: { id: category.id },
+            supplier: { id: supplier.id },
+            credit_card: { id: credit_card.id }
+          }
+        ]
+
+        post imports_path, params: { transactions: payload }, as: :json
+
+        expect(response).to have_http_status(:ok)
+        tx = account.transactions.find_by(description: "Compra no Cartão com Competência Própria")
+        expect(tx).to be_present
+        expect(tx.date).to eq(Date.new(2026, 8, 10))
+        expect(tx.competence_date).to eq(Date.new(2026, 8, 5))
+      end
+
+      it "grava parcelas pré-expandidas vindas do preview associando o mesmo installment_group_id" do
+        category = account.categories.first
+        supplier = create(:supplier, account: account)
+        credit_card = create(:credit_card, account: account, bank_account: bank_account)
+        group_id = SecureRandom.uuid
+
+        payload = [
+          {
+            date: "12/08/2026",
+            competence_date: "10/08/2026",
+            description: "Televisão (1/2)",
+            amount: 500.00,
+            transaction_type: "expense",
+            current_installment: 1,
+            total_installments: 2,
+            installment_group_id: group_id,
+            category: { id: category.id },
+            supplier: { id: supplier.id },
+            credit_card: { id: credit_card.id }
+          },
+          {
+            date: "12/08/2026",
+            competence_date: "10/09/2026",
+            description: "Televisão (2/2)",
+            amount: 500.00,
+            transaction_type: "expense",
+            current_installment: 2,
+            total_installments: 2,
+            installment_group_id: group_id,
+            category: { id: category.id },
+            supplier: { id: supplier.id },
+            credit_card: { id: credit_card.id }
+          }
+        ]
+
+        expect {
+          post imports_path, params: { transactions: payload }, as: :json
+        }.to change(account.transactions, :count).by(2)
+
+        expect(response).to have_http_status(:ok)
+        txs = account.transactions.where(installment_group_id: group_id).order(:installment_number)
+        expect(txs.count).to eq(2)
+        expect(txs[0].competence_date).to eq(Date.new(2026, 8, 10))
+        expect(txs[1].competence_date).to eq(Date.new(2026, 9, 10))
+      end
     end
 
     describe "POST /imports (envio direto via form tradicional)" do
@@ -156,21 +242,20 @@ RSpec.describe "Importação por Planilha (Imports)", type: :request do
     end
 
     describe "GET /imports/download_template" do
-      it "faz o download do modelo apenas com cabeçalho" do
+      it "faz o download do modelo em formato XLSX apenas com cabeçalho" do
         get download_template_imports_path(sample: false)
 
         expect(response).to have_http_status(:ok)
-        expect(response.header['Content-Type']).to include('text/csv')
-        expect(response.body).to include("Data;Data Competência;Descrição;Valor;Tipo;Categoria;Fornecedor;Centro de Custo;Conta Bancária;Cartão de Crédito;Parcela Atual;Parcela Total;Estorno")
+        expect(response.header['Content-Type']).to include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        expect(response.header['Content-Disposition']).to include('modelo_transacoes_cabecalho.xlsx')
       end
 
-      it "faz o download do modelo com dados de exemplo" do
+      it "faz o download do modelo em formato XLSX com dados de exemplo" do
         get download_template_imports_path(sample: true)
 
         expect(response).to have_http_status(:ok)
-        expect(response.header['Content-Type']).to include('text/csv')
-        expect(response.body).to include("Salário Mensal")
-        expect(response.body).to include("Supermercado")
+        expect(response.header['Content-Type']).to include('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        expect(response.header['Content-Disposition']).to include('modelo_transacoes_exemplo.xlsx')
       end
     end
   end

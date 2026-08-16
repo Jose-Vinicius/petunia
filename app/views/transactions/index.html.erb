@@ -13,7 +13,7 @@
       <%= link_to t("transactions.index.new_income"), new_transaction_path(type: "income"), data: { turbo_frame: "modal" }, class: "btn btn-secondary", style: "color: #34d399; border-color: rgba(52, 211, 153, 0.4);" %>
       <%= link_to t("transactions.index.new_button"), new_transaction_path(type: "expense"), data: { turbo_frame: "modal" }, class: "btn btn-primary" %>
       <%= link_to "⇄ Nova Transferência", new_transaction_path(type: "transfer"), data: { turbo_frame: "modal" }, class: "btn btn-secondary", style: "color: #60a5fa; border-color: rgba(96, 165, 250, 0.4);" %>
-      <%= link_to t("imports.button"), new_import_path, data: { turbo_frame: "modal" }, class: "btn btn-secondary desktop-only" %>
+      <%= link_to t("imports.button"), new_import_path, data: { turbo_frame: "_top" }, class: "btn btn-secondary desktop-only" %>
     </div>
   </div>
 

@@ -15,7 +15,13 @@ class ImportsController < ApplicationController
     file = params[:file]
 
     if file.blank?
-      render json: { errors: [ t("imports.create.no_file") ], rows: [] }, status: :unprocessable_content
+      respond_to do |format|
+        format.html do
+          flash[:alert] = t("imports.create.no_file")
+          redirect_to new_import_path, status: :see_other
+        end
+        format.json { render json: { errors: [ t("imports.create.no_file") ], rows: [] }, status: :unprocessable_content }
+      end
       return
     end
 
@@ -30,20 +36,29 @@ class ImportsController < ApplicationController
     preview_data = importer.parse_preview
 
     if preview_data[:errors].any?
-      render json: preview_data, status: :unprocessable_content
+      respond_to do |format|
+        format.html do
+          flash[:alert] = preview_data[:errors].join("; ")
+          redirect_to new_import_path, status: :see_other
+        end
+        format.json { render json: preview_data, status: :unprocessable_content }
+      end
       return
     end
 
-    render json: {
-      rows: preview_data[:rows],
-      collections: {
-        categories: current_account.categories.order(:name).map { |c| { id: c.id, name: c.name } },
-        suppliers: current_account.suppliers.order(:name).map { |s| { id: s.id, name: s.name } },
-        cost_centers: current_account.cost_centers.order(:name).map { |c| { id: c.id, name: c.name } },
-        bank_accounts: current_account.bank_accounts.order(:name).map { |b| { id: b.id, name: b.name } },
-        credit_cards: current_account.credit_cards.order(:name).map { |c| { id: c.id, name: c.name } }
-      }
+    @rows = preview_data[:rows]
+    @collections = {
+      categories: current_account.categories.order(:name).map { |c| { id: c.id, name: c.name } },
+      suppliers: current_account.suppliers.order(:name).map { |s| { id: s.id, name: s.name } },
+      cost_centers: current_account.cost_centers.order(:name).map { |c| { id: c.id, name: c.name } },
+      bank_accounts: current_account.bank_accounts.order(:name).map { |b| { id: b.id, name: b.name } },
+      credit_cards: current_account.credit_cards.order(:name).map { |c| { id: c.id, name: c.name } }
     }
+
+    respond_to do |format|
+      format.html { render :preview }
+      format.json { render json: { rows: @rows, collections: @collections } }
+    end
   end
 
   def create
@@ -87,22 +102,14 @@ class ImportsController < ApplicationController
         credit_card = find_or_create_credit_card(tx_data[:credit_card], bank_account)
 
         tx_type = tx_data[:transaction_type].presence || "expense"
-        if tx_type == "income"
-          bank_account ||= current_account.bank_accounts.first || current_account.bank_accounts.create!(name: "Conta Principal")
-          credit_card = nil
-        elsif credit_card.present?
+        if credit_card.present?
           bank_account = nil
-        else
-          bank_account ||= current_account.bank_accounts.first || current_account.bank_accounts.create!(name: "Conta Principal")
         end
 
         is_refund_val = ActiveModel::Type::Boolean.new.cast(tx_data[:is_refund])
         tx_date = TransactionImporterService.parse_date(tx_data[:date]) || Date.current
-        parsed_comp_date = if credit_card.present?
-                             credit_card.invoice_competence_for(tx_date)
-                           else
-                             TransactionImporterService.parse_date(tx_data[:competence_date]) || tx_date
-                           end
+        raw_comp_date = TransactionImporterService.parse_date(tx_data[:competence_date])
+        parsed_comp_date = raw_comp_date || (credit_card.present? ? credit_card.invoice_competence_for(tx_date) : tx_date)
 
         tx_attrs = {
           description: tx_data[:description].to_s.strip,
@@ -121,8 +128,9 @@ class ImportsController < ApplicationController
         current_inst = [ tx_data[:current_installment].to_i, 1 ].max
         total_inst = [ (tx_data[:total_installments].presence || tx_data[:installments_count].presence || 1).to_i, 1 ].max
         total_inst = [ total_inst, current_inst ].max
+        group_id = tx_data[:installment_group_id].presence
 
-        if total_inst > 1
+        if total_inst > 1 && group_id.blank? && current_inst == 1
           base_params = {
             description: tx_attrs[:description],
             date: tx_attrs[:date],
@@ -150,6 +158,12 @@ class ImportsController < ApplicationController
             errors << "Linha #{idx + 1}: Não foi possível criar as parcelas (#{current_inst}/#{total_inst})."
           end
         else
+          if total_inst > 1
+            tx_attrs[:installment_group_id] = group_id || SecureRandom.uuid
+            tx_attrs[:installment_number] = current_inst
+            tx_attrs[:total_installments] = total_inst
+          end
+
           tx = current_account.transactions.build(tx_attrs)
 
           if tx.save
@@ -174,18 +188,22 @@ class ImportsController < ApplicationController
     sample = params[:sample] == "true"
     headers = [ "Data", "Data Competência", "Descrição", "Valor", "Tipo", "Categoria", "Fornecedor", "Centro de Custo", "Conta Bancária", "Cartão de Crédito", "Parcela Atual", "Parcela Total", "Estorno" ]
 
-    csv_data = CSV.generate(headers: true, col_sep: ";") do |csv|
-      csv << headers
+    p = Axlsx::Package.new
+    wb = p.workbook
+
+    wb.add_worksheet(name: "Modelo Transações") do |sheet|
+      sheet.add_row headers
       if sample
-        csv << [ "10/08/2026", "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Empresa ACME", "Trabalho", "Nubank", "", "1", "1", "Não" ]
-        csv << [ "11/08/2026", "10/09/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Mercado Central", "Pessoal", "", "Visa Itaú", "1", "1", "Não" ]
-        csv << [ "12/08/2026", "10/09/2026", "Smartphone Novo", "100,00", "Despesa", "Eletrônicos", "Loja Tech", "Pessoal", "", "Visa Itaú", "10", "12", "Não" ]
-        csv << [ "13/08/2026", "10/09/2026", "Estorno Compra", "45,00", "Despesa", "Alimentação", "Restaurante Gourmet", "Pessoal", "", "Visa Itaú", "1", "1", "Sim" ]
+        types = Array.new(headers.size, :string)
+        sheet.add_row [ "10/08/2026", "10/08/2026", "Salário Mensal", "3500,00", "Receita", "Salário", "Empresa ACME", "Trabalho", "Nubank", "", "1", "1", "Não" ], types: types
+        sheet.add_row [ "11/08/2026", "10/09/2026", "Supermercado", "250,50", "Despesa", "Alimentação", "Mercado Central", "Pessoal", "", "Visa Itaú", "1", "1", "Não" ], types: types
+        sheet.add_row [ "12/08/2026", "10/09/2026", "Smartphone Novo", "100,00", "Despesa", "Eletrônicos", "Loja Tech", "Pessoal", "", "Visa Itaú", "10", "12", "Não" ], types: types
+        sheet.add_row [ "13/08/2026", "10/09/2026", "Estorno Compra", "45,00", "Despesa", "Alimentação", "Restaurante Gourmet", "Pessoal", "", "Visa Itaú", "1", "1", "Sim" ], types: types
       end
     end
 
-    filename = sample ? "modelo_transacoes_exemplo.csv" : "modelo_transacoes_cabecalho.csv"
-    send_data "\xEF\xBB\xBF" + csv_data, filename: filename, type: "text/csv; charset=utf-8", disposition: "attachment"
+    filename = sample ? "modelo_transacoes_exemplo.xlsx" : "modelo_transacoes_cabecalho.xlsx"
+    send_data p.to_stream.read, filename: filename, type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", disposition: "attachment"
   end
 
   private

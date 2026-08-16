@@ -24,11 +24,8 @@ class InstallmentTransactionCreator
     base_date = parse_date(@base_params[:date]) || Date.current
     credit_card = @account.credit_cards.find_by(id: @base_params[:credit_card_id]) if @base_params[:credit_card_id].present?
 
-    initial_competence = if credit_card.present?
-                           credit_card.invoice_competence_for(base_date)
-                         else
-                           parse_date(@base_params[:competence_date]) || base_date
-                         end
+    initial_competence = parse_date(@base_params[:competence_date]) ||
+                         (credit_card.present? ? credit_card.invoice_competence_for(base_date) : base_date)
 
     base_description = @base_params[:description].to_s.gsub(/\s*\(\d+\/\d+\)\z/, "")
     created_transactions = []
@@ -38,7 +35,7 @@ class InstallmentTransactionCreator
         (@current_installment..@total_installments).each do |i|
           month_offset = i - @current_installment
           comp_date = initial_competence >> month_offset
-          tx_date = credit_card.present? ? base_date : (base_date >> month_offset)
+          tx_date = base_date
 
           tx = @account.transactions.build(@base_params.merge(
             amount: @amount_per_installment,
@@ -63,7 +60,7 @@ class InstallmentTransactionCreator
           amount = (cents / 100.0).round(2)
 
           comp_date = initial_competence >> (i - 1)
-          tx_date = credit_card.present? ? base_date : (base_date >> (i - 1))
+          tx_date = base_date
 
           tx = @account.transactions.build(@base_params.merge(
             amount: amount,

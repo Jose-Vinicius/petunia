@@ -51,6 +51,118 @@ RSpec.describe TransactionImporterService, type: :service do
       expect(row2[:credit_card][:id]).to eq(credit_card.id)
       expect(row2[:credit_card][:is_new]).to be false
     end
+
+    it 'não atribui banco nem cartão por default se o campo estiver em branco na planilha' do
+      blank_csv = <<~CSV
+        data,descrição,valor,tipo,categoria
+        10/08/2026,Lanche Sem Banco,25.00,despesa,Alimentação
+      CSV
+      file = Tempfile.new(['blank_bank', '.csv'])
+      file.write(blank_csv)
+      file.rewind
+
+      service = described_class.new(
+        file_path: file.path,
+        filename: 'blank_bank.csv',
+        account: account
+      )
+
+      preview = service.parse_preview
+      row = preview[:rows].first
+      expect(row[:bank_account][:id]).to be_nil
+      expect(row[:bank_account][:name]).to be_nil
+      expect(row[:credit_card][:id]).to be_nil
+      expect(row[:credit_card][:name]).to be_nil
+
+      file.close
+      file.unlink
+    end
+
+    it 'preserva a data de competência da planilha mesmo para cartão de crédito' do
+      comp_csv = <<~CSV
+        data,data_competencia,descrição,valor,tipo,cartao
+        10/08/2026,05/08/2026,Compra com Competencia Especifica,100.00,despesa,Visa Itaú
+      CSV
+      file = Tempfile.new(['comp_date', '.csv'])
+      file.write(comp_csv)
+      file.rewind
+
+      service = described_class.new(
+        file_path: file.path,
+        filename: 'comp_date.csv',
+        account: account
+      )
+
+      preview = service.parse_preview
+      row = preview[:rows].first
+      expect(row[:date]).to eq('10/08/2026')
+      expect(row[:competence_date]).to eq('05/08/2026')
+
+      file.close
+      file.unlink
+    end
+
+    it 'expande o preview em múltiplas parcelas com datas de competência mensais correspondentes' do
+      inst_csv = <<~CSV
+        data,data_competencia,descrição,valor,tipo,cartao,parcelas
+        12/08/2026,10/08/2026,Smartphone Novo,100.00,despesa,Visa Itaú,3
+      CSV
+      file = Tempfile.new(['inst_preview', '.csv'])
+      file.write(inst_csv)
+      file.rewind
+
+      service = described_class.new(
+        file_path: file.path,
+        filename: 'inst_preview.csv',
+        account: account
+      )
+
+      preview = service.parse_preview
+      rows = preview[:rows]
+      expect(rows.size).to eq(3)
+      expect(rows[0][:description]).to eq('Smartphone Novo (1/3)')
+      expect(rows[0][:competence_date]).to eq('10/08/2026')
+      expect(rows[1][:description]).to eq('Smartphone Novo (2/3)')
+      expect(rows[1][:competence_date]).to eq('10/09/2026')
+      expect(rows[2][:description]).to eq('Smartphone Novo (3/3)')
+      expect(rows[2][:competence_date]).to eq('10/10/2026')
+
+      group_ids = rows.map { |r| r[:installment_group_id] }
+      expect(group_ids.compact.uniq.size).to eq(1)
+
+      file.close
+      file.unlink
+    end
+
+    it 'expande o preview apenas para as parcelas restantes quando informado parcela_atual e parcela_total (ex: 9 de 12)' do
+      inst_csv = <<~CSV
+        data,data_competencia,descrição,valor,tipo,cartao,parcela_atual,parcela_total
+        12/08/2026,10/08/2026,Eletrodoméstico,100.00,despesa,Visa Itaú,9,12
+      CSV
+      file = Tempfile.new(['inst_partial_preview', '.csv'])
+      file.write(inst_csv)
+      file.rewind
+
+      service = described_class.new(
+        file_path: file.path,
+        filename: 'inst_partial_preview.csv',
+        account: account
+      )
+
+      preview = service.parse_preview
+      rows = preview[:rows]
+      expect(rows.size).to eq(4)
+      expect(rows[0][:description]).to eq('Eletrodoméstico (9/12)')
+      expect(rows[0][:current_installment]).to eq(9)
+      expect(rows[0][:competence_date]).to eq('10/08/2026')
+
+      expect(rows[3][:description]).to eq('Eletrodoméstico (12/12)')
+      expect(rows[3][:current_installment]).to eq(12)
+      expect(rows[3][:competence_date]).to eq('10/11/2026')
+
+      file.close
+      file.unlink
+    end
   end
 
   describe '#call' do
