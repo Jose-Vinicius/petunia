@@ -71,6 +71,14 @@ class Transaction < ApplicationRecord
     has_attribute?(:is_refund) ? super : false
   end
 
+  def reimbursable?
+    has_attribute?(:reimbursable) ? super : false
+  end
+
+  def reimbursed?
+    has_attribute?(:reimbursed) ? super : false
+  end
+
   private
 
   def set_default_is_refund

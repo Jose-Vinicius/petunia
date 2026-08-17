@@ -41,6 +41,14 @@ class RecurringTransaction < ApplicationRecord
     transaction_type == "expense"
   end
 
+  def reimbursable?
+    has_attribute?(:reimbursable) ? super : false
+  end
+
+  def reimbursed?
+    has_attribute?(:reimbursed) ? super : false
+  end
+
   def toggle_active!
     update!(active: !active)
   end
