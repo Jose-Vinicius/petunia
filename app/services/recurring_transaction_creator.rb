@@ -6,11 +6,11 @@ class RecurringTransactionCreator
     @base_params = base_params.to_h.symbolize_keys
     @amount = parse_amount(amount)
     @months_count = [ [ months_count.to_i, 1 ].max, 12 ].min
-    @frequency = %w[weekly monthly yearly].include?(frequency.to_s) ? frequency.to_s : "monthly"
+    @frequency = %w[monthly yearly].include?(frequency.to_s) ? frequency.to_s : "monthly"
   end
 
   def call
-    start_date = parse_date(base_params[:date]) || parse_date(base_params[:start_date]) || Date.current
+    start_date = parse_date(base_params[:date]) || Date.current
     start_competence = parse_date(base_params[:competence_date]) || start_date
 
     card = nil
@@ -41,20 +41,18 @@ class RecurringTransactionCreator
 
       (1..months_count).each do |i|
         step = i - 1
-        tx_date = case frequency
-                  when "weekly" then start_date + step.weeks
-                  when "yearly" then start_date >> (step * 12)
-                  else start_date >> step
+        tx_date = if frequency == "yearly"
+                    start_date >> (step * 12)
+                  else
+                    start_date >> step
                   end
 
         comp_date = if card.present?
                       card.invoice_competence_for(tx_date)
+                    elsif frequency == "yearly"
+                      start_competence >> (step * 12)
                     else
-                      case frequency
-                      when "weekly" then start_competence + step.weeks
-                      when "yearly" then start_competence >> (step * 12)
-                      else start_competence >> step
-                      end
+                      start_competence >> step
                     end
 
         tx_status = if i == 1

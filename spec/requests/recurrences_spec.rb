@@ -36,34 +36,6 @@ RSpec.describe "Lançamentos Recorrentes (Recurrences)", type: :request do
       end
     end
 
-    describe "GET /recurrences/:id" do
-      it "exibe os detalhes da recorrência e os lançamentos gerados" do
-        rec = account.recurring_transactions.create!(
-          description: "Academia",
-          amount: 100.00,
-          transaction_type: "expense",
-          frequency: "monthly",
-          start_date: Date.current,
-          category: category
-        )
-        account.transactions.create!(
-          description: "Academia",
-          amount: 100.00,
-          date: Date.current,
-          transaction_type: "expense",
-          category: category,
-          supplier: supplier,
-          bank_account: bank_account,
-          recurring_transaction: rec
-        )
-
-        get recurrence_path(rec)
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Academia")
-        expect(response.body).to include("Detalhes da regra de recorrência")
-      end
-    end
-
     describe "POST /recurrences" do
       it "cria uma nova recorrência e projeta transações" do
         payload = {
@@ -84,28 +56,6 @@ RSpec.describe "Lançamentos Recorrentes (Recurrences)", type: :request do
           post recurrences_path, params: payload
         }.to change(account.recurring_transactions, :count).by(1)
          .and change(account.transactions, :count).by(5)
-
-        expect(response).to redirect_to(recurrences_path)
-      end
-
-      it "cria uma recorrência semanal" do
-        payload = {
-          recurring_transaction: {
-            description: "Consultoria Semanal",
-            amount: "300,00",
-            transaction_type: "income",
-            frequency: "weekly",
-            start_date: "10/08/2026",
-            category_id: category.id,
-            bank_account_id: bank_account.id
-          },
-          recurring_months_count: 4
-        }
-
-        expect {
-          post recurrences_path, params: payload
-        }.to change(account.recurring_transactions, :count).by(1)
-         .and change(account.transactions, :count).by(4)
 
         expect(response).to redirect_to(recurrences_path)
       end

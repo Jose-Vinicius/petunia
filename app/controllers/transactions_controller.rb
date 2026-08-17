@@ -74,12 +74,36 @@ class TransactionsController < ApplicationController
       @transaction = current_account.transactions.build(transaction_params)
 
       if @transaction.save
-        respond_to do |format|
-          format.html { redirect_to (request.referrer.presence || transactions_path), status: :see_other, notice: t("transactions.create.success") }
-          format.turbo_stream do
-            load_index_data
-            flash.now[:notice] = t("transactions.create.success")
-            render :update_success
+        if @transaction.reimbursable?
+          @reimbursement_transaction = current_account.transactions.build(
+            transaction_type: "income",
+            description: "Reembolso: #{@transaction.description}",
+            amount: @transaction.amount,
+            date: @transaction.date,
+            competence_date: @transaction.competence_date,
+            category_id: @transaction.category_id,
+            supplier_id: @transaction.supplier_id,
+            cost_center_id: @transaction.cost_center_id,
+            bank_account_id: @transaction.bank_account_id,
+            status: "pending"
+          )
+          load_form_options
+          respond_to do |format|
+            format.html { redirect_to (request.referrer.presence || transactions_path), status: :see_other, notice: "Lançamento salvo! Cadastre a receita de reembolso." }
+            format.turbo_stream do
+              load_index_data
+              flash.now[:notice] = "Lançamento salvo! Cadastre a receita de reembolso."
+              render :reimbursement_modal
+            end
+          end
+        else
+          respond_to do |format|
+            format.html { redirect_to (request.referrer.presence || transactions_path), status: :see_other, notice: t("transactions.create.success") }
+            format.turbo_stream do
+              load_index_data
+              flash.now[:notice] = t("transactions.create.success")
+              render :update_success
+            end
           end
         end
       else
@@ -325,6 +349,7 @@ class TransactionsController < ApplicationController
       :credit_card_id,
       :destination_bank_account_id,
       :is_refund,
+      :reimbursable,
       :status
     )
   end

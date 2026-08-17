@@ -13,10 +13,10 @@ class RecurringTransactionsGenerator
       card = rule.credit_card
 
       (0...target_months).each do |m|
-        target_date = case rule.frequency
-                      when "weekly" then rule.start_date + m.weeks
-                      when "yearly" then rule.start_date >> (m * 12)
-                      else rule.start_date >> m
+        target_date = if rule.frequency == "yearly"
+                        rule.start_date >> (m * 12)
+                      else
+                        rule.start_date >> m
                       end
 
         next if target_date < rule.start_date
@@ -24,12 +24,10 @@ class RecurringTransactionsGenerator
 
         comp_date = if card.present?
                       card.invoice_competence_for(target_date)
+                    elsif rule.frequency == "yearly"
+                      rule.start_date >> (m * 12)
                     else
-                      case rule.frequency
-                      when "weekly" then rule.start_date + m.weeks
-                      when "yearly" then rule.start_date >> (m * 12)
-                      else rule.start_date >> m
-                      end
+                      rule.start_date >> m
                     end
 
         # Check if transaction for this month already exists

@@ -1,4 +1,4 @@
-<%= form_with(model: recurring_transaction, url: (recurring_transaction.persisted? ? recurrence_path(recurring_transaction) : recurrences_path), local: true) do |f| %>
+<%= form_with(model: recurring_transaction, local: true) do |f| %>
   <% if recurring_transaction.errors.any? %>
     <div id="error_explanation" style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--error, #ef4444); border-radius: var(--radius-md, 8px); padding: 1rem; margin-bottom: 1.5rem; color: #fca5a5; font-size: 0.9rem;">
       <ul style="margin: 0; padding-left: 1.25rem;">
@@ -36,7 +36,6 @@
       <%= f.label :frequency, "Frequência de Repetição", class: "form-label" %>
       <%= f.select :frequency, [
             ["🗓️ Mensal (Todo mês)", "monthly"],
-            ["🗓️ Semanal (Toda semana)", "weekly"],
             ["📅 Anual (Uma vez por ano)", "yearly"]
           ], {}, class: "form-input" %>
     </div>

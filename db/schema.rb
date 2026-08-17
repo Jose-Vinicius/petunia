@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_13_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_16_224200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -103,6 +103,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_13_180000) do
     t.date "end_date"
     t.string "frequency", default: "monthly", null: false
     t.boolean "is_refund", default: false, null: false
+    t.boolean "reimbursable", default: false, null: false
+    t.boolean "reimbursed", default: false, null: false
     t.date "start_date", null: false
     t.bigint "supplier_id"
     t.string "transaction_type", null: false
@@ -282,6 +284,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_13_180000) do
     t.integer "installment_number"
     t.boolean "is_refund", default: false, null: false
     t.bigint "recurring_transaction_id"
+    t.boolean "reimbursable", default: false, null: false
+    t.boolean "reimbursed", default: false, null: false
+    t.decimal "reimbursed_amount", precision: 10, scale: 2, default: "0.0", null: false
     t.string "status", default: "realized", null: false
     t.bigint "supplier_id"
     t.integer "total_installments"
@@ -301,6 +306,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_13_180000) do
     t.index ["installment_group_id"], name: "index_transactions_on_installment_group_id"
     t.index ["is_refund"], name: "index_transactions_on_is_refund"
     t.index ["recurring_transaction_id"], name: "index_transactions_on_recurring_transaction_id"
+    t.index ["reimbursable", "reimbursed"], name: "index_transactions_on_reimbursable_and_reimbursed"
     t.index ["supplier_id"], name: "index_transactions_on_supplier_id"
   end
 

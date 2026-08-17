@@ -1,0 +1,37 @@
+<%= turbo_stream.replace "transactions_content" do %>
+  <%= render "summary_cards" %>
+  <%= render "filters" %>
+  <%= render "list" %>
+<% end %>
+<%= turbo_stream.update "modal" do %>
+  <div class="modal-backdrop">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Cadastrar Receita de Reembolso</h2>
+          <p class="modal-subtitle">Confirme os dados da receita para o reembolso gerado</p>
+        </div>
+        <%= link_to (request.referrer.presence || transactions_path), data: { turbo_frame: "_top" }, class: "modal-close", title: "Fechar" do %>
+          <span class="material-symbols-outlined">close</span>
+        <% end %>
+      </div>
+      <%= render "form", transaction: @reimbursement_transaction %>
+    </div>
+  </div>
+<% end %>
+<% if flash[:notice].present? || flash[:alert].present? %>
+  <%= turbo_stream.update "flash_messages" do %>
+    <div class="flash-container">
+      <% if flash[:notice].present? %>
+        <div class="flash-message flash-notice">
+          <span><%= flash[:notice] %></span>
+        </div>
+      <% end %>
+      <% if flash[:alert].present? %>
+        <div class="flash-message flash-alert">
+          <span><%= flash[:alert] %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
