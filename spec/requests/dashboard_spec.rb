@@ -60,6 +60,22 @@ RSpec.describe "Dashboard Financeiro", type: :request do
       expect(controller.instance_variable_get(:@projected_balance)).to eq(6000.0)
     end
 
+    it "abate reembolsos de cartão no total de despesas e nos saldos do dashboard" do
+      credit_card = create(:credit_card, account: account, bank_account: bank_account)
+      supplier = create(:supplier, account: account)
+
+      create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 264.06, is_refund: false, status: "realized", date: Date.current)
+      create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 43.59, is_refund: true, status: "realized", date: Date.current)
+      create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 86.81, is_refund: true, status: "realized", date: Date.current)
+      create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 43.59, is_refund: true, status: "realized", date: Date.current)
+
+      get dashboard_path, params: { period: "all" }
+
+      expect(response).to have_http_status(:ok)
+      expect(controller.instance_variable_get(:@monthly_realized_expense)).to eq(90.07)
+      expect(controller.instance_variable_get(:@monthly_expense)).to eq(90.07)
+    end
+
     it "exibe o link para o dashboard na página inicial quando autenticado" do
       get root_path
       expect(response).to have_http_status(:ok)

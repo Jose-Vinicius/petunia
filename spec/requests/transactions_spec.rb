@@ -46,6 +46,22 @@ RSpec.describe "Transações (Transactions)", type: :request do
         expect(response.body).to include("Transação de Março")
         expect(response.body).not_to include("Transação de Janeiro")
       end
+
+      it "abate o valor de estornos/reembolsos do cartão no total de despesas" do
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 88.06, date: Date.new(2026, 8, 15), competence_date: Date.new(2026, 9, 8), description: "Shopee 1/3")
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 88.00, date: Date.new(2026, 8, 15), competence_date: Date.new(2026, 10, 8), description: "Shopee 2/3")
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 88.00, date: Date.new(2026, 8, 15), competence_date: Date.new(2026, 11, 8), description: "Shopee 3/3")
+
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 43.59, date: Date.new(2026, 8, 24), competence_date: Date.new(2026, 9, 8), is_refund: true, description: "reembolso shoppe 1")
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 86.81, date: Date.new(2026, 8, 24), competence_date: Date.new(2026, 9, 8), is_refund: true, description: "reembolso shoppe 2")
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 43.59, date: Date.new(2026, 8, 24), competence_date: Date.new(2026, 9, 8), is_refund: true, description: "reembolso shoppe 3")
+
+        get transactions_path, params: { period: "all" }
+
+        expect(response).to have_http_status(:ok)
+        expect(controller.instance_variable_get(:@total_realized_expense)).to eq(90.07)
+        expect(controller.instance_variable_get(:@total_expense)).to eq(90.07)
+      end
     end
 
     describe "GET /transactions/new" do

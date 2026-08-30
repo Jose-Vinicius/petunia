@@ -50,4 +50,20 @@ RSpec.describe CreditCard, type: :model do
       expect(competence).to eq(Date.new(2026, 10, 5))
     end
   end
+
+  describe '#spent_unpaid' do
+    let(:card) { create(:credit_card, closing_day: 25, due_day: 5) }
+    let(:account) { card.account }
+    let(:category) { account.categories.first }
+    let(:supplier) { create(:supplier, account: account) }
+
+    it 'abate estornos do saldo gasto não pago' do
+      create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: card, bank_account: nil, amount: 264.06, competence_date: Date.new(2026, 9, 5), is_refund: false)
+      create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: card, bank_account: nil, amount: 43.59, competence_date: Date.new(2026, 9, 5), is_refund: true)
+      create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: card, bank_account: nil, amount: 86.81, competence_date: Date.new(2026, 9, 5), is_refund: true)
+      create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: card, bank_account: nil, amount: 43.59, competence_date: Date.new(2026, 9, 5), is_refund: true)
+
+      expect(card.spent_unpaid).to eq(90.07)
+    end
+  end
 end

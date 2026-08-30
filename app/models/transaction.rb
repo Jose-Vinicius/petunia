@@ -21,6 +21,10 @@ class Transaction < ApplicationRecord
     left_joins(:category).where("categories.id IS NULL OR LOWER(categories.name) NOT LIKE ?", "%pagamento%fatura%")
   }
 
+  def self.net_expense_amount
+    charges.without_invoice_payments.sum(:amount) - refunds.without_invoice_payments.sum(:amount)
+  end
+
   def installment?
     installment_group_id.present?
   end

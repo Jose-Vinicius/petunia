@@ -309,8 +309,8 @@ class TransactionsController < ApplicationController
     @total_pending_income = scope.income.pending.sum(:amount)
     @total_income = @total_realized_income + @total_pending_income
 
-    @total_realized_expense = scope.expense.charges.without_invoice_payments.realized.sum(:amount)
-    @total_pending_expense = scope.expense.charges.without_invoice_payments.pending.sum(:amount)
+    @total_realized_expense = scope.expense.realized.net_expense_amount
+    @total_pending_expense = scope.expense.pending.net_expense_amount
     @total_expense = @total_realized_expense + @total_pending_expense
 
     @balance = @total_income - @total_expense

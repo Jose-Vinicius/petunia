@@ -141,5 +141,24 @@ RSpec.describe Transaction, type: :model do
         expect(account.transactions.pending).not_to include(realized_tx)
       end
     end
+
+    describe '.net_expense_amount' do
+      it 'calcula a despesa líquida subtraindo reembolsos das compras' do
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 264.06, is_refund: false)
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 43.59, is_refund: true)
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 86.81, is_refund: true)
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 43.59, is_refund: true)
+
+        expect(account.transactions.expense.net_expense_amount).to eq(90.07)
+      end
+
+      it 'ignora pagamentos de fatura' do
+        cat_pagamento = create(:category, account: account, name: "Pagamento de Fatura")
+        create(:transaction, :expense, account: account, category: category, supplier: supplier, credit_card: credit_card, bank_account: nil, amount: 100.0, is_refund: false)
+        create(:transaction, :expense, account: account, category: cat_pagamento, supplier: supplier, bank_account: bank_account, credit_card: nil, amount: 100.0, is_refund: false)
+
+        expect(account.transactions.expense.net_expense_amount).to eq(100.0)
+      end
+    end
   end
 end

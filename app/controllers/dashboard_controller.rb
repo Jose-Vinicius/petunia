@@ -9,8 +9,8 @@ class DashboardController < ApplicationController
     @monthly_pending_income = scope.income.pending.sum(:amount)
     @monthly_income = @monthly_realized_income + @monthly_pending_income
 
-    @monthly_realized_expense = scope.expense.charges.without_invoice_payments.realized.sum(:amount)
-    @monthly_pending_expense = scope.expense.charges.without_invoice_payments.pending.sum(:amount)
+    @monthly_realized_expense = scope.expense.realized.net_expense_amount
+    @monthly_pending_expense = scope.expense.pending.net_expense_amount
     @monthly_expense = @monthly_realized_expense + @monthly_pending_expense
 
     @monthly_balance = @monthly_income - @monthly_expense
@@ -38,7 +38,8 @@ class DashboardController < ApplicationController
                            .without_invoice_payments
                            .joins(:category)
                            .group("categories.name")
-                           .sum(:amount)
+                           .sum("CASE WHEN transactions.is_refund = true THEN -transactions.amount ELSE transactions.amount END")
+                           .select { |_name, total| total > 0 }
                            .sort_by { |_name, total| -total }
 
     @total_categories_count = all_cat_expenses.size
@@ -68,7 +69,7 @@ class DashboardController < ApplicationController
     @chart_monthly_data = {
       labels: months.map { |m| I18n.l(m, format: "%b/%y") },
       income: months.map { |m| current_account.transactions.where(date_col => m..m.end_of_month).income.sum(:amount).to_f },
-      expense: months.map { |m| current_account.transactions.where(date_col => m..m.end_of_month).expense.charges.without_invoice_payments.sum(:amount).to_f }
+      expense: months.map { |m| current_account.transactions.where(date_col => m..m.end_of_month).expense.net_expense_amount.to_f }
     }
 
     # 3. Line Chart (Evolução do Saldo)
@@ -76,7 +77,7 @@ class DashboardController < ApplicationController
     daily_rows = scope.where.not(transaction_type: "transfer")
                       .group(date_col_sym)
                       .order(date_col_sym => :asc)
-                      .select("#{date_col_sym} AS day, SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS inc, SUM(CASE WHEN transaction_type = 'expense' AND is_refund = false THEN amount ELSE 0 END) AS exp")
+                      .select("#{date_col_sym} AS day, SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS inc, SUM(CASE WHEN transaction_type = 'expense' THEN (CASE WHEN is_refund = true THEN -amount ELSE amount END) ELSE 0 END) AS exp")
     cum = 0.0
     balance_labels = []
     balance_values = []
@@ -94,7 +95,8 @@ class DashboardController < ApplicationController
                       .without_invoice_payments
                       .joins(:supplier)
                       .group("suppliers.name")
-                      .sum(:amount)
+                      .sum("CASE WHEN transactions.is_refund = true THEN -transactions.amount ELSE transactions.amount END")
+                      .select { |_name, total| total > 0 }
                       .sort_by { |_, v| -v }
                       .first(5)
     @chart_supplier_data = {
@@ -113,13 +115,14 @@ class DashboardController < ApplicationController
                            .without_invoice_payments
                            .joins(:category)
                            .group("categories.name")
-                           .sum(:amount)
+                           .sum("CASE WHEN transactions.is_refund = true THEN -transactions.amount ELSE transactions.amount END")
+                           .select { |_name, total| total > 0 }
                            .sort_by { |_name, total| -total }
 
     @category_expenses = all_cat_expenses.drop(offset).first(limit) || []
     @next_page = page + 1
     @has_more = all_cat_expenses.size > (offset + limit)
-    @monthly_expense = scope.expense.charges.without_invoice_payments.sum(:amount)
+    @monthly_expense = scope.expense.net_expense_amount
 
     render partial: "dashboard/category_expenses_list", layout: false
   end

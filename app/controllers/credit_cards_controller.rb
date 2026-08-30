@@ -49,7 +49,7 @@ class CreditCardsController < ApplicationController
                                  .order(date: :desc)
 
     @refunds_total = @transactions.expense.refunds.sum(:amount)
-    @charges_total = @transactions.expense.charges.sum(:amount) + @refunds_total
+    @charges_total = @transactions.expense.charges.sum(:amount)
     @invoice_total = @charges_total - @refunds_total
     @bank_accounts = current_account.bank_accounts.order(:name)
     @invoice_payment = @credit_card.invoice_payment_for(@selected_month)

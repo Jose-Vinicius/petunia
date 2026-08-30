@@ -62,12 +62,16 @@ class CreditCard < ApplicationRecord
 
   def spent_unpaid
     paid_competences = invoice_payments.pluck(:competence_date).map { |d| d.beginning_of_month }.uniq
-    charges_txs = transactions.expense.charges.to_a
+    txs = transactions.expense.to_a
     if paid_competences.present?
-      unpaid = charges_txs.reject { |tx| tx.competence_date.present? && paid_competences.include?(tx.competence_date.beginning_of_month) }
-      unpaid.sum(&:amount)
+      unpaid_txs = txs.reject { |tx| tx.competence_date.present? && paid_competences.include?(tx.competence_date.beginning_of_month) }
+      charges = unpaid_txs.reject(&:is_refund?).sum(&:amount)
+      refunds = unpaid_txs.select(&:is_refund?).sum(&:amount)
+      [charges - refunds, 0.0].max
     else
-      charges_txs.sum(&:amount)
+      charges = txs.reject(&:is_refund?).sum(&:amount)
+      refunds = txs.select(&:is_refund?).sum(&:amount)
+      [charges - refunds, 0.0].max
     end
   end
 

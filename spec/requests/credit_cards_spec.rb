@@ -158,6 +158,25 @@ RSpec.describe 'Cartões de Crédito (CreditCards)', type: :request do
         expect(response.body).to include("Compra Mercado")
         expect(response.body).to include("250,00")
       end
+
+      it 'abate reembolsos do valor total da fatura e exibe compras reais' do
+        cartao = create(:credit_card, account: conta, bank_account: banco, closing_day: 25, due_day: 5)
+        cat = conta.categories.first
+        sup = create(:supplier, account: conta)
+
+        create(:transaction, :expense, account: conta, category: cat, supplier: sup, credit_card: cartao, bank_account: nil, amount: 264.06, date: Date.new(2026, 8, 15), competence_date: Date.new(2026, 9, 5), description: "Compras Shopee", is_refund: false)
+        create(:transaction, :expense, account: conta, category: cat, supplier: sup, credit_card: cartao, bank_account: nil, amount: 43.59, date: Date.new(2026, 8, 24), competence_date: Date.new(2026, 9, 5), description: "Reembolso 1", is_refund: true)
+        create(:transaction, :expense, account: conta, category: cat, supplier: sup, credit_card: cartao, bank_account: nil, amount: 86.81, date: Date.new(2026, 8, 24), competence_date: Date.new(2026, 9, 5), description: "Reembolso 2", is_refund: true)
+        create(:transaction, :expense, account: conta, category: cat, supplier: sup, credit_card: cartao, bank_account: nil, amount: 43.59, date: Date.new(2026, 8, 24), competence_date: Date.new(2026, 9, 5), description: "Reembolso 3", is_refund: true)
+
+        get invoices_credit_card_path(cartao), params: { month: "2026-09" }
+
+        expect(response).to have_http_status(:success)
+        expect(controller.instance_variable_get(:@charges_total)).to eq(264.06)
+        expect(controller.instance_variable_get(:@refunds_total)).to eq(173.99)
+        expect(controller.instance_variable_get(:@invoice_total)).to eq(90.07)
+        expect(response.body).to include("90,07")
+      end
     end
 
     describe 'POST /credit_cards/:id/pay_invoice' do
